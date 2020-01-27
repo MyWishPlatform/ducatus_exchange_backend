@@ -7,12 +7,14 @@ from drf_yasg.utils import swagger_auto_schema
 from ducatus_widget.rates.api import get_usd_rates, get_usd_prices, convert_to_duc_single
 from ducatus_widget.rates.serializers import ExchangeSerializer, RateSerializer, PriceSerializer
 
+#rate_path = openapi.Parameter('')
 
 class RateRequest(APIView):
 
     @swagger_auto_schema(
         operation_description="rate and price request",
-        responses={200: ExchangeSerializer()}
+        responses={200: ExchangeSerializer()},
+        manual_parameters=[]
     )
     def get(self, request):
         usd_rate = get_usd_rates()
