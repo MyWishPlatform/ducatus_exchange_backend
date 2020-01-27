@@ -5,7 +5,6 @@ from ducatus_widget.consts import MAX_DIGITS
 
 
 class Payment(models.Model):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE)
     user_address = models.CharField(max_length=100, null=True, default='')
     tx_hash = models.CharField(max_length=100, null=True, default='')
     currency = models.CharField(max_length=50, null=True, default='')

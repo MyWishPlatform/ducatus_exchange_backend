@@ -49,9 +49,7 @@ class Receiver(threading.Thread):
         channel.start_consuming()
 
     def payment(self, message):
-        print('payment message', flush=True)
-        print('message["amount"]', message['amount'])
-        print('payment ok', flush=True)
+        print('PAYMENT MESSAGE RECEIVED', flush=True)
         parse_payment_message(message)
 
     def callback(self, ch, method, properties, body):

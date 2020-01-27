@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from channels.db import database_sync_to_async
 
 from ducatus_widget.payments.models import Payment
 from ducatus_widget.exchange_rate import get_current_rate
@@ -46,9 +45,20 @@ def register_payment(user_address, tx_hash, currency, amount):
         rate=calculated_amount['rate'],
         sent_amount=calculated_amount['amount']
     )
-    print(payment.__dict__)
+    print(
+        'PAYMENT REGISTERED: {value_orig} {curr} ({value} DUC}) with rate {rate} from {addr} with TXID: {txid}'.format(
+            value_orig=amount,
+            curr=currency,
+            value=calculated_amount['amount'],
+            rate=calculated_amount['rate'],
+            addr=user_address,
+            txid=tx_hash
+        ),
+        flush=True
+    )
 
-    #payment.save()
+    payment.save()
+    print('payment ok', flush=True)
     return payment
 
 
