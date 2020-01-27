@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_extensions',
     'ducatus_widget.payments',
+    'ducatus_widget.rates',
+    'ducatus_widget.transfers',
+    'ducatus_widget.',
 ]
 
 MIDDLEWARE = [

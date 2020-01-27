@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 
 from ducatus_widget.payments.models import Payment
 from ducatus_widget.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_all
+from ducatus_widget.transfers.api import transfer_ducatus
 
 
 DECIMALS = {
@@ -32,8 +33,7 @@ def calculate_amount(original_amount, currency):
     return {'amount': amount_to_send['value'], 'rate': amount_to_send['rate']}
 
 
-def register_payment(user_address, tx_hash, currency, amount):
-    # user = User.objects.get(id=user_id)
+def register_payment(user_address, tx_hash, currency, amount, to_address):
 
     calculated_amount = calculate_amount(amount, currency)
     payment = Payment(
@@ -46,13 +46,14 @@ def register_payment(user_address, tx_hash, currency, amount):
         sent_amount=calculated_amount['amount']
     )
     print(
-        'PAYMENT REGISTERED: {value_orig} {curr} ({value} DUC}) with rate {rate} from {addr} with TXID: {txid}'.format(
-            value_orig=amount,
+        'PAYMENT: {amount} {curr} ({value} DUC}) on rate {rate} from {addr} with TXID: {txid} to send at {to_addr}'.format(
+            amount=amount,
             curr=currency,
             value=calculated_amount['amount'],
             rate=calculated_amount['rate'],
             addr=user_address,
-            txid=tx_hash
+            txid=tx_hash,
+            to_addr=to_address
         ),
         flush=True
     )
@@ -76,6 +77,9 @@ def parse_payment_message(message):
     user_address = message.get('userAddress')
     amount = message.get('amount')
     currency = message.get('currency')
-    print('PAYMENT:', tx, user_address, amount, currency, flush=True)
+    to_address = message.get('receivingAddress')
+    print('PAYMENT:', tx, user_address, amount, currency, to_address, flush=True)
 
-    register_payment(user_address, tx, currency, amount)
+    payment = register_payment(user_address, tx, currency, amount, to_address)
+
+    transfer_ducatus(payment)

@@ -35,8 +35,9 @@ class DucatuscoreInterface:
         try:
             res = self.rpc.sendtoaddress(address, amount)
             print(res)
+            return res
         except Exception as e:
-            print('DUCATUS TRANSFER ERRPR: transfer for {amount} DUC for {addr} failed'
+            print('DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
                   .format(amount=amount, addr=address), flush=True
                   )
             print(e, flush=True)
