@@ -11,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_widget.settings')
 import django
 django.setup()
 
-from ducatus_widget.settings import BACKEND_WALLETS
+from ducatus_widget.settings import NETWORK_SETTINGS
 from ducatus_widget.payments.api import parse_payment_message
 
 
@@ -31,7 +31,7 @@ class Receiver(threading.Thread):
 
         channel = connection.channel()
 
-        queue_name = BACKEND_WALLETS[self.network]['queue']
+        queue_name = NETWORK_SETTINGS[self.network]['queue']
         print(queue_name)
 
         channel.queue_declare(
@@ -68,7 +68,7 @@ class Receiver(threading.Thread):
         print('unknown message', message, flush=True)
 
 
-networks = BACKEND_WALLETS.keys()
+networks = NETWORK_SETTINGS.keys()
 
 
 for network in networks:

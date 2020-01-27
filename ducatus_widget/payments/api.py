@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 
 from ducatus_widget.payments.models import Payment
-from ducatus_widget.exchange_rate import get_current_rate
+from ducatus_widget.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_all
 
 
 DECIMALS = {
@@ -12,7 +12,7 @@ DECIMALS = {
 
 
 def convert_currency(amount, currency):
-    rate = get_current_rate()
+    rate = get_usd_prices()
     if currency == 'ETH':
         pass
     if currency == 'BTC':
