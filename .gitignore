@@ -3,3 +3,4 @@
 /*/*/migrations/
 /*/__pycache__/
 /*/*/__pycache__/
+/ducatus_widget/settings_local.py
