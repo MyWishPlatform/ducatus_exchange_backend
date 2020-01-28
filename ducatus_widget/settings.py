@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'ducatus_widget.payments',
     'ducatus_widget.rates',
     'ducatus_widget.transfers',
-    'ducatus_widget.',
+    'ducatus_widget.exchange_requests',
 ]
 
 MIDDLEWARE = [

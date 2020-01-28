@@ -14,7 +14,8 @@ class DucatuscoreInterface:
         self.check_connection()
 
     def setup_endpoint(self):
-        duc_settings = NETWORK_SETTINGS['DUC']
+#        duc_settings = NETWORK_SETTINGS['DUC']
+        duc_settings = NETWORK_SETTINGS['LTC']
 
         self.endpoint = 'http://{user}:{pwd}@{host}:{port}'.format(
             user=duc_settings['user'],

@@ -40,4 +40,5 @@ urlpatterns = [
     url(r'^api/v1/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^api/v1/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     url(r'^api/v1/rates/', include('ducatus_widget.rates.urls')),
+    url(r'^api/v1/exchange/', include('ducatus_widget.exchange_requests.urls')),
 ]
