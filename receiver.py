@@ -52,6 +52,9 @@ class Receiver(threading.Thread):
         print('PAYMENT MESSAGE RECEIVED', flush=True)
         parse_payment_message(message)
 
+    def transferred(self, message):
+        print('TRANSFER CONFIRMATION RECEIVED', flush=True)
+
     def callback(self, ch, method, properties, body):
         print('received', body, properties, method, flush=True)
         try:
