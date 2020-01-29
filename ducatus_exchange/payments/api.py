@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 
+from ducatus_exchange.exchange_requests.models import DucatusAddress
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
 from ducatus_exchange.transfers.api import transfer_ducatus
@@ -30,7 +31,7 @@ def calculate_amount(original_amount, currency):
 
 
 def register_payment(user_id, tx_hash, currency, amount):
-    user = User.objects.get(id=user_id)
+    user = DucatusAddress.objects.get(id=user_id)
 
     calculated_amount = calculate_amount(amount, currency)
     payment = Payment(
