@@ -5,7 +5,7 @@ from ducatus_exchange.consts import MAX_DIGITS
 
 
 class Payment(models.Model):
-    user_address = models.CharField(max_length=100, null=True, default='')
+    user = models.CharField(max_length=100, null=True, default='')
     tx_hash = models.CharField(max_length=100, null=True, default='')
     currency = models.CharField(max_length=50, null=True, default='')
     original_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
