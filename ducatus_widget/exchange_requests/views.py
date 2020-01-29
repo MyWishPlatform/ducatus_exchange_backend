@@ -5,8 +5,8 @@ from rest_framework import status
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-# from ducatus_widget.exchange_requests.api import get_usd_rates, get_usd_prices, convert_to_duc_single
-from ducatus_widget.exchange_requests.serializers import ExchangeRequestSerializer
+# from ducatus_exchange.exchange_requests.api import get_usd_rates, get_usd_prices, convert_to_duc_single
+from ducatus_exchange.exchange_requests.serializers import ExchangeRequestSerializer
 
 
 class ExchangeRequest(APIView):

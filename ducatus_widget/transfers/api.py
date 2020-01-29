@@ -1,6 +1,6 @@
-from ducatus_widget.litecoin_rpc import DucatuscoreInterface
-from ducatus_widget.transfers.models import DucatusTransfer
-from ducatus_widget.exchange_requests.models import ExchangeRequest
+from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.transfers.models import DucatusTransfer
+from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
 def transfer_ducatus(payment):

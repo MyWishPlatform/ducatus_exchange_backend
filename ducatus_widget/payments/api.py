@@ -1,8 +1,8 @@
 from django.contrib.auth.models import User
 
-from ducatus_widget.payments.models import Payment
-from ducatus_widget.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
-from ducatus_widget.transfers.api import transfer_ducatus
+from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
+from ducatus_exchange.transfers.api import transfer_ducatus
 
 
 DECIMALS = {

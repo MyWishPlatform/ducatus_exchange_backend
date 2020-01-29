@@ -1,7 +1,7 @@
 import requests
 import json
 
-from ducatus_widget.consts import DUCATUS_USD_RATE
+from ducatus_exchange.consts import DUCATUS_USD_RATE
 
 
 def request_rates(fsym, tsyms, reverse=False):

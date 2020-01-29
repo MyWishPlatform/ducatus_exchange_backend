@@ -1,8 +1,8 @@
 from django.db import models
 
-from ducatus_widget.consts import MAX_DIGITS
-from ducatus_widget.payments.models import Payment
-from ducatus_widget.exchange_requests.models import ExchangeRequest
+from ducatus_exchange.consts import MAX_DIGITS
+from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
 class DucatusTransfer(models.Model):

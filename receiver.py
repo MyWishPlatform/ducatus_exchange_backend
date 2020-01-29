@@ -26,8 +26,8 @@ class Receiver(threading.Thread):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
             'localhost',
             5672,
-            'ducatus_widget',
-            pika.PlainCredentials('ducatus_widget', 'ducatus_widget'),
+            'ducatus_exchange',
+            pika.PlainCredentials('ducatus_exchange', 'ducatus_exchange'),
         ))
 
         channel = connection.channel()

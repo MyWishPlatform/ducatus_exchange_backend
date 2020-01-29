@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ducatus_widget.rates.api import get_usd_rates, get_usd_prices, convert_to_duc_single
-from ducatus_widget.rates.serializers import ExchangeSerializer, RateSerializer, PriceSerializer
+from ducatus_exchange.rates.api import get_usd_rates, get_usd_prices, convert_to_duc_single
+from ducatus_exchange.rates.serializers import ExchangeSerializer, RateSerializer, PriceSerializer
 
 #rate_path = openapi.Parameter('')
 

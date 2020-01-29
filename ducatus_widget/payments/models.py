@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from ducatus_widget.consts import MAX_DIGITS
+from ducatus_exchange.consts import MAX_DIGITS
 
 
 class Payment(models.Model):

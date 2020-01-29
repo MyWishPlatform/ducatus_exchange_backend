@@ -1,6 +1,6 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
-from ducatus_widget.settings import NETWORK_SETTINGS
+from ducatus_exchange.settings import NETWORK_SETTINGS
 
 
 class DucatuscoreInterface:

@@ -1,5 +1,5 @@
 from django.db import models
-from ducatus_widget.consts import MAX_DIGITS
+from ducatus_exchange.consts import MAX_DIGITS
 
 
 class Rate(models.Model):

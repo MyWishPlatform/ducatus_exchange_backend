@@ -7,8 +7,8 @@ from bip32utils import BIP32Key
 from eth_keys import keys
 from rest_framework import serializers
 
-from ducatus_widget.settings import ROOT_PUBLIC_KEY, BITCOIN_URLS
-from ducatus_widget.exchange_requests.models import ExchangeRequest, DucatusAddress
+from ducatus_exchange.settings import ROOT_PUBLIC_KEY, BITCOIN_URLS
+from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusAddress
 
 
 def generate_memo(m):
