@@ -43,7 +43,7 @@ def register_payment(user_id, tx_hash, currency, amount):
         sent_amount=calculated_amount['amount']
     )
     print(
-        'PAYMENT: {amount} {curr} ({value} DUC}) on rate {rate} from user {user} with TXID: {txid}'.format(
+        'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} from user {user} with TXID: {txid}'.format(
             amount=amount,
             curr=currency,
             value=calculated_amount['amount'],
