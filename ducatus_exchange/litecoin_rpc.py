@@ -12,17 +12,15 @@ class DucatuscoreInterface:
 
         self.setup_endpoint()
         self.rpc = AuthServiceProxy(self.endpoint)
+        self.settings = NETWORK_SETTINGS['DUC']
         self.check_connection()
 
     def setup_endpoint(self):
-        settings = NETWORK_SETTINGS['DUC']
-        #duc_settings = NETWORK_SETTINGS['LTC']
-
         self.endpoint = 'http://{user}:{pwd}@{host}:{port}'.format(
-            user=settings['user'],
-            pwd=settings['password'],
-            host=settings['host'],
-            port=settings['port']
+            user=self.settings['user'],
+            pwd=self.settings['password'],
+            host=self.settings['host'],
+            port=self.settings['port']
         )
         return
 
