@@ -29,12 +29,12 @@ def calculate_amount(original_amount, currency):
     return {'amount': int(amount_to_send['amount']), 'rate': amount_to_send['rate']}
 
 
-def register_payment(user_address, tx_hash, currency, amount, to_address):
+def register_payment(user_id, tx_hash, currency, amount):
+    user = User.objects.get(id=user_id)
 
     calculated_amount = calculate_amount(amount, currency)
     payment = Payment(
-        # user=user,
-        user_address=user_address,
+        user=user,
         tx_hash=tx_hash,
         currency=currency,
         original_amount=amount,
@@ -42,14 +42,13 @@ def register_payment(user_address, tx_hash, currency, amount, to_address):
         sent_amount=calculated_amount['amount']
     )
     print(
-        'PAYMENT: {amount} {curr} ({value} DUC}) on rate {rate} from {addr} with TXID: {txid} to send at {to_addr}'.format(
+        'PAYMENT: {amount} {curr} ({value} DUC}) on rate {rate} from user {user} with TXID: {txid}'.format(
             amount=amount,
             curr=currency,
             value=calculated_amount['amount'],
             rate=calculated_amount['rate'],
-            addr=user_address,
+            user=user.id,
             txid=tx_hash,
-            to_addr=to_address
         ),
         flush=True
     )
@@ -70,12 +69,12 @@ def parse_payment_message(message):
     #     "success": true
     # }
     tx = message.get('transactionHash')
-    user_address = message.get('userAddress')
+    user_id = message.get('userId')
     amount = message.get('amount')
     currency = message.get('currency')
-    to_address = message.get('receivingAddress')
-    print('PAYMENT:', tx, user_address, amount, currency, to_address, flush=True)
+    # to_address = message.get('receivingAddress')
+    print('PAYMENT:', tx, user_id, amount, currency, flush=True)
 
-    payment = register_payment(user_address, tx, currency, amount, to_address)
+    payment = register_payment(user_id, tx, currency, amount)
 
     transfer_ducatus(payment)
