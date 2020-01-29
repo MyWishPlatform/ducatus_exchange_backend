@@ -10,9 +10,9 @@ class DucatuscoreInterface:
 
     def __init__(self):
 
+        self.settings = NETWORK_SETTINGS['DUC']
         self.setup_endpoint()
         self.rpc = AuthServiceProxy(self.endpoint)
-        self.settings = NETWORK_SETTINGS['DUC']
         self.check_connection()
 
     def setup_endpoint(self):
