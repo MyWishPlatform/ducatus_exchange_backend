@@ -13,6 +13,7 @@ django.setup()
 
 from ducatus_widget.settings import NETWORK_SETTINGS
 from ducatus_widget.payments.api import parse_payment_message
+from ducatus_widget.transfers.api import confirm_transfer
 
 
 class Receiver(threading.Thread):
@@ -54,6 +55,7 @@ class Receiver(threading.Thread):
 
     def transferred(self, message):
         print('TRANSFER CONFIRMATION RECEIVED', flush=True)
+        confirm_transfer(message)
 
     def callback(self, ch, method, properties, body):
         print('received', body, properties, method, flush=True)

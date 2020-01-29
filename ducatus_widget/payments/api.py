@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 
 from ducatus_widget.payments.models import Payment
-from ducatus_widget.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_all
+from ducatus_widget.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
 from ducatus_widget.transfers.api import transfer_ducatus
 
 
@@ -13,24 +13,20 @@ DECIMALS = {
 
 
 def convert_currency(amount, currency):
-    rate = get_usd_prices()
-    if currency == 'ETH':
-        pass
-    if currency == 'BTC':
-        pass
-
-    return {'amount': amount, 'rate': rate}
+    rate = float(convert_to_duc_single(get_usd_rates())[currency])
+    value = amount / rate
+    return {'amount': value, 'rate': rate}
 
 
 def calculate_amount(original_amount, currency):
 
+    value = original_amount
+
     if currency == 'ETH':
-        value = original_amount * DECIMALS['ETH'] / DECIMALS['DUC']
-    else:
-        value = original_amount
+        value = original_amount * DECIMALS['DUC'] / DECIMALS['ETH']
 
     amount_to_send = convert_currency(value, currency)
-    return {'amount': amount_to_send['value'], 'rate': amount_to_send['rate']}
+    return {'amount': int(amount_to_send['amount']), 'rate': amount_to_send['rate']}
 
 
 def register_payment(user_address, tx_hash, currency, amount, to_address):
