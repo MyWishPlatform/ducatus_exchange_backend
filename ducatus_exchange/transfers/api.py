@@ -9,12 +9,12 @@ def transfer_ducatus(payment):
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver))
 
     rpc = DucatuscoreInterface()
-    res = rpc.transfer(receiver, amount)
+    tx = rpc.transfer(receiver, amount)
 
     exchange_request = ExchangeRequest.objects.get(id=payment.request.id)
     transfer = DucatusTransfer(
         request=exchange_request,
-        # tx_hash=res['tx_hash']
+        tx_hash=tx,
         amount=amount,
         payment=payment,
         state='WAITING_FOR_CONFIRMATION'
@@ -22,7 +22,7 @@ def transfer_ducatus(payment):
     transfer.save()
 
     print('ducatus transfer ok')
-    return res
+    return transfer
 
 
 def confirm_transfer(message):

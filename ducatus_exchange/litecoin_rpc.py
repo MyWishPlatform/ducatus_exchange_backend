@@ -6,6 +6,7 @@ from ducatus_exchange.settings import NETWORK_SETTINGS
 class DucatuscoreInterface:
 
     endpoint = None
+    settings = None
 
     def __init__(self):
 
@@ -14,14 +15,14 @@ class DucatuscoreInterface:
         self.check_connection()
 
     def setup_endpoint(self):
-        duc_settings = NETWORK_SETTINGS['DUC']
+        settings = NETWORK_SETTINGS['DUC']
         #duc_settings = NETWORK_SETTINGS['LTC']
 
         self.endpoint = 'http://{user}:{pwd}@{host}:{port}'.format(
-            user=duc_settings['user'],
-            pwd=duc_settings['password'],
-            host=duc_settings['host'],
-            port=duc_settings['port']
+            user=settings['user'],
+            pwd=settings['password'],
+            host=settings['host'],
+            port=settings['port']
         )
         return
 
@@ -34,10 +35,11 @@ class DucatuscoreInterface:
 
     def transfer(self, address, amount):
         try:
+            self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
             res = self.rpc.sendtoaddress(address, amount)
             print(res)
             return res
-        except Exception as e:
+        except JSONRPCException as e:
             print('DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
                   .format(amount=amount, addr=address), flush=True
                   )
