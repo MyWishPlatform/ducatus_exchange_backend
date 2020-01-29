@@ -33,7 +33,6 @@ class Receiver(threading.Thread):
         channel = connection.channel()
 
         queue_name = NETWORK_SETTINGS[self.network]['queue']
-        print(queue_name)
 
         channel.queue_declare(
                 queue=queue_name,
@@ -46,7 +45,11 @@ class Receiver(threading.Thread):
             on_message_callback=self.callback
         )
 
-        print('receiver start ', self.network, flush=True)
+        print(
+            'RECEIVER MAIN: started on {net} with queue `{queue_name}`'
+            .format(net=self.network, queue_name=queue_name), flush=True
+        )
+
         channel.start_consuming()
 
     def payment(self, message):
