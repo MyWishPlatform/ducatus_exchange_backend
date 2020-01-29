@@ -7,13 +7,13 @@ import sys
 from types import FunctionType
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_widget.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
 django.setup()
 
-from ducatus_widget.settings import NETWORK_SETTINGS
-from ducatus_widget.payments.api import parse_payment_message
-from ducatus_widget.transfers.api import confirm_transfer
+from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.payments.api import parse_payment_message
+from ducatus_exchange.transfers.api import confirm_transfer
 
 
 class Receiver(threading.Thread):

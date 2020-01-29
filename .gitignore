@@ -4,5 +4,5 @@
 /__pycache__/
 /*/__pycache__/
 /*/*/__pycache__/
-/ducatus_widget/settings_local.py
+/ducatus_exchange/settings_local.py
 gunicorn.conf.py
