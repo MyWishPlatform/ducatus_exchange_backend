@@ -54,10 +54,17 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
         duc_addr = DucatusAddress(address=validated_data['duc_address'])
         duc_addr.save()
 
-        root_key = BIP32Key.fromExtendedKey(ROOT_PUBLIC_KEY, public=True)
+        if IS_TESTNET_PAYMENTS:
+            root_pub_key = ROOT_KEYS['testnet']['public']
+        else:
+            root_pub_key = ROOT_KEYS['mainnet']['public']
+
+        root_key = BIP32Key.fromExtendedKey(root_pub_key, public=True)
         child_key = root_key.ChildKey(duc_addr.id)
 
         validated_data['user_id'] = duc_addr.id
+        btc_address = child_key.Address()
+        registration_btc_address(btc_address)
         validated_data['btc_address'] = child_key.Address()
         validated_data['eth_address'] = keys.PublicKey(child_key.K.to_string()).to_checksum_address().lower()
 
