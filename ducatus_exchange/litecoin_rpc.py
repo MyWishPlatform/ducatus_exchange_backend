@@ -35,8 +35,9 @@ class DucatuscoreInterface:
     def transfer(self, address, amount):
         try:
             value = amount / DECIMALS['DUC']
+            print('try sending {value} DUC to {addr}'.format(value=value, addr=address))
             self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
-            res = self.rpc.sendtoaddress(address, amount)
+            res = self.rpc.sendtoaddress(address, value)
             print(res)
             return res
         except JSONRPCException as e:
