@@ -41,7 +41,6 @@ def register_payment(request_id, tx_hash, currency, amount):
         elif currency == 'ETH':
             saved_rate = ExchangeRequest.initial_rate_eth
 
-
     calculated_amount = calculate_amount(amount, currency, saved_rate)
     payment = Payment(
         user=request,
@@ -57,7 +56,7 @@ def register_payment(request_id, tx_hash, currency, amount):
             curr=currency,
             value=calculated_amount['amount'],
             rate=calculated_amount['rate'],
-            user=user.id,
+            user=request.id,
             txid=tx_hash,
         ),
         flush=True
