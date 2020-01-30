@@ -5,13 +5,13 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 def transfer_ducatus(payment):
     amount = payment.sent_amount
-    receiver = payment.user.address
+    receiver = payment.user.duc_address
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
 
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
 
-    exchange_request = ExchangeRequest.objects.get(duc_address=payment.user.address)
+    exchange_request = ExchangeRequest.objects.get(duc_address=payment.user.duc_address)
     transfer = DucatusTransfer(
         request=exchange_request,
         tx_hash=tx,
