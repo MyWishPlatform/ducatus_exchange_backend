@@ -35,7 +35,7 @@ def confirm_transfer(message):
     #     "success": true
     # }
     transfer_id = message['transferId']
-    transfer_address = message['address']
+    transfer_address = message['ducAddress']
     print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address))
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
     if transfer_address == transfer.request.duc_address:
