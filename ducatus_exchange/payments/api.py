@@ -8,7 +8,7 @@ from ducatus_exchange.transfers.api import transfer_ducatus
 from ducatus_exchange.consts import DECIMALS
 
 
-def convert_currency(amount, currency, saved_rate) :
+def convert_currency(amount, currency, saved_rate):
     if saved_rate is None:
         rate = float(convert_to_duc_single(get_usd_rates())[currency])
     else:
