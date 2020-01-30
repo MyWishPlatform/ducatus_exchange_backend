@@ -11,7 +11,7 @@ def transfer_ducatus(payment):
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
 
-    exchange_request = ExchangeRequest.objects.get(id=payment.request.id)
+    exchange_request = ExchangeRequest.objects.get(duc_address=payment.user.address)
     transfer = DucatusTransfer(
         request=exchange_request,
         tx_hash=tx,
