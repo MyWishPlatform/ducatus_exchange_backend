@@ -13,3 +13,4 @@ class DucatusTransfer(models.Model):
     # rate = models.DecimalField(max_digits=512, decimal_places=0)
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
     state = models.CharField(max_length=50, null=True, default='')
+    created_date = models.DateTimeField(auto_now_add=True)

@@ -1,35 +1,49 @@
+import datetime
 from django.contrib.auth.models import User
 
-from ducatus_exchange.exchange_requests.models import DucatusAddress
+from ducatus_exchange.exchange_requests.models import DucatusAddress, ExchangeRequest
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
+from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
 from ducatus_exchange.transfers.api import transfer_ducatus
 from ducatus_exchange.consts import DECIMALS
 
 
-def convert_currency(amount, currency):
-    rate = float(convert_to_duc_single(get_usd_rates())[currency])
+def convert_currency(amount, currency, saved_rate) :
+    if saved_rate is None:
+        rate = float(convert_to_duc_single(get_usd_rates())[currency])
+    else:
+        rate = saved_rate
     value = amount / rate
     return {'amount': value, 'rate': rate}
 
 
-def calculate_amount(original_amount, currency):
+def calculate_amount(original_amount, currency, saved_rate):
 
     value = original_amount
 
     if currency == 'ETH':
         value = original_amount * DECIMALS['DUC'] / DECIMALS['ETH']
 
-    amount_to_send = convert_currency(value, currency)
+    amount_to_send = convert_currency(value, currency, saved_rate)
     return {'amount': int(amount_to_send['amount']), 'rate': amount_to_send['rate']}
 
 
-def register_payment(user_id, tx_hash, currency, amount):
-    user = DucatusAddress.objects.get(id=user_id)
+def register_payment(request_id, tx_hash, currency, amount):
+    saved_rate  = None
+    request = ExchangeRequest.objects.get(id=request_id)
 
-    calculated_amount = calculate_amount(amount, currency)
+    delta = datetime.datetime.now() - request.created_at
+
+    if delta.hours < 1:
+        if currency == 'BTC':
+            saved_rate = ExchangeRequest.initial_rate_btc
+        elif currency == 'ETH':
+            saved_rate = ExchangeRequest.initial_rate_eth
+
+
+    calculated_amount = calculate_amount(amount, currency, saved_rate)
     payment = Payment(
-        user=user,
+        user=request,
         tx_hash=tx_hash,
         currency=currency,
         original_amount=amount,

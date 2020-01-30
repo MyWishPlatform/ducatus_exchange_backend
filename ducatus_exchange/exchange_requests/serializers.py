@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusAddress
+from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
 
 
 def generate_memo(m):
@@ -51,8 +52,7 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
         fields = ['duc_address', 'eth_address', 'btc_address']
 
     def create(self, validated_data):
-        duc_addr = DucatusAddress(address=validated_data['duc_address'])
-        duc_addr.save()
+        duc_addr = DucatusAddress.objects.get_or_create(address=validated_data['duc_address'])[0]
 
         if IS_TESTNET_PAYMENTS:
             root_pub_key = ROOT_KEYS['testnet']['public']
@@ -68,6 +68,9 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
         validated_data['btc_address'] = child_key.Address()
         validated_data['eth_address'] = keys.PublicKey(child_key.K.to_string()).to_checksum_address().lower()
 
-        print(validated_data)
+        rates = convert_to_duc_single(get_usd_rates())
+
+        validated_data['initial_rate_eth'] = float(rates['ETH'])
+        validated_data['initial_rate_btc'] = float(rates['BTC'])
 
         return super().create(validated_data)
