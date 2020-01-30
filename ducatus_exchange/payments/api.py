@@ -35,7 +35,7 @@ def register_payment(request_id, tx_hash, currency, amount):
 
     delta = timezone.now() - request.created_at
 
-    if delta.hours < 1:
+    if delta.seconds < 3600:
         if currency == 'BTC':
             saved_rate = ExchangeRequest.initial_rate_btc
         elif currency == 'ETH':
