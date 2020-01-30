@@ -1,4 +1,5 @@
 import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 from ducatus_exchange.exchange_requests.models import DucatusAddress, ExchangeRequest
@@ -29,10 +30,10 @@ def calculate_amount(original_amount, currency, saved_rate):
 
 
 def register_payment(request_id, tx_hash, currency, amount):
-    saved_rate  = None
+    saved_rate = None
     request = ExchangeRequest.objects.get(id=request_id)
 
-    delta = datetime.datetime.now() - request.created_at
+    delta = timezone.now() - request.created_at
 
     if delta.hours < 1:
         if currency == 'BTC':
