@@ -36,7 +36,7 @@ def init_exchange_request(duc_address):
     exchange_request.eth_address = request_key.ChildKey(exchange_request.id).Address()
     exchange_request.btc_address = keys.PublicKey(request_key.ChildKey(exchange_request.id).K.to_string()).to_checksum_address().lower()
 
-    # registration_btc_address(exchange_request.btc_address)
+    registration_btc_address(exchange_request.btc_address)
     return
 
 
