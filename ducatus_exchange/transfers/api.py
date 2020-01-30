@@ -5,7 +5,7 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 def transfer_ducatus(payment):
     amount = payment.sent_amount
-    receiver = payment.to_addr
+    receiver = payment.user.address
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver))
 
     rpc = DucatuscoreInterface()
