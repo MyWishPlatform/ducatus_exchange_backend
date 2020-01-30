@@ -71,5 +71,6 @@ def parse_payment_message(message):
     print('PAYMENT:', tx, user_id, amount, currency, flush=True)
 
     payment = register_payment(user_id, tx, currency, amount)
-
+    print('starting transfer', flush=True)
     transfer_ducatus(payment)
+    print('transfer completed', flush=True)

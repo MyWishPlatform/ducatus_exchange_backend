@@ -6,7 +6,7 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 def transfer_ducatus(payment):
     amount = payment.sent_amount
     receiver = payment.user.address
-    print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver))
+    print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
 
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
@@ -21,7 +21,7 @@ def transfer_ducatus(payment):
     )
     transfer.save()
 
-    print('ducatus transfer ok')
+    print('ducatus transfer ok', flush=True)
     return transfer
 
 
@@ -36,7 +36,7 @@ def confirm_transfer(message):
     # }
     transfer_id = message['transferId']
     transfer_address = message['ducAddress']
-    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address))
+    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address), flush=True)
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
     if transfer_address == transfer.request.duc_address:
         transfer.state = 'DONE'
