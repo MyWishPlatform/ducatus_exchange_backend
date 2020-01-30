@@ -1,6 +1,7 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.consts import DECIMALS
 
 
 class DucatuscoreInterface:
@@ -33,6 +34,7 @@ class DucatuscoreInterface:
 
     def transfer(self, address, amount):
         try:
+            value = amount / DECIMALS['DUC']
             self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
             res = self.rpc.sendtoaddress(address, amount)
             print(res)

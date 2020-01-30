@@ -4,13 +4,7 @@ from ducatus_exchange.exchange_requests.models import DucatusAddress
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.api import get_usd_prices, get_usd_rates, convert_to_duc_single
 from ducatus_exchange.transfers.api import transfer_ducatus
-
-
-DECIMALS = {
-    'ETH': 10 ** 18,
-    'BTC': 10 ** 8,
-    'DUC': 10 ** 8,
-}
+from ducatus_exchange.consts import DECIMALS
 
 
 def convert_currency(amount, currency):
