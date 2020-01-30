@@ -7,7 +7,7 @@ from bip32utils import BIP32Key
 from eth_keys import keys
 from rest_framework import serializers
 
-from ducatus_exchange.settings import ROOT_PUBLIC_KEY, BITCOIN_URLS
+from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusAddress
 
 
@@ -32,7 +32,12 @@ def registration_btc_address(btc_address):
 def init_exchange_request(duc_address):
     exchange_request = ExchangeRequest(duc_address)
 
-    request_key = BIP32Key.fromExtendedKey(ROOT_PUBLIC_KEY, public=True)
+    if IS_TESTNET_PAYMENTS:
+        root_pub_key = ROOT_KEYS['testnet']['public']
+    else:
+        root_pub_key = ROOT_KEYS['mainnet']['public']
+
+    request_key = BIP32Key.fromExtendedKey(root_pub_key, public=True)
     exchange_request.eth_address = request_key.ChildKey(exchange_request.id).Address()
     exchange_request.btc_address = keys.PublicKey(request_key.ChildKey(exchange_request.id).K.to_string()).to_checksum_address().lower()
 
