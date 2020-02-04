@@ -21,6 +21,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from ducatus_exchange.views import FeedbackForm
+
 schema_view = get_schema_view(
    openapi.Info(
       title="Ducatus Widget API",
@@ -41,4 +43,5 @@ urlpatterns = [
     url(r'^api/v1/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     url(r'^api/v1/rates/', include('ducatus_exchange.rates.urls')),
     url(r'^api/v1/exchange/', include('ducatus_exchange.exchange_requests.urls')),
+    url(r'api/v1/send_ducatus_feedback', FeedbackForm.as_view(), name='send-ducatus-feedback'),
 ]

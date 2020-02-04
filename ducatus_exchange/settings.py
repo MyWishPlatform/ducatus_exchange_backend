@@ -129,9 +129,9 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'ducatus_exchange', 'static/')
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'ducatus_exchange', 'static'),
-]
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, 'ducatus_exchange', 'static'),
+#]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
