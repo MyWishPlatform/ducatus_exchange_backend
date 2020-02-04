@@ -43,5 +43,5 @@ urlpatterns = [
     url(r'^api/v1/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     url(r'^api/v1/rates/', include('ducatus_exchange.rates.urls')),
     url(r'^api/v1/exchange/', include('ducatus_exchange.exchange_requests.urls')),
-    url(r'api/v1/send_ducatus_feedback', FeedbackForm.as_view(), name='send-ducatus-feedback'),
+    url(r'api/v1/send_ducatus_feedback/', FeedbackForm.as_view(), name='send-ducatus-feedback'),
 ]
