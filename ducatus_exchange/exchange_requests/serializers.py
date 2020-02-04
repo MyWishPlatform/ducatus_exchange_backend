@@ -6,6 +6,7 @@ import binascii
 from bip32utils import BIP32Key
 from eth_keys import keys
 from rest_framework import serializers
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusAddress
@@ -70,7 +71,19 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
 
         rates = convert_to_duc_single(get_usd_rates())
 
-        validated_data['initial_rate_eth'] = float(rates['ETH'])
-        validated_data['initial_rate_btc'] = float(rates['BTC'])
+        validated_data['initial_rate_eth'] = rates['ETH']
+        validated_data['initial_rate_btc'] = rates['BTC']
 
         return super().create(validated_data)
+
+    def is_valid(self, raise_exception=False):
+        if hasattr(self, 'initial_data'):
+            try:
+                obj = ExchangeRequest.objects.get(**self.initial_data)
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
+                return super().is_valid(raise_exception)
+            else:
+                self.instance = obj
+                return super().is_valid(raise_exception)
+        else:
+            return super().is_valid(raise_exception)

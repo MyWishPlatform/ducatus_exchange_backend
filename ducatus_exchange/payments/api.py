@@ -37,9 +37,9 @@ def register_payment(request_id, tx_hash, currency, amount):
 
     if delta.seconds < 3600:
         print('using saved rate for request', flush=True)
-        if currency == 'BTC':
+        if currency == 'BTC' and request.initial_rate_btc != 0:
             saved_rate = request.initial_rate_btc
-        elif currency == 'ETH':
+        elif currency == 'ETH' and request.initial_rate_eth != 0:
             saved_rate = request.initial_rate_eth
 
     calculated_amount = calculate_amount(amount, currency, saved_rate)
