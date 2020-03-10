@@ -11,6 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusUser
 from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
+from ducatus_exchange.bip32_ducatus import DucatusWallet
 
 
 def generate_memo(m):
@@ -69,18 +70,25 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
             platform=validated_data['platform']
         )
 
-        root_pub_key = get_root_key()
-
-        root_key = BIP32Key.fromExtendedKey(root_pub_key, public=True)
-        child_key = root_key.ChildKey(ducatus_user.id)
-
-        btc_address = child_key.Address()
+        eth_btc_root_pub_key = get_root_key()
+        eth_btc_root_key = BIP32Key.fromExtendedKey(eth_btc_root_pub_key, public=True)
+        eth_btc_child_key = eth_btc_root_key.ChildKey(ducatus_user.id)
+        btc_address = eth_btc_child_key.Address()
         registration_btc_address(btc_address)
-        eth_address = keys.PublicKey(child_key.K.to_string()).to_checksum_address().lower()
+        eth_address = keys.PublicKey(eth_btc_child_key.K.to_string()).to_checksum_address().lower()
+
+        duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['public'])
+        duc_address = duc_root_key.get_child(ducatus_user.id, is_prime=False).to_address()
+
+        ducx_root_pub__key = ROOT_KEYS['ducatusx']['public']
+        ducx_root_key = BIP32Key.fromExtendedKey(ducx_root_pub__key, public=True)
+        ducx_address = keys.PublicKey(ducx_root_key.K.to_string()).to_checksum_address().lower()
 
         validated_data['user_id'] = ducatus_user.id
         validated_data['btc_address'] = btc_address
         validated_data['eth_address'] = eth_address
+        validated_data['duc_address'] = duc_address
+        validated_data['ducx_address'] = ducx_address
 
         rates = convert_to_duc_single(get_usd_rates())
 
