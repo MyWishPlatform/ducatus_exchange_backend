@@ -9,7 +9,7 @@ from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
-from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusAddress
+from ducatus_exchange.exchange_requests.models import ExchangeRequest, DucatusUser
 from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
 
 
@@ -47,27 +47,40 @@ def init_exchange_request(duc_address):
     return
 
 
+def get_root_key():
+    network = 'mainnet'
+
+    if IS_TESTNET_PAYMENTS:
+        network = 'testnet'
+
+    root_pub_key = ROOT_KEYS[network]['public']
+
+    return root_pub_key
+
+
 class ExchangeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExchangeRequest
-        fields = ['duc_address', 'eth_address', 'btc_address']
+        fields = ['duc_address', 'ducx_address', 'eth_address', 'btc_address']
 
     def create(self, validated_data):
-        duc_addr = DucatusAddress.objects.get_or_create(address=validated_data['duc_address'])[0]
+        ducatus_user, user_created = DucatusUser.objects.get_or_create(
+            address=validated_data['address'],
+            platform=validated_data['platform']
+        )
 
-        if IS_TESTNET_PAYMENTS:
-            root_pub_key = ROOT_KEYS['testnet']['public']
-        else:
-            root_pub_key = ROOT_KEYS['mainnet']['public']
+        root_pub_key = get_root_key()
 
         root_key = BIP32Key.fromExtendedKey(root_pub_key, public=True)
-        child_key = root_key.ChildKey(duc_addr.id)
+        child_key = root_key.ChildKey(ducatus_user.id)
 
-        validated_data['user_id'] = duc_addr.id
         btc_address = child_key.Address()
         registration_btc_address(btc_address)
-        validated_data['btc_address'] = child_key.Address()
-        validated_data['eth_address'] = keys.PublicKey(child_key.K.to_string()).to_checksum_address().lower()
+        eth_address = keys.PublicKey(child_key.K.to_string()).to_checksum_address().lower()
+
+        validated_data['user_id'] = ducatus_user.id
+        validated_data['btc_address'] = btc_address
+        validated_data['eth_address'] = eth_address
 
         rates = convert_to_duc_single(get_usd_rates())
 
