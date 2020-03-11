@@ -62,19 +62,17 @@ def get_root_key():
 class ExchangeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExchangeRequest
-        fields = ['duc_address', 'ducx_address', 'eth_address', 'btc_address']
+        fields = ['user', 'duc_address', 'ducx_address', 'eth_address', 'btc_address']
 
     def create(self, validated_data):
-        ducatus_user, user_created = DucatusUser.objects.get_or_create(
-            address=validated_data['address'],
-            platform=validated_data['platform']
-        )
+        print('validated_data:', validated_data, flush=True)
+        ducatus_user = validated_data['user']
 
         eth_btc_root_pub_key = get_root_key()
         eth_btc_root_key = BIP32Key.fromExtendedKey(eth_btc_root_pub_key, public=True)
         eth_btc_child_key = eth_btc_root_key.ChildKey(ducatus_user.id)
         btc_address = eth_btc_child_key.Address()
-        registration_btc_address(btc_address)
+        # registration_btc_address(btc_address)
         eth_address = keys.PublicKey(eth_btc_child_key.K.to_string()).to_checksum_address().lower()
 
         duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['public'])

@@ -26,17 +26,41 @@ class ExchangeRequest(APIView):
 
     )
     def post(self, request):
-        print(request.data)
-        serializer = ExchangeRequestSerializer(data=request.data)
+        request_data = request.data
+        address = request_data.get('to_address')
+        platform = request_data.get('to_currency')
+
+        ducatus_user, user_created = DucatusUser.objects.get_or_create(
+            address=address,
+            platform=platform
+        )
+
+        if user_created:
+            ducatus_user.save()
+
+        request_data['user'] = ducatus_user.id
+        request_data.pop('to_address')
+
+        print('data:', request_data, flush=True)
+        serializer = ExchangeRequestSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
 
-        rates = convert_to_duc_single(get_usd_rates())
+        # rates = convert_to_duc_single(get_usd_rates())
 
-        obj.initial_rate_eth = float(rates['ETH'])
-        obj.initial_rate_btc = float(rates['BTC'])
-        obj.save()
-        print(obj.__dict__)
+        # obj.initial_rate_eth = float(rates['ETH'])
+        # obj.initial_rate_btc = float(rates['BTC'])
+        # obj.save()
+        # print(obj.__dict__)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if platform == 'DUC':
+            response_data = dict(serializer.data)
+            response_data.pop('duc_address')
+            response_data.pop('user')
+        else:
+            response_data = {'duc_address': serializer.data.get('duc_address')}
+
+        print('res:', response_data)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
