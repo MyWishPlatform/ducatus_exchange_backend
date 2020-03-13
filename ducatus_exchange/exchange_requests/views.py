@@ -9,11 +9,33 @@ from ducatus_exchange.exchange_requests.models import DucatusUser
 from ducatus_exchange.exchange_requests.serializers import ExchangeRequestSerializer
 from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
 
+exchange_response_duc = openapi.Response(
+    description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'ducx_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'btc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'eth_address': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    )
+)
+
+exchange_response_ducx = openapi.Response(
+    description='Response with DUC addresses if `DUCX` passed in `to_currency`',
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+    )
+)
+
 
 class ExchangeRequest(APIView):
 
     @swagger_auto_schema(
-        operation_description="post DUC address and get ETH and BTC addresses for payment",
+        operation_description="post DUC or DUCX address and get addresses for payment",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['to_address', 'to_currency'],
@@ -22,7 +44,7 @@ class ExchangeRequest(APIView):
                 'to_currency': openapi.Schema(type=openapi.TYPE_STRING)
             },
         ),
-        responses={200: ExchangeRequestSerializer()},
+        responses={200: exchange_response_duc, 201: exchange_response_ducx},
 
     )
     def post(self, request):
