@@ -43,3 +43,7 @@ def confirm_transfer(message):
         transfer.save()
     print('transfer completed ok')
     return
+
+
+def transfer_ducatusx():
+    pass
