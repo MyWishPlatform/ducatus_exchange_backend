@@ -1,11 +1,8 @@
-import datetime
-from django.utils import timezone
-from django.contrib.auth.models import User
-
-from ducatus_exchange.exchange_requests.models import DucatusAddress, ExchangeRequest
+from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
-from ducatus_exchange.transfers.api import transfer_ducatus
+from ducatus_exchange.rates.serializers import AllRatesSerializer
+from ducatus_exchange.transfers.api import transfer_currency
 from ducatus_exchange.consts import DECIMALS
 
 
@@ -19,7 +16,6 @@ def convert_currency(amount, currency, saved_rate):
 
 
 def calculate_amount(original_amount, currency, saved_rate):
-
     value = original_amount
 
     if currency == 'ETH':
@@ -30,19 +26,12 @@ def calculate_amount(original_amount, currency, saved_rate):
 
 
 def register_payment(request_id, tx_hash, currency, amount):
-    saved_rate = None
     request = ExchangeRequest.objects.get(id=request_id)
 
-    delta = timezone.now() - request.created_at
+    rates = AllRatesSerializer({})
+    currency_rate = rates.data[currency]
 
-    if delta.seconds < 3600:
-        print('using saved rate for request', flush=True)
-        if currency == 'BTC' and request.initial_rate_btc != 0:
-            saved_rate = request.initial_rate_btc
-        elif currency == 'ETH' and request.initial_rate_eth != 0:
-            saved_rate = request.initial_rate_eth
-
-    calculated_amount = calculate_amount(amount, currency, saved_rate)
+    calculated_amount = calculate_amount(amount, currency, currency_rate)
     payment = Payment(
         user=request,
         tx_hash=tx_hash,
@@ -52,12 +41,12 @@ def register_payment(request_id, tx_hash, currency, amount):
         sent_amount=calculated_amount['amount']
     )
     print(
-        'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} from user {user} with TXID: {txid}'.format(
+        'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} within request {req} with TXID: {txid}'.format(
             amount=amount,
             curr=currency,
             value=calculated_amount['amount'],
             rate=calculated_amount['rate'],
-            user=request.id,
+            req=request.id,
             txid=tx_hash,
         ),
         flush=True
@@ -69,23 +58,14 @@ def register_payment(request_id, tx_hash, currency, amount):
 
 
 def parse_payment_message(message):
-    # {
-    #     "status": "COMMITTED",
-    #     "transactionHash": "c0963718ea4bfdf1540cfbbc46357971ac2799f45811505a6a1d8cf8c92b5906",
-    #     "userAddress": "1Bwd6WKNykMtsahTSkPaJvw4m4CKXz4hPM",
-    #     "amount": 600359,
-    #     "currency": "BTC",
-    #     "type": "payment",
-    #     "success": true
-    # }
     tx = message.get('transactionHash')
-    user_id = message.get('userId')
+    request_id = message.get('exchangeId')
     amount = message.get('amount')
     currency = message.get('currency')
-    # to_address = message.get('receivingAddress')
-    print('PAYMENT:', tx, user_id, amount, currency, flush=True)
+    receiving_address = message.get('address')
+    print('PAYMENT:', tx, request_id, amount, currency, flush=True)
 
-    payment = register_payment(user_id, tx, currency, amount)
+    payment = register_payment(request_id, tx, currency, amount)
     print('starting transfer', flush=True)
-    transfer_ducatus(payment)
+    transfer_currency(payment)
     print('transfer completed', flush=True)

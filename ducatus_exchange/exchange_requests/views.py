@@ -7,7 +7,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser
 from ducatus_exchange.exchange_requests.serializers import ExchangeRequestSerializer
-from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
 
 exchange_response_duc = openapi.Response(
     description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
@@ -67,13 +66,6 @@ class ExchangeRequest(APIView):
         serializer = ExchangeRequestSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
-
-        # rates = convert_to_duc_single(get_usd_rates())
-
-        # obj.initial_rate_eth = float(rates['ETH'])
-        # obj.initial_rate_btc = float(rates['BTC'])
-        # obj.save()
-        # print(obj.__dict__)
 
         if platform == 'DUC':
             response_data = dict(serializer.data)
