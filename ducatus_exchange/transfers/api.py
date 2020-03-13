@@ -1,11 +1,21 @@
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
+def transfer_currency(payment):
+    currency = payment.exchange_request.to_currency
+
+    if currency == 'DUC':
+        transfer_ducatus(payment)
+    else:
+        transfer_ducatusx(payment)
+
+
 def transfer_ducatus(payment):
     amount = payment.sent_amount
-    receiver = payment.user.duc_address
+    receiver = payment.exchange_request.user.duc_address
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
 
     rpc = DucatuscoreInterface()
@@ -23,6 +33,15 @@ def transfer_ducatus(payment):
 
     print('ducatus transfer ok', flush=True)
     return transfer
+
+
+def transfer_ducatusx(payment):
+    amount = payment.sent_amount
+    receiver = payment.exchange_request.user.address
+    print('ducatusX transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+
+    parity = ParityInterface()
+
 
 
 def confirm_transfer(message):
@@ -43,7 +62,3 @@ def confirm_transfer(message):
         transfer.save()
     print('transfer completed ok')
     return
-
-
-def transfer_ducatusx():
-    pass
