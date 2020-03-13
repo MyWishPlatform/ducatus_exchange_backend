@@ -88,11 +88,6 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
         validated_data['duc_address'] = duc_address
         validated_data['ducx_address'] = ducx_address
 
-        rates = convert_to_duc_single(get_usd_rates())
-
-        validated_data['initial_rate_eth'] = rates['ETH']
-        validated_data['initial_rate_btc'] = rates['BTC']
-
         return super().create(validated_data)
 
     def is_valid(self, raise_exception=False):

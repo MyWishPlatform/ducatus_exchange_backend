@@ -16,10 +16,10 @@ class ExchangeRequest(APIView):
         operation_description="post DUC address and get ETH and BTC addresses for payment",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['address', 'platform'],
+            required=['to_address', 'to_currency'],
             properties={
-                'address': openapi.Schema(type=openapi.TYPE_STRING),
-                'platform': openapi.Schema(type=openapi.TYPE_STRING)
+                'to_address': openapi.Schema(type=openapi.TYPE_STRING),
+                'to_currency': openapi.Schema(type=openapi.TYPE_STRING)
             },
         ),
         responses={200: ExchangeRequestSerializer()},

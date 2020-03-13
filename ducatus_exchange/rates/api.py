@@ -38,6 +38,9 @@ def get_usd_prices():
     for tsym in query_tsyms:
         usd_prices[tsym] = request_rates(tsym, query_fsym, reverse=True)
 
+    usd_prices['DUC'] = 0.05
+    usd_prices['DUCX'] = 0.50
+
     return usd_prices
 
 
