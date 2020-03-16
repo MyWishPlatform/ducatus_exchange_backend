@@ -4,7 +4,7 @@ from ducatus_exchange.consts import MAX_DIGITS
 
 
 class DucatusUser(models.Model):
-    address = models.CharField(max_length=50, unique=True)
+    address = models.CharField(max_length=50, unique=False)
     platform = models.CharField(max_length=25, null=True, default=None)
 
 
