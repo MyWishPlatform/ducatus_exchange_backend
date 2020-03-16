@@ -3,8 +3,6 @@ import json
 
 from rest_framework import serializers
 
-from ducatus_exchange.rates.api import get_usd_prices
-
 
 def request_rates(fsym, tsyms, reverse=False):
     api_url = 'https://min-api.cryptocompare.com/data/price'
@@ -22,6 +20,20 @@ def request_rates(fsym, tsyms, reverse=False):
         answer = answer[tsyms]
 
     return answer
+
+
+def get_usd_prices():
+    query_tsyms = ['ETH', 'BTC']
+    query_fsym = 'USD'
+
+    usd_prices = {}
+    for tsym in query_tsyms:
+        usd_prices[tsym] = request_rates(tsym, query_fsym, reverse=True)
+
+    usd_prices['DUC'] = 0.05
+    usd_prices['DUCX'] = 0.50
+
+    return usd_prices
 
 
 class DucRateSerializer(serializers.Serializer):

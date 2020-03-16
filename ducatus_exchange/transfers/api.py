@@ -58,14 +58,6 @@ def save_transfer(payment, tx, amount, currency):
 
 
 def confirm_transfer(message):
-    # {
-    #     "status": "COMMITTED",
-    #     "transactionHash": "8c803aeb0fcaf3203b49bab742b5faf3be1c57b7bf6635b553f299b97bb7f626",
-    #     "transferId": 51,
-    #     "address": "Lraxrzhdo67f6MofLQRy91Y7t7TWsXpXEu4",
-    #     "type": "transferred",
-    #     "success": true
-    # }
     transfer_id = message['transferId']
     transfer_address = message['address']
     print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address), flush=True)
