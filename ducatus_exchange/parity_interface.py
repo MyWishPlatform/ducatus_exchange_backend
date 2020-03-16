@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 import json
 import requests
-import sys
-import binascii
+import web3
+
 from ducatus_exchange.settings import NETWORK_SETTINGS
 
 
@@ -61,17 +60,21 @@ class ParityInterface:
         return f
 
     def transfer(self, address, amount):
-        # nonce = int(self.eth_getTransactionCount(self.settings.address, "pending"), 16)
+        nonce = int(self.eth_getTransactionCount(self.settings['address'], "pending"), 16)
+
         tx_params = {
-            'from': self.settings.address,
             'to': address,
-            'value': hex(amount),
-            'gas': hex(21000),
-            'gasPrice': hex(2 * 10 ** 9)
+            'value': amount,
+            'gas': 21000,
+            'gasPrice': 2 * 10 ** 9,
+            'nonce': nonce,
+            'chainId': self.settings['chainId']
         }
 
+        signed_tx = web3.eth.account.signTransaction(tx_params, self.settings['private'])
+
         try:
-            tx = self.eth_sendTransaction(tx_params)
+            tx = self.eth_sendRawTransaction(signed_tx)
             print(tx)
             return tx
         except (ParConnectExc, ParErrorExc) as e:
