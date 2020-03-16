@@ -51,12 +51,9 @@ class ExchangeRequest(APIView):
         address = request_data.get('to_address')
         platform = request_data.get('to_currency')
 
-        ducatus_user, user_created = DucatusUser.objects.get_or_create(
-            address=address,
-            platform=platform
-        )
-
-        if user_created:
+        ducatus_user = DucatusUser.objects.filter(address=address, platform=platform)
+        if not ducatus_user:
+            ducatus_user = DucatusUser(address=address, platform=platform)
             ducatus_user.save()
 
         request_data['user'] = ducatus_user.id
