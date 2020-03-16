@@ -6,7 +6,7 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
 class DucatusTransfer(models.Model):
-    request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
+    exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     # user_address = models.CharField(max_length=100, null=True, default='')
     tx_hash = models.CharField(max_length=100, null=True, default='')
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)

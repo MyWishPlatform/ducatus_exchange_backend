@@ -1,6 +1,6 @@
 import json
 import requests
-import web3
+from web3 import Web3, HTTPProvider
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
 
@@ -34,7 +34,8 @@ class ParityInterface:
             host=self.settings['host'],
             port=self.settings['port']
         )
-        print('parity interface', self.addr, self.port, flush=True)
+        self.settings['chainId'] = self.eth_chainId()
+        print('parity interface', self.settings, flush=True)
         return
 
     def __getattr__(self, method):
@@ -71,13 +72,15 @@ class ParityInterface:
             'chainId': self.settings['chainId']
         }
 
-        signed_tx = web3.eth.account.signTransaction(tx_params, self.settings['private'])
+        w3 = Web3(HTTPProvider(self.endpoint))
+
+        signed_tx = w3.eth.account.signTransaction(tx_params, self.settings['private'])
 
         try:
-            tx = self.eth_sendRawTransaction(signed_tx)
-            print(tx)
-            return tx
-        except (ParConnectExc, ParErrorExc) as e:
+            tx = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+            print(tx.hex())
+            return tx.hex()
+        except Exception as e:
             print('DUCATUSX TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
                   .format(amount=amount, addr=address), flush=True
                   )

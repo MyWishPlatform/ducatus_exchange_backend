@@ -33,7 +33,7 @@ def register_payment(request_id, tx_hash, currency, amount):
 
     calculated_amount = calculate_amount(amount, currency, currency_rate)
     payment = Payment(
-        user=request,
+        exchange_request=request,
         tx_hash=tx_hash,
         currency=currency,
         original_amount=amount,

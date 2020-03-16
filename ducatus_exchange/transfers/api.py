@@ -17,19 +17,11 @@ def transfer_ducatus(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.duc_address
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    currency = 'DUC'
 
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
-
-    exchange_request = ExchangeRequest.objects.get(duc_address=payment.user.duc_address)
-    transfer = DucatusTransfer(
-        request=exchange_request,
-        tx_hash=tx,
-        amount=amount,
-        payment=payment,
-        state='WAITING_FOR_CONFIRMATION'
-    )
-    transfer.save()
+    transfer = save_transfer(payment, tx, amount, currency)
 
     print('ducatus transfer ok', flush=True)
     return transfer
@@ -39,9 +31,30 @@ def transfer_ducatusx(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
     print('ducatusX transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    currency = 'DUCX'
 
     parity = ParityInterface()
+    tx = parity.transfer(receiver, amount)
+    transfer = save_transfer(payment, tx, amount, currency)
 
+    print('ducatusx transfer ok', flush=True)
+    return transfer
+
+
+def save_transfer(payment, tx, amount, currency):
+    exchange_request = ExchangeRequest.objects.get(duc_address=payment.exchange_request)
+    transfer = DucatusTransfer(
+        exchange_request=exchange_request,
+        tx_hash=tx,
+        amount=amount,
+        payment=payment,
+        currency=currency,
+        state='WAITING_FOR_CONFIRMATION'
+    )
+    transfer.save()
+
+    print('ducatus transfer ok', flush=True)
+    return transfer
 
 
 def confirm_transfer(message):
@@ -54,7 +67,7 @@ def confirm_transfer(message):
     #     "success": true
     # }
     transfer_id = message['transferId']
-    transfer_address = message['ducAddress']
+    transfer_address = message['address']
     print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address), flush=True)
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
     if transfer_address == transfer.request.duc_address:
