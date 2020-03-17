@@ -68,8 +68,11 @@ def parse_payment_message(message):
     currency = message.get('currency')
     receiving_address = message.get('address')
     print('PAYMENT:', tx, request_id, amount, currency, flush=True)
-
-    payment = register_payment(request_id, tx, currency, amount)
-    print('starting transfer', flush=True)
-    transfer_currency(payment)
-    print('transfer completed', flush=True)
+    try:
+        payment = register_payment(request_id, tx, currency, amount)
+        print('starting transfer', flush=True)
+        transfer_currency(payment)
+        print('transfer completed', flush=True)
+    except ExchangeRequest.DoesNotExist as e:
+        print(e, flush=True)
+        pass
