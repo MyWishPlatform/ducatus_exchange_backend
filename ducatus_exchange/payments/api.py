@@ -40,6 +40,8 @@ def register_payment(request_id, tx_hash, currency, amount):
         rate=calculated_amount,
         sent_amount=rate
     )
+    exchange_request.from_currency = currency
+    exchange_request.save()
     print(
         'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} within request {req} with TXID: {txid}'.format(
             amount=amount,

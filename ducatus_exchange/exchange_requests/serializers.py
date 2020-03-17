@@ -61,7 +61,7 @@ def get_root_key():
 class ExchangeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExchangeRequest
-        fields = ['user', 'duc_address', 'ducx_address', 'eth_address', 'btc_address']
+        fields = ['user', 'duc_address', 'ducx_address', 'eth_address', 'btc_address', 'to_currency']
 
     def create(self, validated_data):
         print('validated_data:', validated_data, flush=True)
