@@ -33,13 +33,14 @@ def register_payment(request_id, tx_hash, currency, amount):
     request_currency = exchange_request.to_currency
 
     calculated_amount, rate = calculate_amount(amount, currency, request_currency)
+    print('amount:', calculated_amount, 'rate:', rate,  flush=True)
     payment = Payment(
         exchange_request=exchange_request,
         tx_hash=tx_hash,
         currency=currency,
         original_amount=amount,
-        rate=calculated_amount,
-        sent_amount=rate
+        rate=rate,
+        sent_amount=calculated_amount
     )
     exchange_request.from_currency = currency
     exchange_request.save()
