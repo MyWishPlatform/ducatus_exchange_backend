@@ -15,7 +15,7 @@ def transfer_currency(payment):
 
 def transfer_ducatus(payment):
     amount = payment.sent_amount
-    receiver = payment.exchange_request.user.duc_address
+    receiver = payment.exchange_request.user.address
     print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
     currency = 'DUC'
 
