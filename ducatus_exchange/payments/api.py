@@ -22,7 +22,7 @@ def calculate_amount(original_amount, from_currency, to_currency):
     else:
         value = original_amount * DECIMALS['ETH'] / DECIMALS['BTC']
 
-    print('value: {value}, rate: {rate}'.format(value=value, rate=rate), flush=True)
+    print('value: {value}, rate: {rate}'.format(value=value, rate=currency_rate), flush=True)
     amount = value / currency_rate
 
     return amount, currency_rate
