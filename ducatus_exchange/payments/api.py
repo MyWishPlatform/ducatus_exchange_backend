@@ -16,7 +16,7 @@ def calculate_amount(original_amount, from_currency, to_currency):
 
     if to_currency == 'DUC':
         if from_currency in ['ETH', 'DUCX']:
-            value = original_amount * DECIMALS['BTC' / DECIMALS['ETH']]
+            value = original_amount * DECIMALS['BTC'] / DECIMALS['ETH']
         else:
             value = original_amount
     else:
