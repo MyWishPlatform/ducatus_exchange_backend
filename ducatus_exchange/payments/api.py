@@ -6,7 +6,12 @@ from ducatus_exchange.consts import DECIMALS
 
 
 def calculate_amount(original_amount, from_currency, to_currency):
+    print('Calculating amount, original: {orig}, from {from_curr} to {to_curr}'.format(orig=original_amount,
+                                                                                       from_curr=from_currency,
+                                                                                       to_curr=to_currency
+                                                                                       ), flush=True)
     rates = AllRatesSerializer({})
+    print('Rates:', rates, flush=True)
     currency_rate = rates.data[to_currency][from_currency]
 
     if to_currency == 'DUC':
