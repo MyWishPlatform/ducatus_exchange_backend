@@ -59,11 +59,11 @@ def save_transfer(payment, tx, amount, currency):
 
 def confirm_transfer(message):
     transfer_id = message['transferId']
-    transfer_address = message['address']
-    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer_address), flush=True)
+    #transfer_address = message['address']
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
-    if transfer_address == transfer.request.duc_address:
-        transfer.state = 'DONE'
-        transfer.save()
+    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer.exchange_request.user.address), flush=True)
+    #if transfer_address == transfer.request.duc_address:
+    transfer.state = 'DONE'
+    transfer.save()
     print('transfer completed ok')
     return
