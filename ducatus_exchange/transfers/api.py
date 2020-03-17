@@ -42,7 +42,7 @@ def transfer_ducatusx(payment):
 
 
 def save_transfer(payment, tx, amount, currency):
-    exchange_request = ExchangeRequest.objects.get(duc_address=payment.exchange_request)
+    exchange_request = payment.exchange_request
     transfer = DucatusTransfer(
         exchange_request=exchange_request,
         tx_hash=tx,
