@@ -51,6 +51,11 @@ class ExchangeRequestView(APIView):
         address = request_data.get('to_address')
         platform = request_data.get('to_currency')
 
+        if address is None:
+            return Response({'error': 'to_address not passed'}, status=status.HTTP_400_BAD_REQUEST)
+        if platform is None:
+            return Response({'error': 'to_platform not passed'}, status=status.HTTP_400_BAD_REQUEST)
+
         ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
         user_created = False
         if not ducatus_user_filter:
