@@ -1,11 +1,10 @@
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
 def transfer_currency(payment):
-    currency = payment.exchange_request.to_currency
+    currency = payment.exchange_request.user.platform
 
     if currency == 'DUC':
         transfer_ducatus(payment)
