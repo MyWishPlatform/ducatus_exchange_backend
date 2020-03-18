@@ -30,7 +30,7 @@ exchange_response_ducx = openapi.Response(
 )
 
 
-class ExchangeRequest(APIView):
+class ExchangeRequestView(APIView):
 
     @swagger_auto_schema(
         operation_description="post DUC or DUCX address and get addresses for payment",

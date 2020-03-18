@@ -46,4 +46,3 @@ class ExchangeRequest(models.Model):
         self.ducx_address = ducx_address
 
         self.save()
-
