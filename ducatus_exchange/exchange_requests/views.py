@@ -5,8 +5,7 @@ from rest_framework import status
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ducatus_exchange.exchange_requests.models import DucatusUser
-from ducatus_exchange.exchange_requests.serializers import ExchangeRequestSerializer
+from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 
 exchange_response_duc = openapi.Response(
     description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
@@ -52,26 +51,35 @@ class ExchangeRequest(APIView):
         platform = request_data.get('to_currency')
 
         ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
+        user_created = False
         if not ducatus_user_filter:
+            user_created = True
             ducatus_user = DucatusUser(address=address, platform=platform)
             ducatus_user.save()
         else:
             ducatus_user = ducatus_user_filter.last()
 
-        request_data['user'] = ducatus_user.id
+        request_data['user'] = ducatus_user.idus
         request_data.pop('to_address')
 
         print('data:', request_data, flush=True)
-        serializer = ExchangeRequestSerializer(data=request_data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save()
+
+        if user_created:
+            exchange_request = ExchangeRequest(user=ducatus_user)
+            exchange_request.save()
+            exchange_request.generate_keys()
+            exchange_request.save()
+        else:
+            exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
 
         if platform == 'DUC':
-            response_data = dict(serializer.data)
-            response_data.pop('duc_address')
-            response_data.pop('user')
+            response_data = {
+                'eth_address': exchange_request.eth_address,
+                'btc_address': exchange_request.btc_address,
+                'ducx_address': exchange_request.ducx_address
+            }
         else:
-            response_data = {'duc_address': serializer.data.get('duc_address')}
+            response_data = {'duc_address': exchange_request.duc_address}
 
         print('res:', response_data)
 
