@@ -47,6 +47,7 @@ class ExchangeRequest(APIView):
     )
     def post(self, request):
         request_data = request.data
+        print('request data:', request_data, flush=True)
         address = request_data.get('to_address')
         platform = request_data.get('to_currency')
 
@@ -59,11 +60,6 @@ class ExchangeRequest(APIView):
         else:
             ducatus_user = ducatus_user_filter.last()
 
-        request_data['user'] = ducatus_user.idus
-        request_data.pop('to_address')
-
-        print('data:', request_data, flush=True)
-
         if user_created:
             exchange_request = ExchangeRequest(user=ducatus_user)
             exchange_request.save()
@@ -71,6 +67,8 @@ class ExchangeRequest(APIView):
             exchange_request.save()
         else:
             exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
+
+        print('addresses:', exchange_request.__dict__, flush=True)
 
         if platform == 'DUC':
             response_data = {
