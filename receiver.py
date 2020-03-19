@@ -13,7 +13,7 @@ django.setup()
 
 from django.core.exceptions import ObjectDoesNotExist
 from ducatus_exchange.settings import NETWORK_SETTINGS
-from ducatus_exchange.payments.api import parse_payment_message
+from ducatus_exchange.payments.api import parse_payment_message, NeedRequeue
 from ducatus_exchange.transfers.api import confirm_transfer
 
 
@@ -71,6 +71,9 @@ class Receiver(threading.Thread):
             print('Could not find onject in database', flush=True)
             print(e, flush=True)
             ch.basic_ack(delivery_tag=method.delivery_tag)
+        except NeedRequeue:
+            print('requeueing message', flush=True)
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())),
                   flush=True)

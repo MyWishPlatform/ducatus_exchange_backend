@@ -3,6 +3,12 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer
 from ducatus_exchange.transfers.api import transfer_currency
 from ducatus_exchange.consts import DECIMALS
+from ducatus_exchange.parity_interface import ParityInterfaceException
+from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
+
+
+class NeedRequeue(Exception):
+    pass
 
 
 def calculate_amount(original_amount, from_currency):
@@ -43,8 +49,8 @@ def register_payment(request_id, tx_hash, currency, amount):
         rate=rate,
         sent_amount=calculated_amount
     )
-    exchange_request.from_currency = currency
-    exchange_request.save()
+    # exchange_request.from_currency = currency
+    # exchange_request.save()
     print(
         'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} within request {req} with TXID: {txid}'.format(
             amount=amount,
@@ -71,5 +77,10 @@ def parse_payment_message(message):
     print('PAYMENT:', tx, request_id, amount, currency, flush=True)
     payment = register_payment(request_id, tx, currency, amount)
     print('starting transfer', flush=True)
-    transfer_currency(payment)
+    try:
+        transfer_currency(payment)
+    except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
+        print('Transfer not completed, reverting payment', flush=True)
+        payment.delete()
+        raise NeedRequeue
     print('transfer completed', flush=True)

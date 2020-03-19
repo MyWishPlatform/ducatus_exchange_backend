@@ -5,6 +5,9 @@ from web3 import Web3, HTTPProvider
 from ducatus_exchange.settings import NETWORK_SETTINGS
 
 
+class ParityInterfaceException(Exception):
+    pass
+
 
 class ParConnectExc(Exception):
     def __init__(self, *args):
@@ -81,10 +84,13 @@ class ParityInterface:
             print(tx.hex())
             return tx.hex()
         except Exception as e:
-            print('DUCATUSX TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
-                  .format(amount=amount, addr=address), flush=True
-                  )
+            err = 'DUCATUSX TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
+                .format(amount=amount, addr=address)
+            print(err, flush=True)
             print(e, flush=True)
+            raise ParityInterfaceException(err)
+
+
 
 
 
