@@ -36,9 +36,10 @@ class ExchangeRequest(models.Model):
         duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['public'])
         duc_address = duc_root_key.get_child(self.user.id, is_prime=False).to_address()
 
-        ducx_root_pub__key = ROOT_KEYS['ducatusx']['public']
-        ducx_root_key = BIP32Key.fromExtendedKey(ducx_root_pub__key, public=True)
-        ducx_address = keys.PublicKey(ducx_root_key.K.to_string()).to_checksum_address().lower()
+        ducx_root_pub_key = ROOT_KEYS['ducatusx']['public']
+        ducx_root_key = BIP32Key.fromExtendedKey(ducx_root_pub_key, public=True)
+        ducx_child_key = ducx_root_key.ChildKey(self.user.id)
+        ducx_address = keys.PublicKey(ducx_child_key.K.to_string()).to_checksum_address().lower()
 
         self.btc_address = btc_address
         self.eth_address = eth_address
