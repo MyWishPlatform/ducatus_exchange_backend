@@ -4,6 +4,10 @@ from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
 
 
+class DucatuscoreInterfaceException(Exception):
+    pass
+
+
 class DucatuscoreInterface:
 
     endpoint = None
@@ -41,9 +45,10 @@ class DucatuscoreInterface:
             print(res)
             return res
         except JSONRPCException as e:
-            print('DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
-                  .format(amount=amount, addr=address), flush=True
-                  )
+            err = 'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'\
+                .format(amount=amount, addr=address)
+            print(err, flush=True)
             print(e, flush=True)
+            raise DucatuscoreInterfaceException(err)
 
 

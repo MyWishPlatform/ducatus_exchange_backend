@@ -5,36 +5,86 @@ from rest_framework import status
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ducatus_exchange.exchange_requests.models import DucatusAddress
-from ducatus_exchange.exchange_requests.serializers import ExchangeRequestSerializer
-from ducatus_exchange.rates.api import convert_to_duc_single, get_usd_rates
+from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 
-class ExchangeRequest(APIView):
+exchange_response_duc = openapi.Response(
+    description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'ducx_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'btc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'eth_address': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    )
+)
+
+exchange_response_ducx = openapi.Response(
+    description='Response with DUC addresses if `DUCX` passed in `to_currency`',
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+    )
+)
+
+
+class ExchangeRequestView(APIView):
 
     @swagger_auto_schema(
-        operation_description="post DUC address and get ETH and BTC addresses for payment",
+        operation_description="post DUC or DUCX address and get addresses for payment",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['duc_address'],
+            required=['to_address', 'to_currency'],
             properties={
-                'duc_address': openapi.Schema(type=openapi.TYPE_STRING)
+                'to_address': openapi.Schema(type=openapi.TYPE_STRING),
+                'to_currency': openapi.Schema(type=openapi.TYPE_STRING)
             },
         ),
-        responses={200: ExchangeRequestSerializer()},
+        responses={200: exchange_response_duc, 201: exchange_response_ducx},
 
     )
     def post(self, request):
-        print(request.data)
-        serializer = ExchangeRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save()
+        request_data = request.data
+        print('request data:', request_data, flush=True)
+        address = request_data.get('to_address')
+        platform = request_data.get('to_currency')
 
-        rates = convert_to_duc_single(get_usd_rates())
+        if address is None:
+            return Response({'error': 'to_address not passed'}, status=status.HTTP_400_BAD_REQUEST)
+        if platform is None:
+            return Response({'error': 'to_platform not passed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        obj.initial_rate_eth = float(rates['ETH'])
-        obj.initial_rate_btc = float(rates['BTC'])
-        obj.save()
-        print(obj.__dict__)
+        ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
+        user_created = False
+        if not ducatus_user_filter:
+            user_created = True
+            ducatus_user = DucatusUser(address=address, platform=platform)
+            ducatus_user.save()
+        else:
+            ducatus_user = ducatus_user_filter.last()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if user_created:
+            exchange_request = ExchangeRequest(user=ducatus_user)
+            exchange_request.save()
+            exchange_request.generate_keys()
+            exchange_request.save()
+        else:
+            exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
+
+        print('addresses:', exchange_request.__dict__, flush=True)
+
+        if platform == 'DUC':
+            response_data = {
+                'eth_address': exchange_request.eth_address,
+                'btc_address': exchange_request.btc_address,
+                'ducx_address': exchange_request.ducx_address
+            }
+        else:
+            response_data = {'duc_address': exchange_request.duc_address}
+
+        print('res:', response_data)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
