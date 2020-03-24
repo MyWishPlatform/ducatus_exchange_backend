@@ -103,7 +103,7 @@ class ExchangeRequestView(APIView):
 
 class ValidateDucatusAddress(APIView):
     @swagger_auto_schema(
-        operation_description="post DUC or DUCX address and get addresses for payment",
+        operation_description="post DUC address to validate",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['to_address'],
