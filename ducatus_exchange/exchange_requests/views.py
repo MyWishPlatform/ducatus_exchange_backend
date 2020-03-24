@@ -7,6 +7,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 
+from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+
 exchange_response_duc = openapi.Response(
     description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
     schema=openapi.Schema(
@@ -25,6 +27,16 @@ exchange_response_ducx = openapi.Response(
         type=openapi.TYPE_OBJECT,
         properties={
             'duc_address': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+    )
+)
+
+validate_address_result = openapi.Response(
+    description='Response with status of validated address',
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'address_valid': openapi.Schema(type=openapi.TYPE_BOOLEAN)
         },
     )
 )
@@ -87,4 +99,28 @@ class ExchangeRequestView(APIView):
         print('res:', response_data)
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+class ValidateDUcatusAddress(APIView):
+    @swagger_auto_schema(
+        operation_description="post DUC or DUCX address and get addresses for payment",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['to_address'],
+            properties={
+                'address': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={200: validate_address_result},
+
+    )
+    def post(self, request):
+        address = request.data.get('address')
+
+        rpc = DucatuscoreInterface()
+        valid = rpc.validate_address(address)
+
+        return Response({'address_valid': valid}, status=status.HTTP_200_OK)
+
+
 
