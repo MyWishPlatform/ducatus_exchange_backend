@@ -101,7 +101,7 @@ class ExchangeRequestView(APIView):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
-class ValidateDUcatusAddress(APIView):
+class ValidateDucatusAddress(APIView):
     @swagger_auto_schema(
         operation_description="post DUC or DUCX address and get addresses for payment",
         request_body=openapi.Schema(
