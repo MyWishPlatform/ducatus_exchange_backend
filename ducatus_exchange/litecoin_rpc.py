@@ -1,3 +1,5 @@
+from http.client import RemoteDisconnected
+
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
@@ -50,5 +52,23 @@ class DucatuscoreInterface:
             print(err, flush=True)
             print(e, flush=True)
             raise DucatuscoreInterfaceException(err)
+
+    def validate_address(self, address):
+        for attempt in range(10):
+            print('attempt', attempt, flush=True)
+            try:
+                rpc_response = self.rpc.validateaddress(address)
+            except RemoteDisconnected as e:
+                print(e, flush=True)
+                rpc_response = False
+            if not isinstance(rpc_response, bool):
+                print(rpc_response, flush=True)
+                break
+        else:
+            raise Exception(
+                'cannot validate address with 10 attempts')
+
+        return rpc_response['isvalid']
+
 
 
