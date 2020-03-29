@@ -65,6 +65,7 @@ class ParityInterface:
 
     def transfer(self, address, amount):
         nonce = int(self.eth_getTransactionCount(self.settings['address'], "pending"), 16)
+        print('nonce', nonce, flush=True)
 
         tx_params = {
             'to': address,
