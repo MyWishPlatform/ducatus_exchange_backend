@@ -72,7 +72,7 @@ class ParityInterface:
             'value': amount,
             'gas': 21000,
             'gasPrice': 2 * 10 ** 9,
-            'nonce': nonce,
+            'nonce': nonce + 1,
             'chainId': self.settings['chainId']
         }
 
