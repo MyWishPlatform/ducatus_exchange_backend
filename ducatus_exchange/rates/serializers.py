@@ -3,13 +3,16 @@ import json
 
 from rest_framework import serializers
 
+from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY
+
 
 def request_rates(fsym, tsyms, reverse=False):
     api_url = 'https://min-api.cryptocompare.com/data/price'
 
     payload = {
         'fsym': fsym,
-        'tsyms': tsyms
+        'tsyms': tsyms,
+        'api_key': CRYPTOCOMPARE_API_KEY
     }
 
     res = requests.get(api_url, params=payload)
