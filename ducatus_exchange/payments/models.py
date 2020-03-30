@@ -13,3 +13,4 @@ class Payment(models.Model):
     rate = models.DecimalField(max_digits=512, decimal_places=0)
     sent_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     created_date = models.DateTimeField(auto_now_add=True)
+    transfer_state = models.CharField(max_length=50, null=True, default='WAITING_FOR_TRANSFER')

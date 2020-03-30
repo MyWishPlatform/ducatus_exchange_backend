@@ -7,7 +7,7 @@ from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
 
 
-class NeedRequeue(Exception):
+class TransferException(Exception):
     pass
 
 
@@ -79,8 +79,10 @@ def parse_payment_message(message):
     print('starting transfer', flush=True)
     try:
         transfer_currency(payment)
+        payment.transfer_state = 'DONE'
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)
-        payment.delete()
-        raise NeedRequeue
+        payment.transfer_state = 'ERROR'
+        payment.save()
+        raise TransferException
     print('transfer completed', flush=True)
