@@ -85,7 +85,7 @@ class ParityInterface:
             print(tx.hex())
             return tx.hex()
         except Exception as e:
-            err = 'DUCATUSX TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
+            err = 'DUCATUSX TRANSFER ERROR: transfer for {amount} DUCX for {addr} failed' \
                 .format(amount=amount, addr=address)
             print(err, flush=True)
             print(e, flush=True)
