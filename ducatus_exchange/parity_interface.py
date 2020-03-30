@@ -65,13 +65,14 @@ class ParityInterface:
 
     def transfer(self, address, amount):
         nonce = int(self.eth_getTransactionCount(self.settings['address'], "pending"), 16)
+        gas_price = int(self.eth_gasPrice(), 16)
         print('nonce', nonce, flush=True)
 
         tx_params = {
             'to': address,
             'value': int(amount),
-            'gas': 21000,
-            'gasPrice': 2 * 10 ** 9,
+            'gas': 30000,
+            'gasPrice': gas_price * 2,
             'nonce': nonce + 1,
             'chainId': self.settings['chainId']
         }
