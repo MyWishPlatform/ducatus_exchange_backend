@@ -69,7 +69,7 @@ class ParityInterface:
 
         tx_params = {
             'to': address,
-            'value': str(amount),
+            'value': int(amount),
             'gas': 21000,
             'gasPrice': 2 * 10 ** 9,
             'nonce': nonce + 1,

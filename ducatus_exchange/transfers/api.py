@@ -29,7 +29,7 @@ def transfer_ducatus(payment):
 def transfer_ducatusx(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
-    print('ducatusX transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    print('ducatusX transfer started: sending {amount} DUCX to {addr}'.format(amount=amount, addr=receiver), flush=True)
     currency = 'DUCX'
 
     parity = ParityInterface()
