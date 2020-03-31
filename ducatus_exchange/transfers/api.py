@@ -52,7 +52,7 @@ def save_transfer(payment, tx, amount, currency):
     )
     transfer.save()
 
-    print('ducatus transfer ok', flush=True)
+    print('transfer saved', flush=True)
     return transfer
 
 
