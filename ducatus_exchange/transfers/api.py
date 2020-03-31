@@ -64,5 +64,6 @@ def confirm_transfer(message):
     #if transfer_address == transfer.request.duc_address:
     transfer.state = 'DONE'
     transfer.save()
+    transfer.payment.transfer_state = 'DONE'
     print('transfer completed ok')
     return
