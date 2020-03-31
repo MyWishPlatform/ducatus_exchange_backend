@@ -1,8 +1,10 @@
 import json
 import requests
-from web3 import Web3, HTTPProvider
+from eth_utils import to_checksum_address
+from eth_account import Account
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.consts import DECIMALS
 
 
 class ParityInterfaceException(Exception):
@@ -64,30 +66,34 @@ class ParityInterface:
         return f
 
     def transfer(self, address, amount):
-        nonce = int(self.eth_getTransactionCount(self.settings['address'], "pending"), 16)
-        gas_price = int(self.eth_gasPrice(), 16)
-        print('nonce', nonce, flush=True)
+        print('DUCATUSX TRANSFER STARTED: {address}, {amount} DUCX'.format(
+            address=address,
+            amount=amount / DECIMALS['DUCX']
+        ), flush=True)
+
+        nonce = self.eth_getTransactionCount(self.settings['address'], "pending")
+        gas_price = self.eth_gasPrice()
+        chain_id = self.settings['chainId']
 
         tx_params = {
-            'to': address,
+            'to': to_checksum_address(address),
             'value': int(amount),
             'gas': 30000,
-            'gasPrice': gas_price * 2,
-            'nonce': nonce + 1,
-            'chainId': self.settings['chainId']
+            'gasPrice': int(gas_price, 16) * 2,
+            'nonce': int(nonce, 16),
+            'chainId': int(chain_id, 16)
         }
+        print('TX PARAMS', tx_params, flush=True)
 
-        w3 = Web3(HTTPProvider(self.endpoint))
-
-        signed_tx = w3.eth.account.signTransaction(tx_params, self.settings['private'])
+        signed = Account.sign_transaction(tx_params, self.settings['private'])
 
         try:
-            tx = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
-            print(tx.hex())
-            return tx.hex()
+            sent = parity.eth_sendRawTransaction(signed.rawTransaction.hex())
+            print('TXID:', sent, flush=True)
+            return sent
         except Exception as e:
             err = 'DUCATUSX TRANSFER ERROR: transfer for {amount} DUCX for {addr} failed' \
-                .format(amount=amount, addr=address)
+                .format(amount=amount / DECIMALS['DUCX'], addr=address)
             print(err, flush=True)
             print(e, flush=True)
             raise ParityInterfaceException(err)
