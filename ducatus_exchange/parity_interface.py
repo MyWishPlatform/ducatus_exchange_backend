@@ -88,7 +88,7 @@ class ParityInterface:
         signed = Account.sign_transaction(tx_params, self.settings['private'])
 
         try:
-            sent = parity.eth_sendRawTransaction(signed.rawTransaction.hex())
+            sent = self.eth_sendRawTransaction(signed.rawTransaction.hex())
             print('TXID:', sent, flush=True)
             return sent
         except Exception as e:
