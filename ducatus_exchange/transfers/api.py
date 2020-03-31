@@ -65,5 +65,6 @@ def confirm_transfer(message):
     transfer.state = 'DONE'
     transfer.save()
     transfer.payment.transfer_state = 'DONE'
+    transfer.payment.save()
     print('transfer completed ok')
     return
