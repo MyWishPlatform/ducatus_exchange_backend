@@ -1,6 +1,9 @@
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
+from ducatus_exchange.settings import ROOT_KEYS
+from ducatus_exchange.bip32_ducatus import DucatusWallet
+from ducatus_exchange.payments.models import Payment
 
 
 def transfer_currency(payment):
@@ -58,13 +61,38 @@ def save_transfer(payment, tx, amount, currency):
 
 def confirm_transfer(message):
     transfer_id = message['transferId']
-    #transfer_address = message['address']
+    # transfer_address = message['address']
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
-    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer.exchange_request.user.address), flush=True)
-    #if transfer_address == transfer.request.duc_address:
+    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer.exchange_request.user.address),
+          flush=True)
+    # if transfer_address == transfer.request.duc_address:
     transfer.state = 'DONE'
     transfer.save()
     transfer.payment.transfer_state = 'DONE'
     transfer.payment.save()
     print('transfer completed ok')
     return
+
+
+def collect_duc(address_to, payment):
+    duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['private'])
+    duc_child = duc_root_key.get_child(payment.exchange_request.user.id, is_prime=False)
+    child_private = duc_child.export_to_wif().decode()
+    tx_hashes = [payment.tx_hash]
+    address_from = payment.exchange_request.duc_address
+    amount = payment.original_amount
+    rpc = DucatuscoreInterface()
+    try:
+        tx = rpc.internal_transfer(tx_hashes, address_from, address_to, amount, child_private)
+        payment.collection_state = 'COLLECTED'
+        payment.collection_tx_hash = tx
+        payment.save()
+    except Exception as e:
+        print('Error in internal transfer from {addr_from} to {addr_to} with amount {amount} DUC'.format(
+            addr_from=address_from,
+            addr_to=address_to,
+            amount=amount
+        ), flush=True)
+        print('error:', e, flush=True)
+        payment.collection_state = 'ERROR'
+        payment.save()
