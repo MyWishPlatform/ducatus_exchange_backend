@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
@@ -94,6 +97,6 @@ def collect_duc(payment):
             addr_to=address_to,
             amount=amount
         ), flush=True)
-        print('error:', e, flush=True)
+        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
         payment.collection_state = 'ERROR'
         payment.save()

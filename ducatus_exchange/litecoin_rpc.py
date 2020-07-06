@@ -73,6 +73,9 @@ class DucatuscoreInterface:
     def get_unspent(self, tx_hash, count):
         return self.rpc.gettxout(tx_hash, count)
 
+    def get_fee(self):
+        return self.rpc.getinfo()['relayfee']
+
     def get_unspent_input(self, tx_hash, payment_address):
         last_response = {}
         count = 0
@@ -100,8 +103,7 @@ class DucatuscoreInterface:
                     'vout': input_vout_count
                 })
 
-            # transaction_fee = self.get_fee()
-            transaction_fee = Decimal(int(amount) / 100)
+            transaction_fee = self.get_fee() * DECIMALS['DUC']
             send_amount = (Decimal(amount) - transaction_fee) / DECIMALS['DUC']
 
             print('input_params', input_params, flush=True)
