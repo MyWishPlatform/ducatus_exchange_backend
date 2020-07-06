@@ -74,7 +74,7 @@ def confirm_transfer(message):
     return
 
 
-def collect_duc(address_to, payment):
+def collect_duc(payment):
     duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['private'])
     duc_child = duc_root_key.get_child(payment.exchange_request.user.id, is_prime=False)
     child_private = duc_child.export_to_wif().decode()
@@ -82,6 +82,7 @@ def collect_duc(address_to, payment):
     address_from = payment.exchange_request.duc_address
     amount = payment.original_amount
     rpc = DucatuscoreInterface()
+    address_to = rpc.rpc.getaccountaddress('')
     try:
         tx = rpc.internal_transfer(tx_hashes, address_from, address_to, amount, child_private)
         payment.collection_state = 'COLLECTED'
