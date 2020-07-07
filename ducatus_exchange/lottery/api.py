@@ -40,15 +40,16 @@ class LotteryRegister:
             lottery_player.lottery = lottery
         lottery_player.save()
 
-        lottery.received_usd_amount += lottery_player.sent_usd_amount
+        lottery.received_usd_amount += Decimal(usd_amount)
         if lottery.received_usd_amount >= lottery.usd_amount:
             lottery.ended = True
         lottery.save()
 
-        print('address {} registered to lottery {} (id={}) with {} tickets'.format(lottery_player.user.address,
-                                                                                   lottery.name, lottery.id,
-                                                                                   tickets_amount),
-              flush=True)
+        print(
+            'address {} registered to lottery {} (id={}) with {} usd and {} tickets'.format(lottery_player.user.address,
+                                                                                            lottery.name, lottery.id,
+                                                                                            usd_amount, tickets_amount),
+            flush=True)
 
     def get_tickets_amount(self, usd_amount):
         tickets_amount_result = 0
