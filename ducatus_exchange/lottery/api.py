@@ -25,12 +25,22 @@ class LotteryRegister:
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
 
-        lottery_player = LotteryPlayer()
-        lottery_player.sent_usd_amount = usd_amount
-        lottery_player.tickets_amount = tickets_amount
-        lottery_player.user = self.payment.exchange_request.user
-        lottery_player.lottery = lottery
+        try:
+            lottery_player = LotteryPlayer.objects.get(lottery=lottery)
+            lottery_player.sent_usd_amount += usd_amount
+            lottery_player.tickets_amount += tickets_amount
+        except LotteryPlayer.DoesNotExist:
+            lottery_player = LotteryPlayer()
+            lottery_player.sent_usd_amount = usd_amount
+            lottery_player.tickets_amount = tickets_amount
+            lottery_player.user = self.payment.exchange_request.user
+            lottery_player.lottery = lottery
         lottery_player.save()
+
+        print('address {} registered to lottery {} (id={}) with {} tickets'.format(lottery_player.user.address,
+                                                                                   lottery.name, lottery.id,
+                                                                                   lottery_player.tickets_amount),
+              flush=True)
 
     def get_tickets_amount(self, usd_amount):
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():

@@ -17,12 +17,14 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
+from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from ducatus_exchange.views import FeedbackForm
 from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress
+from ducatus_exchange.lottery.views import LotteryViewSet
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -35,6 +37,9 @@ schema_view = get_schema_view(
    public=True,
    permission_classes=(permissions.AllowAny,),
 )
+
+router = DefaultRouter(trailing_slash=True)
+router.register(r'lotteries', LotteryViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
