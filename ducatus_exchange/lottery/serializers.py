@@ -17,4 +17,3 @@ class LotteryPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = LotteryPlayer
         fields = '__all__'
-        read_only_fields = '__all__'
