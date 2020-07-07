@@ -25,6 +25,8 @@ class LotteryRegister:
         usd_prices = get_usd_prices()
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
+        if not tickets_amount:
+            return
 
         try:
             lottery_player = LotteryPlayer.objects.get(lottery=lottery)
