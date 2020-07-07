@@ -51,4 +51,5 @@ urlpatterns = [
     url(r'^api/v1/exchange/', include('ducatus_exchange.exchange_requests.urls')),
     url(r'api/v1/validate_ducatus_address/', ValidateDucatusAddress.as_view(), name='validate-ducatus-address'),
     url(r'api/v1/send_ducatus_feedback/', FeedbackForm.as_view(), name='send-ducatus-feedback'),
+    url(r'^api/v1/', include(router.urls)),
 ]
