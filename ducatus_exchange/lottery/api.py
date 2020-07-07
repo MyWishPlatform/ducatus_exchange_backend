@@ -29,7 +29,7 @@ class LotteryRegister:
             return
 
         try:
-            lottery_player = LotteryPlayer.objects.get(lottery=lottery)
+            lottery_player = LotteryPlayer.objects.get(lottery=lottery, user=self.payment.exchange_request.user)
             lottery_player.sent_usd_amount += Decimal(usd_amount)
             lottery_player.tickets_amount += tickets_amount
         except LotteryPlayer.DoesNotExist:
