@@ -37,6 +37,11 @@ class LotteryRegister:
             lottery_player.lottery = lottery
         lottery_player.save()
 
+        lottery.received_usd_amount += lottery_player.sent_usd_amount
+        if lottery.received_usd_amount >= lottery.usd_amount:
+            lottery.ended = True
+        lottery.save()
+
         print('address {} registered to lottery {} (id={}) with {} tickets'.format(lottery_player.user.address,
                                                                                    lottery.name, lottery.id,
                                                                                    lottery_player.tickets_amount),

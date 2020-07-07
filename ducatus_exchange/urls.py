@@ -24,7 +24,7 @@ from drf_yasg import openapi
 
 from ducatus_exchange.views import FeedbackForm
 from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress
-from ducatus_exchange.lottery.views import LotteryViewSet
+from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -40,6 +40,7 @@ schema_view = get_schema_view(
 
 router = DefaultRouter(trailing_slash=True)
 router.register(r'lotteries', LotteryViewSet)
+router.register(r'lotteries_players', LotteryPlayerViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
