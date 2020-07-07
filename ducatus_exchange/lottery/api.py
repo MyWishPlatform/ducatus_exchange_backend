@@ -49,12 +49,15 @@ class LotteryRegister:
               flush=True)
 
     def get_tickets_amount(self, usd_amount):
+        tickets_amount_result = 0
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():
-            if usd_amount * RATES_PRECISION - usd_value >= 0:
+            if usd_amount * RATES_PRECISION - usd_value < 0:
                 print('usd value', usd_amount * RATES_PRECISION, flush=True)
                 print('tickets amount', tickets_amount, flush=True)
-                return tickets_amount
-        return 0
+                return tickets_amount_result
+            else:
+                tickets_amount_result = tickets_amount
+        return tickets_amount_result
 
     def get_usd_amount(self, usd_prices):
         currency = self.payment.currency
