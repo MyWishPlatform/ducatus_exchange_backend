@@ -56,7 +56,7 @@ class LotteryRegister:
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():
             if usd_amount * RATES_PRECISION - usd_value < 0:
                 print('usd value', usd_amount * RATES_PRECISION, flush=True)
-                print('tickets amount', tickets_amount, flush=True)
+                print('tickets amount', tickets_amount_result, flush=True)
                 return tickets_amount_result
             else:
                 tickets_amount_result = tickets_amount
