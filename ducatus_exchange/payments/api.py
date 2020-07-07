@@ -5,6 +5,7 @@ from ducatus_exchange.transfers.api import transfer_currency
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
+from ducatus_exchange.lottery.api import LotteryRegister
 
 
 class TransferException(Exception):
@@ -65,6 +66,10 @@ def register_payment(request_id, tx_hash, currency, amount):
 
     payment.save()
     print('payment ok', flush=True)
+
+    lottery_entrypoint = LotteryRegister(payment)
+    lottery_entrypoint.try_register_to_lotteries()
+
     return payment
 
 

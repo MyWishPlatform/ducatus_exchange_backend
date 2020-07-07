@@ -8,3 +8,13 @@ DECIMALS = {
     'DUC': 10 ** 8,
     'DUCX': 10 ** 18,
 }
+
+TICKETS_FOR_USD = {
+    10: 1,
+    50: 6,
+    100: 13,
+    500: 70,
+    1000: 150,
+}
+
+RATES_PRECISION = 1.05
