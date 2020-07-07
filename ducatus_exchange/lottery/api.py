@@ -1,4 +1,5 @@
 from django.utils import timezone
+from decimal import Decimal
 
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
@@ -27,7 +28,7 @@ class LotteryRegister:
 
         try:
             lottery_player = LotteryPlayer.objects.get(lottery=lottery)
-            lottery_player.sent_usd_amount += usd_amount
+            lottery_player.sent_usd_amount += Decimal(usd_amount)
             lottery_player.tickets_amount += tickets_amount
         except LotteryPlayer.DoesNotExist:
             lottery_player = LotteryPlayer()
