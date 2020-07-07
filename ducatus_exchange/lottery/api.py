@@ -45,12 +45,14 @@ class LotteryRegister:
 
         print('address {} registered to lottery {} (id={}) with {} tickets'.format(lottery_player.user.address,
                                                                                    lottery.name, lottery.id,
-                                                                                   lottery_player.tickets_amount),
+                                                                                   tickets_amount),
               flush=True)
 
     def get_tickets_amount(self, usd_amount):
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():
             if usd_amount * RATES_PRECISION - usd_value >= 0:
+                print('usd value', usd_amount * RATES_PRECISION, flush=True)
+                print('tickets amount', tickets_amount, flush=True)
                 return tickets_amount
         return 0
 
