@@ -78,8 +78,9 @@ class ExchangeRequestView(APIView):
             ducatus_user.save()
         else:
             ducatus_user = ducatus_user_filter.last()
-            ducatus_user.email = email
-            ducatus_user.save()
+            if email:
+                ducatus_user.email = email
+                ducatus_user.save()
 
         if user_created:
             exchange_request = ExchangeRequest(user=ducatus_user)
