@@ -12,6 +12,7 @@ class Lottery(models.Model):
     received_usd_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=3, default=0)
     started_at = models.BigIntegerField()
     ended = models.BooleanField(default=False)
+    filled_at = models.BigIntegerField(null=True, default=None)
 
 
 class LotteryPlayer(models.Model):

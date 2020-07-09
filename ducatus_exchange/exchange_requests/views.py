@@ -48,10 +48,11 @@ class ExchangeRequestView(APIView):
         operation_description="post DUC or DUCX address and get addresses for payment",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['to_address', 'to_currency'],
+            required=['to_address', 'to_currency', 'email'],
             properties={
                 'to_address': openapi.Schema(type=openapi.TYPE_STRING),
-                'to_currency': openapi.Schema(type=openapi.TYPE_STRING)
+                'to_currency': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
         responses={200: exchange_response_duc, 201: exchange_response_ducx},
@@ -62,6 +63,7 @@ class ExchangeRequestView(APIView):
         print('request data:', request_data, flush=True)
         address = request_data.get('to_address')
         platform = request_data.get('to_currency')
+        email = request.get('email')
 
         if address is None:
             return Response({'error': 'to_address not passed'}, status=status.HTTP_400_BAD_REQUEST)
@@ -72,10 +74,12 @@ class ExchangeRequestView(APIView):
         user_created = False
         if not ducatus_user_filter:
             user_created = True
-            ducatus_user = DucatusUser(address=address, platform=platform)
+            ducatus_user = DucatusUser(address=address, platform=platform, email=email)
             ducatus_user.save()
         else:
             ducatus_user = ducatus_user_filter.last()
+            ducatus_user.email = email
+            ducatus_user.save()
 
         if user_created:
             exchange_request = ExchangeRequest(user=ducatus_user)

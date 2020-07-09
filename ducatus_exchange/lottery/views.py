@@ -12,6 +12,6 @@ class LotteryViewSet(viewsets.ModelViewSet):
 
 
 class LotteryPlayerViewSet(viewsets.ModelViewSet):
-    queryset = LotteryPlayer.objects.all()
+    queryset = LotteryPlayer.objects.order_by('id')
     serializer_class = LotteryPlayerSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
