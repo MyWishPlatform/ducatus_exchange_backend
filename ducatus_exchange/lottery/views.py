@@ -8,7 +8,7 @@ from ducatus_exchange.lottery.serializers import LotterySerializer, LotteryPlaye
 class LotteryViewSet(viewsets.ModelViewSet):
     queryset = Lottery.objects.all()
     serializer_class = LotterySerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class LotteryPlayerViewSet(viewsets.ModelViewSet):
