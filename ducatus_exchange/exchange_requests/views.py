@@ -63,7 +63,7 @@ class ExchangeRequestView(APIView):
         print('request data:', request_data, flush=True)
         address = request_data.get('to_address')
         platform = request_data.get('to_currency')
-        email = request.get('email')
+        email = request_data.get('email')
 
         if address is None:
             return Response({'error': 'to_address not passed'}, status=status.HTTP_400_BAD_REQUEST)
