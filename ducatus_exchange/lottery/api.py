@@ -37,6 +37,7 @@ class LotteryRegister:
             lottery_player = LotteryPlayer()
             lottery_player.sent_usd_amount = usd_amount
             lottery_player.tickets_amount = tickets_amount
+            lottery_player.received_duc_amount = self.payment.sent_amount
             lottery_player.user = self.payment.exchange_request.user
             lottery_player.lottery = lottery
         lottery_player.save()
