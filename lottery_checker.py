@@ -13,7 +13,7 @@ from ducatus_exchange.settings import LOTTERY_CLOSING_INTERVAL, LOTTERY_CHECKER_
 if __name__ == '__main__':
     while True:
         for lottery in Lottery.objects.all():
-            if lottery.received_usd_amount >= lottery.usd_amount and lottery.filled_at:
+            if lottery.sent_duc_amount >= lottery.duc_amount and lottery.filled_at:
                 if timezone.now().timestamp() - lottery.filled_at > LOTTERY_CLOSING_INTERVAL:
                     lottery.ended = True
                     lottery.save()

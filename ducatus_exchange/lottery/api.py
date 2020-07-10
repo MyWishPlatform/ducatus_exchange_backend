@@ -42,7 +42,8 @@ class LotteryRegister:
 
         lottery.received_usd_amount += Decimal(usd_amount)
         lottery.gave_tickets_amount += tickets_amount
-        if lottery.received_usd_amount >= lottery.usd_amount and not lottery.filled_at:
+        lottery.sent_duc_amount += self.payment.sent_amount
+        if lottery.sent_duc_amount >= lottery.duc_amount and not lottery.filled_at:
             lottery.filled_at = int(timezone.now().timestamp())
         lottery.save()
 
