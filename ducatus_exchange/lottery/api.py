@@ -32,6 +32,7 @@ class LotteryRegister:
             lottery_player = LotteryPlayer.objects.get(lottery=lottery, user=self.payment.exchange_request.user)
             lottery_player.sent_usd_amount += Decimal(usd_amount)
             lottery_player.tickets_amount += tickets_amount
+            lottery_player.received_duc_amount += self.payment.sent_amount
         except LotteryPlayer.DoesNotExist:
             lottery_player = LotteryPlayer()
             lottery_player.sent_usd_amount = usd_amount
@@ -40,7 +41,6 @@ class LotteryRegister:
             lottery_player.lottery = lottery
         lottery_player.save()
 
-        lottery.received_usd_amount += Decimal(usd_amount)
         lottery.gave_tickets_amount += tickets_amount
         lottery.sent_duc_amount += self.payment.sent_amount
         if lottery.sent_duc_amount >= lottery.duc_amount and not lottery.filled_at:
