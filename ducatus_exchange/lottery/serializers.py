@@ -28,4 +28,5 @@ class LotteryPlayerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['address'] = instance.user.address
+        res['received_duc_amount'] = int(res['received_duc_amount']) // DECIMALS['DUC']
         return res
