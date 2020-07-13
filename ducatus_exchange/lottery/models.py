@@ -8,6 +8,7 @@ class Lottery(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
     image = models.ImageField(upload_to='lottery_images/')
+    video = models.URLField(null=True, default=None)
     duc_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
     sent_duc_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
     started_at = models.BigIntegerField()
