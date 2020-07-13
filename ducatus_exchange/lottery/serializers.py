@@ -9,7 +9,7 @@ class LotterySerializer(serializers.ModelSerializer):
         model = Lottery
         fields = (
             'id', 'name', 'description', 'image', 'duc_amount', 'sent_duc_amount', 'started_at', 'ended', 'filled_at',
-            'gave_tickets_amount')
+            'gave_tickets_amount', 'video')
         extra_kwargs = {
             'id': {'read_only': True},
             'sent_duc_amount': {'read_only': True}
