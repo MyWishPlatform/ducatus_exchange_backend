@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 from ducatus_exchange.exchange_requests.models import DucatusUser
 from ducatus_exchange.consts import MAX_DIGITS
@@ -6,7 +7,7 @@ from ducatus_exchange.consts import MAX_DIGITS
 
 class Lottery(models.Model):
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = JSONField()
     image = models.ImageField(upload_to='lottery_images/')
     video = models.URLField(null=True, default=None)
     duc_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
