@@ -14,6 +14,7 @@ class Lottery(models.Model):
     ended = models.BooleanField(default=False)
     filled_at = models.BigIntegerField(null=True, default=None)
     gave_tickets_amount = models.IntegerField(default=0)
+    winner_user = models.ForeignKey(DucatusUser, on_delete=models.SET_NULL, null=True, default=True)
 
 
 class LotteryPlayer(models.Model):

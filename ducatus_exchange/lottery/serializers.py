@@ -7,16 +7,20 @@ from ducatus_exchange.consts import DECIMALS
 class LotterySerializer(serializers.ModelSerializer):
     class Meta:
         model = Lottery
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'description', 'image', 'duc_amount', 'sent_duc_amount', 'started_at', 'ended', 'filled_at',
+            'gave_tickets_amount')
         extra_kwargs = {
             'id': {'read_only': True},
-            'received_usd_amount': {'read_only': True}
+            'sent_duc_amount': {'read_only': True}
         }
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['sent_duc_amount'] = int(res['sent_duc_amount']) // DECIMALS['DUC']
         res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
+        res['winner_address'] = instance.winner_user.address if instance.winner_user else None
+
         return res
 
 
