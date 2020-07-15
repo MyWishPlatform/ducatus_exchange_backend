@@ -9,7 +9,7 @@ from ducatus_exchange.consts import MAX_DIGITS
 class Lottery(models.Model):
     name = models.CharField(max_length=50)
     description = JSONField()
-    image = models.ImageField(upload_to='lottery_images/')
+    image = models.URLField(null=True, default=None)
     video = models.URLField(null=True, default=None)
     duc_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
     sent_duc_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
