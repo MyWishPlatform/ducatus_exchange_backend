@@ -10,11 +10,13 @@ from django.utils import timezone
 from ducatus_exchange.lottery.models import Lottery, DucatusUser
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.settings import LOTTERY_CLOSING_INTERVAL, LOTTERY_CHECKER_INTERVAL
+from ducatus_exchange.consts import DECIMALS
 
 if __name__ == '__main__':
     while True:
         for lottery in Lottery.objects.filter(ended=False):
-            if lottery.sent_duc_amount >= lottery.duc_amount and lottery.filled_at:
+            if lottery.sent_duc_amount // DECIMALS['DUC'] >= lottery.duc_amount // DECIMALS[
+                'DUC'] and lottery.filled_at:
                 if timezone.now().timestamp() - lottery.filled_at > LOTTERY_CLOSING_INTERVAL:
                     lottery.ended = True
                     # temporarily hardcode
