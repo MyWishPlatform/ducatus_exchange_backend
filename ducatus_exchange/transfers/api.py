@@ -13,9 +13,9 @@ def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
 
     if currency == 'DUC':
-        transfer_ducatus(payment)
+        return transfer_ducatus(payment)
     else:
-        transfer_ducatusx(payment)
+        return transfer_ducatusx(payment)
 
 
 def transfer_ducatus(payment):

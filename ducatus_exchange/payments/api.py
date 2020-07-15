@@ -67,9 +67,6 @@ def register_payment(request_id, tx_hash, currency, amount):
     payment.save()
     print('payment ok', flush=True)
 
-    lottery_entrypoint = LotteryRegister(payment)
-    lottery_entrypoint.try_register_to_lotteries()
-
     return payment
 
 
@@ -83,7 +80,11 @@ def parse_payment_message(message):
     payment = register_payment(request_id, tx, currency, amount)
     print('starting transfer', flush=True)
     try:
-        transfer_currency(payment)
+        transfer = transfer_currency(payment)
+
+        lottery_entrypoint = LotteryRegister(transfer)
+        lottery_entrypoint.try_register_to_lotteries()
+
         payment.transfer_state = 'DONE'
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)

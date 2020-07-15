@@ -8,6 +8,7 @@ django.setup()
 
 from django.utils import timezone
 from ducatus_exchange.lottery.models import Lottery, DucatusUser
+from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.settings import LOTTERY_CLOSING_INTERVAL, LOTTERY_CHECKER_INTERVAL
 
 if __name__ == '__main__':
@@ -17,7 +18,8 @@ if __name__ == '__main__':
                 if timezone.now().timestamp() - lottery.filled_at > LOTTERY_CLOSING_INTERVAL:
                     lottery.ended = True
                     # temporarily hardcode
-                    lottery.winner_user = DucatusUser.objects.first()
+                    lottery.winner_transfer = DucatusTransfer.objects.first()
+                    lottery.winner_user = lottery.winner_transfer.payment.exchange_request.user
                     lottery.save()
                     print('lottery {} with id {} closed'.format(lottery.name, lottery.id), flush=True)
 

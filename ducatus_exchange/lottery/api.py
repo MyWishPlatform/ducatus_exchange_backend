@@ -1,16 +1,16 @@
 from django.utils import timezone
-from decimal import Decimal
 
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
-from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION
 
 
 class LotteryRegister:
 
-    def __init__(self, payment: Payment):
-        self.payment = payment
+    def __init__(self, transfer: DucatusTransfer):
+        self.transfer = transfer
+        self.payment = transfer.payment
 
     def try_register_to_lotteries(self):
         active_lotteries = self.get_active_lotteries()
@@ -28,18 +28,13 @@ class LotteryRegister:
         if not tickets_amount:
             return
 
-        try:
-            lottery_player = LotteryPlayer.objects.get(lottery=lottery, user=self.payment.exchange_request.user)
-            lottery_player.sent_usd_amount += Decimal(usd_amount)
-            lottery_player.tickets_amount += tickets_amount
-            lottery_player.received_duc_amount += self.payment.sent_amount
-        except LotteryPlayer.DoesNotExist:
-            lottery_player = LotteryPlayer()
-            lottery_player.sent_usd_amount = usd_amount
-            lottery_player.tickets_amount = tickets_amount
-            lottery_player.received_duc_amount = self.payment.sent_amount
-            lottery_player.user = self.payment.exchange_request.user
-            lottery_player.lottery = lottery
+        lottery_player = LotteryPlayer()
+        lottery_player.sent_usd_amount = usd_amount
+        lottery_player.tickets_amount = tickets_amount
+        lottery_player.received_duc_amount = self.payment.sent_amount
+        lottery_player.user = self.payment.exchange_request.user
+        lottery_player.transfer = self.transfer
+        lottery_player.lottery = lottery
         lottery_player.save()
 
         lottery.gave_tickets_amount += tickets_amount
@@ -57,7 +52,7 @@ class LotteryRegister:
     def get_tickets_amount(self, usd_amount):
         tickets_amount_result = 0
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():
-            if usd_amount * RATES_PRECISION - usd_value < 0:
+            if usd_amount - usd_value * RATES_PRECISION < 0:
                 print('usd value', usd_amount * RATES_PRECISION, flush=True)
                 print('tickets amount', tickets_amount_result, flush=True)
                 return tickets_amount_result
