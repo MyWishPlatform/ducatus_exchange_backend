@@ -96,10 +96,11 @@ class ExchangeRequestView(APIView):
             response_data = {
                 'eth_address': exchange_request.eth_address,
                 'btc_address': exchange_request.btc_address,
-                'ducx_address': exchange_request.ducx_address
+                # 'ducx_address': exchange_request.ducx_address
             }
         else:
-            response_data = {'duc_address': exchange_request.duc_address}
+            # response_data = {'duc_address': exchange_request.duc_address}
+            response_data = {}
 
         print('res:', response_data)
 
