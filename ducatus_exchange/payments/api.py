@@ -80,13 +80,14 @@ def parse_payment_message(message):
     payment = register_payment(request_id, tx, currency, amount)
     print('starting transfer', flush=True)
     try:
-        if payment.currency in ['ETH', 'BTC']:
-            transfer = transfer_currency(payment)
+        transfer = transfer_currency(payment)
+
+        if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC':
 
             lottery_entrypoint = LotteryRegister(transfer)
             lottery_entrypoint.try_register_to_lotteries()
 
-            payment.transfer_state = 'DONE'
+        payment.transfer_state = 'DONE'
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)
         payment.transfer_state = 'ERROR'
