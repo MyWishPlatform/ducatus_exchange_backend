@@ -82,7 +82,8 @@ def parse_payment_message(message):
     try:
         transfer = transfer_currency(payment)
 
-        if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC':
+        if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC' \
+                and payment.exchange_request.user.email:
 
             lottery_entrypoint = LotteryRegister(transfer)
             lottery_entrypoint.try_register_to_lotteries()
