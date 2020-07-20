@@ -1,40 +1,16 @@
-import requests
-import json
-
 from rest_framework import serializers
 
-from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY
-
-
-def request_rates(fsym, tsyms, reverse=False):
-    api_url = 'https://min-api.cryptocompare.com/data/price'
-
-    payload = {
-        'fsym': fsym,
-        'tsyms': tsyms,
-        'api_key': CRYPTOCOMPARE_API_KEY
-    }
-
-    res = requests.get(api_url, params=payload)
-    if res.status_code != 200:
-        raise Exception('cannot get exchange rate for {}'.format(fsym))
-    answer = json.loads(res.text)
-    if reverse:
-        answer = answer[tsyms]
-
-    return answer
+from ducatus_exchange.rates.models import UsdRate
 
 
 def get_usd_prices():
-    query_tsyms = ['ETH', 'BTC']
-    query_fsym = 'USD'
-
     usd_prices = {}
-    for tsym in query_tsyms:
-        usd_prices[tsym] = request_rates(tsym, query_fsym, reverse=True)
-
+    usd_prices['ETH'] = UsdRate.eth_price
+    usd_prices['BTC'] = UsdRate.btc_price
     usd_prices['DUC'] = 0.05
     usd_prices['DUCX'] = 0.50
+
+    print('current rates', usd_prices, flush=True)
 
     return usd_prices
 
@@ -73,7 +49,3 @@ class AllRatesSerializer(serializers.Serializer):
                 rate[currency] = '{0:.8f}'.format(rate[currency])
 
         return all_rates
-
-
-
-

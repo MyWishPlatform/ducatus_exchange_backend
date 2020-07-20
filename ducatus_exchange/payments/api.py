@@ -72,26 +72,29 @@ def register_payment(request_id, tx_hash, currency, amount):
 
 def parse_payment_message(message):
     tx = message.get('transactionHash')
-    request_id = message.get('exchangeId')
-    amount = message.get('amount')
-    currency = message.get('currency')
-    receiving_address = message.get('address')
-    print('PAYMENT:', tx, request_id, amount, currency, flush=True)
-    payment = register_payment(request_id, tx, currency, amount)
-    print('starting transfer', flush=True)
-    try:
-        transfer = transfer_currency(payment)
+    if not Payment.objects.filter(tx_hash=tx).count() > 0:
+        request_id = message.get('exchangeId')
+        amount = message.get('amount')
+        currency = message.get('currency')
+        receiving_address = message.get('address')
+        print('PAYMENT:', tx, request_id, amount, currency, flush=True)
+        payment = register_payment(request_id, tx, currency, amount)
+        print('starting transfer', flush=True)
+        try:
+            transfer = transfer_currency(payment)
 
-        if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC' \
-                and payment.exchange_request.user.email:
+            if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC' \
+                    and payment.exchange_request.user.email:
 
-            lottery_entrypoint = LotteryRegister(transfer)
-            lottery_entrypoint.try_register_to_lotteries()
+                lottery_entrypoint = LotteryRegister(transfer)
+                lottery_entrypoint.try_register_to_lotteries()
 
-        payment.transfer_state = 'DONE'
-    except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-        print('Transfer not completed, reverting payment', flush=True)
-        payment.transfer_state = 'ERROR'
-        payment.save()
-        raise TransferException
-    print('transfer completed', flush=True)
+            payment.transfer_state = 'DONE'
+        except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
+            print('Transfer not completed, reverting payment', flush=True)
+            payment.transfer_state = 'ERROR'
+            payment.save()
+            raise TransferException
+        print('transfer completed', flush=True)
+    else:
+        print('tx {} already registered'.format(tx), flush=True)
