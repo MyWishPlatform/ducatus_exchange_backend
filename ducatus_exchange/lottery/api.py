@@ -8,7 +8,7 @@ from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION
 from ducatus_exchange.email_messages import lottery_subject, lottery_text, promo_codes_text
-from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL
+from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, PROMO_END_TIMESTAMP
 
 
 class LotteryRegister:
@@ -76,14 +76,25 @@ class LotteryRegister:
 
     def send_confirmation(self, lottery_player):
         try:
+            to_email = lottery_player.transfer.payment.exchange_request.user.email
+            text_body = lottery_text.format(
+                tx_hash=lottery_player.transfer.tx_hash,
+                tickets_amount=lottery_player.tickets_amount,
+            )
+            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+                lottery_player.generate_promo_codes()
+                text_body += promo_codes_text.format(
+                    back_office_code=lottery_player.back_office_code,
+                    e_commerce_code=lottery_player.e_commerce_code
+                )
+
             send_mail(
                 lottery_subject,
-                lottery_text.format(
-                    tx_hash=lottery_player.transfer.tx_hash,
-                    tickets_amount=lottery_player.tickets_amount,
-                ),
+                text_body,
                 CONFIRMATION_FROM_EMAIL,
-                [lottery_player.transfer.payment.exchange_request.user.email],
+                [to_email],
             )
+
+            print('conformation message sent successfully to {}'.format(to_email))
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)

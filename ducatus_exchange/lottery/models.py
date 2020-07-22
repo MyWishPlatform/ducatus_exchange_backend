@@ -1,9 +1,12 @@
+import random
+import string
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
 from ducatus_exchange.exchange_requests.models import DucatusUser
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import MAX_DIGITS
+from ducatus_exchange.settings import PROMO_CODES_LEN
 
 
 class Lottery(models.Model):
@@ -28,3 +31,15 @@ class LotteryPlayer(models.Model):
     user = models.ForeignKey(DucatusUser, on_delete=models.CASCADE)
     transfer = models.ForeignKey(DucatusTransfer, on_delete=models.CASCADE, null=True, default=None)
     lottery = models.ForeignKey(Lottery, on_delete=models.CASCADE)
+    back_office_code = models.CharField(max_length=50, null=True, default=None)
+    e_commerce_code = models.CharField(max_length=50, null=True, default=None)
+
+    def generate_promo_codes(self):
+        chars = string.ascii_letters + string.digits + '!#$%&()*+,-./:;<=>?@[]'
+        back_office_code = ''.join(random.choices(chars, k=PROMO_CODES_LEN))
+        e_commerce_code = ''.join(random.choices(chars, k=PROMO_CODES_LEN))
+
+        self.back_office_code = back_office_code
+        self.e_commerce_code = e_commerce_code
+
+        self.save()
