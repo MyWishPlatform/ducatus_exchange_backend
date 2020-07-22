@@ -25,10 +25,15 @@ class LotteryPlayerViewSet(viewsets.ModelViewSet):
 @api_view(http_method_names=['GET'])
 def lottery_participants(request: Request):
     request_api_key = request.query_params.get('api_key')
+    start_ts = request.query_params.get('start_ts')
+    end_ts = request.query_params.get('end_ts')
     if request_api_key != API_KEY:
         raise PermissionDenied
     lottery_players = LotteryPlayer.objects.all()
     serializer = LotteryPlayerSerializer()
-    response_data = [serializer.to_representation(player, is_admin=True) for player in lottery_players]
+    response_data = []
+    for player in lottery_players:
+        if player.transfer.created_date.timestamp() >= start_ts and player.transfer.created_date.timestamp() <= end_ts:
+            response_data.append(serializer.to_representation(player, is_admin=True))
 
     return Response(response_data)

@@ -28,7 +28,7 @@ class LotterySerializer(serializers.ModelSerializer):
 class LotteryPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = LotteryPlayer
-        fields = ['lottery', 'sent_usd_amount', 'tickets_amount', 'received_duc_amount']
+        fields = ['id', 'lottery', 'sent_usd_amount', 'tickets_amount', 'received_duc_amount']
 
     def to_representation(self, instance, is_admin=False):
         res = super().to_representation(instance)
