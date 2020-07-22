@@ -30,9 +30,12 @@ class LotteryPlayerSerializer(serializers.ModelSerializer):
         model = LotteryPlayer
         fields = ['lottery', 'sent_usd_amount', 'tickets_amount', 'received_duc_amount']
 
-    def to_representation(self, instance):
+    def to_representation(self, instance, is_admin=False):
         res = super().to_representation(instance)
         res['address'] = instance.user.address
         res['tx_hash'] = instance.transfer.tx_hash if instance.transfer.tx_hash else None
         res['received_duc_amount'] = int(res['received_duc_amount']) // DECIMALS['DUC']
+        if is_admin:
+            res['back_office_code'] = instance.back_office_code
+            res['e_commerce_code'] = instance.e_commerce_code
         return res
