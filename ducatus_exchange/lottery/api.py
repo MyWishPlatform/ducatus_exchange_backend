@@ -82,12 +82,8 @@ class LotteryRegister:
             #     tx_hash=lottery_player.transfer.tx_hash,
             #     tickets_amount=lottery_player.tickets_amount,
             # )
-            # if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
-            #     lottery_player.generate_promo_codes()
-            #     text_body += promo_codes_text.format(
-            #         back_office_code=lottery_player.back_office_code,
-            #         e_commerce_code=lottery_player.e_commerce_code
-            #     )
+            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+                lottery_player.generate_promo_codes()
 
             html_body = lottery_html_body.format(
                 usd_amount=lottery_player.sent_usd_amount,
