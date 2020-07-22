@@ -28,6 +28,7 @@ def lottery_participants(request: Request):
     if request_api_key != API_KEY:
         raise PermissionDenied
     lottery_players = LotteryPlayer.objects.all()
-    response_data = LotteryPlayerSerializer(many=True).to_representation(lottery_players, is_admin=True)
+    serializer = LotteryPlayerSerializer()
+    response_data = [serializer.to_representation(player, is_admin=True) for player in lottery_players]
 
     return Response(response_data)
