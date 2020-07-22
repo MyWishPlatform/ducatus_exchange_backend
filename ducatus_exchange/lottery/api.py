@@ -6,9 +6,9 @@ from django.core.mail import send_mail
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION
-from ducatus_exchange.email_messages import lottery_subject, lottery_text, promo_codes_text
-from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, PROMO_END_TIMESTAMP
+from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
+from ducatus_exchange.email_messages import lottery_html_body
+from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, PROMO_END_TIMESTAMP
 
 
 class LotteryRegister:
@@ -77,24 +77,34 @@ class LotteryRegister:
     def send_confirmation(self, lottery_player):
         try:
             to_email = lottery_player.transfer.payment.exchange_request.user.email
-            text_body = lottery_text.format(
+            # text_body = lottery_text.format(
+            #     tx_hash=lottery_player.transfer.tx_hash,
+            #     tickets_amount=lottery_player.tickets_amount,
+            # )
+            # if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+            #     lottery_player.generate_promo_codes()
+            #     text_body += promo_codes_text.format(
+            #         back_office_code=lottery_player.back_office_code,
+            #         e_commerce_code=lottery_player.e_commerce_code
+            #     )
+
+            html_body = lottery_html_body.format(
+                usd_amount=lottery_player.sent_usd_amount,
                 tx_hash=lottery_player.transfer.tx_hash,
                 tickets_amount=lottery_player.tickets_amount,
+                back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
+                back_office_code=lottery_player.back_office_code,
+                e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
+                e_commerce_code=lottery_player.e_commerce_code,
             )
-            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
-                lottery_player.generate_promo_codes()
-                text_body += promo_codes_text.format(
-                    back_office_code=lottery_player.back_office_code,
-                    e_commerce_code=lottery_player.e_commerce_code
-                )
-
             send_mail(
-                lottery_subject,
-                text_body,
-                CONFIRMATION_FROM_EMAIL,
+                '',
+                '',
+                DEFAULT_FROM_EMAIL,
                 [to_email],
-                auth_user=CONFIRMATION_FROM_EMAIL,
-                auth_password=CONFIRMATION_FROM_PASSWORD,
+                # auth_user=CONFIRMATION_FROM_EMAIL,
+                # auth_password=CONFIRMATION_FROM_PASSWORD,
+                html_message=html_body,
             )
 
             print('conformation message sent successfully to {}'.format(to_email))

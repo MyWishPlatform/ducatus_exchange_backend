@@ -1,4 +1,4 @@
-MAX_DIGITS = len(str(2**256))
+MAX_DIGITS = len(str(2 ** 256))
 
 DUCATUS_USD_RATE = 0.05
 
@@ -15,6 +15,29 @@ TICKETS_FOR_USD = {
     100: 13,
     500: 70,
     1000: 150,
+}
+
+BONUSES_FOR_TICKETS = {
+    1: {
+        'back_office_bonus': 5,
+        'e_commerce_bonus': 5,
+    },
+    6: {
+        'back_office_bonus': 8,
+        'e_commerce_bonus': 8,
+    },
+    13: {
+        'back_office_bonus': 13,
+        'e_commerce_bonus': 13,
+    },
+    70: {
+        'back_office_bonus': 21,
+        'e_commerce_bonus': 21,
+    },
+    150: {
+        'back_office_bonus': 34,
+        'e_commerce_bonus': 34,
+    }
 }
 
 RATES_PRECISION = 0.97

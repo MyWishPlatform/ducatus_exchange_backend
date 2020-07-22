@@ -1,13 +1,3 @@
-lottery_subject = """Hello"""
-
-lottery_text = """Hello, you are new lottery player
-Your tx hash {tx_hash}
-Your tickets amount {tickets_amount}"""
-
-promo_codes_text = """
-Your backoffice code {back_office_code}
-Your e-commerce code {e_commerce_code}"""
-
 lottery_html_body = """<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -165,7 +155,7 @@ lottery_html_body = """<!DOCTYPE html
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="h2">
-                    Your DUC Purchase Confirmation for $X
+                    Your DUC Purchase Confirmation for ${usd_amount}
                   </td>
                 </tr>
                 <tr>
@@ -176,10 +166,10 @@ lottery_html_body = """<!DOCTYPE html
                     elogible entries:</td>
                 </tr>
                 <tr>
-                  <td class="bodycopy" style="padding: 10px 0px 20px 0;">X YOUR HASH NUMBER X</td>
+                  <td class="bodycopy" style="padding: 10px 0px 20px 0;">{tx_hash}</td>
                 </tr>
                 <tr>
-                  <td class="bodycopy">In addition to your X entries to win a limited-edition luxury watch, you have
+                  <td class="bodycopy">In addition to your {tickets_amount} entries to win a limited-edition luxury watch, you have
                     also earned:</td>
                 </tr>
               </table>
@@ -189,7 +179,7 @@ lottery_html_body = """<!DOCTYPE html
             <td class="bg-lightpink innerpadding">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td class="voucher-title">X% extra DSV (Digital Shopping Voucher)</td>
+                  <td class="voucher-title">{back_office_bonus}% extra DSV (Digital Shopping Voucher)</td>
                 </tr>
                 <tr>
                   <td class="voucher-text">To redeem, purchase any DSV package at our Ducatus Network Member's site <a
@@ -207,7 +197,7 @@ lottery_html_body = """<!DOCTYPE html
                     extra DSV:</td>
                 </tr>
                 <tr>
-                  <td class="voucher-code"><i>X YOUR EXTRA DSV VOUCHER CODE X</i></td>
+                  <td class="voucher-code"><i>{back_office_code}</i></td>
                 </tr>
                 <tr>
                   <td class="voucher-info">*Valid from now until 15 Aug 2020, one-time purchase only.</td>
@@ -222,7 +212,7 @@ lottery_html_body = """<!DOCTYPE html
             <td class="bg-lightgray innerpadding">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td class="voucher-title">X% discount for any purchase at D-Shop</td>
+                  <td class="voucher-title">{e_commerce_bonus}% discount for any purchase at D-Shop</td>
                 </tr>
                 <tr>
                   <td class="voucher-text">To redeem, purchase any DSV item at D-Shop on our eCommerce site Remus Nation
@@ -236,7 +226,7 @@ lottery_html_body = """<!DOCTYPE html
                     discount:</td>
                 </tr>
                 <tr>
-                  <td class="voucher-code"><i>X YOUR DISCOUNT VOUCHER CODE X</i></td>
+                  <td class="voucher-code"><i>{e_commerce_code}</i></td>
                 </tr>
                 <tr>
                   <td class="voucher-info">*Valid from now until 31 Dec 2020, one-time purchase only.</td>
