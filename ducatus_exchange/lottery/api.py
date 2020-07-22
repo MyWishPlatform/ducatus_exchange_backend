@@ -7,7 +7,7 @@ from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
-from ducatus_exchange.email_messages import lottery_html_style, html_body
+from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body
 from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, \
     PROMO_END_TIMESTAMP
 
@@ -89,7 +89,7 @@ class LotteryRegister:
             #         e_commerce_code=lottery_player.e_commerce_code
             #     )
 
-            html_body = html_body.format(
+            html_body = lottery_html_body.format(
                 usd_amount=lottery_player.sent_usd_amount,
                 tx_hash=lottery_player.transfer.tx_hash,
                 tickets_amount=lottery_player.tickets_amount,

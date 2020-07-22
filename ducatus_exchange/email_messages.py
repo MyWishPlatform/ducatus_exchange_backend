@@ -138,7 +138,7 @@ lottery_html_style = """<!DOCTYPE html
     }
   </style>
 </head>"""
-html_body = """<body ducatus bgcolor="#ffffff">
+lottery_html_body = """<body ducatus bgcolor="#ffffff">
   <table width="100%" bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
     <tr>
       <td>
