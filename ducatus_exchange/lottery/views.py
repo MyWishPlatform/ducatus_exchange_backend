@@ -25,8 +25,8 @@ class LotteryPlayerViewSet(viewsets.ModelViewSet):
 @api_view(http_method_names=['GET'])
 def lottery_participants(request: Request):
     request_api_key = request.query_params.get('api_key')
-    start_ts = request.query_params.get('start_ts')
-    end_ts = request.query_params.get('end_ts')
+    start_ts = request.query_params.get('start_ts', 0)
+    end_ts = request.query_params.get('end_ts', float('inf'))
     if request_api_key != API_KEY:
         raise PermissionDenied
     lottery_players = LotteryPlayer.objects.all()
