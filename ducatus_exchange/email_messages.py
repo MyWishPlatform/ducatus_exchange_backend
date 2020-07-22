@@ -137,9 +137,7 @@ lottery_html_body = """<!DOCTYPE html
       border-bottom: 1px solid black;
     }
   </style>
-</head>
-
-<body ducatus bgcolor="#ffffff">
+</head>""" + """<body ducatus bgcolor="#ffffff">
   <table width="100%" bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
     <tr>
       <td>
