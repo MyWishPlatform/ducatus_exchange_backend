@@ -1,4 +1,4 @@
-lottery_html_body = """<!DOCTYPE html
+lottery_html_style = """<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
@@ -137,7 +137,8 @@ lottery_html_body = """<!DOCTYPE html
       border-bottom: 1px solid black;
     }
   </style>
-</head>""" + """<body ducatus bgcolor="#ffffff">
+</head>"""
+html_body = """<body ducatus bgcolor="#ffffff">
   <table width="100%" bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
     <tr>
       <td>
