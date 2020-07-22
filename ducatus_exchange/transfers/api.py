@@ -1,10 +1,11 @@
 import sys
 import traceback
+from decimal import Decimal
 
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.settings import ROOT_KEYS
+from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.payments.models import Payment
 
@@ -16,6 +17,20 @@ def transfer_currency(payment):
         return transfer_ducatus(payment)
     else:
         return transfer_ducatusx(payment)
+
+
+def make_ref_transfer(payment):
+    amount = Decimal(int(int(Decimal(payment.sent_amount)) * REF_BONUS_PERCENT))
+    receiver = payment.exchange_request.user.ref_address
+    print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    currency = 'DUC'
+
+    rpc = DucatuscoreInterface()
+    tx = rpc.transfer(receiver, amount)
+    transfer = save_transfer(payment, tx, amount, currency)
+
+    print('ducatus referral transfer ok', flush=True)
+    return transfer
 
 
 def transfer_ducatus(payment):

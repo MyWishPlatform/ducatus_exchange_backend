@@ -82,6 +82,15 @@ class ExchangeRequestView(APIView):
                 ducatus_user.email = email
                 ducatus_user.save()
 
+        ref_link = request.META.get('HTTP_REFERER')
+        print('ref link', ref_link, flush=True)
+        try:
+            ref_duc_address = ref_link.split('referral=')[1]
+            ducatus_user.ref_address = ref_duc_address
+            ducatus_user.save()
+        except IndexError:
+            print('not ref address', flush=True)
+
         if user_created:
             exchange_request = ExchangeRequest(user=ducatus_user)
             exchange_request.save()

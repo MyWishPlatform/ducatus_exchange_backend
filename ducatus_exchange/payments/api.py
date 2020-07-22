@@ -1,7 +1,7 @@
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer
-from ducatus_exchange.transfers.api import transfer_currency
+from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
@@ -83,13 +83,20 @@ def parse_payment_message(message):
         try:
             transfer = transfer_currency(payment)
 
-            if payment.currency in ['ETH', 'BTC'] and payment.exchange_request.user.platform == 'DUC' \
-                    and payment.exchange_request.user.email:
+            user = payment.exchange_request.user
+
+            if payment.currency in ['ETH', 'BTC'] and user.platform == 'DUC' and user.email:
 
                 lottery_entrypoint = LotteryRegister(transfer)
                 lottery_entrypoint.try_register_to_lotteries()
 
             payment.transfer_state = 'DONE'
+
+            if user.ref_address and user.platform == 'DUC':
+                make_ref_transfer(payment)
+                payment.exchange_request.user.ref_address = None
+                payment.exchange_request.user.save()
+
         except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
             print('Transfer not completed, reverting payment', flush=True)
             payment.transfer_state = 'ERROR'
