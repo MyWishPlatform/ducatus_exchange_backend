@@ -8,7 +8,7 @@ from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION
 from ducatus_exchange.email_messages import lottery_subject, lottery_text, promo_codes_text
-from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, PROMO_END_TIMESTAMP
+from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, PROMO_END_TIMESTAMP
 
 
 class LotteryRegister:
@@ -93,6 +93,8 @@ class LotteryRegister:
                 text_body,
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
+                auth_user=CONFIRMATION_FROM_EMAIL,
+                auth_password=CONFIRMATION_FROM_PASSWORD,
             )
 
             print('conformation message sent successfully to {}'.format(to_email))
