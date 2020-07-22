@@ -85,7 +85,7 @@ class ExchangeRequestView(APIView):
         ref_link = request.META.get('HTTP_REFERER')
         print('ref link', ref_link, flush=True)
         try:
-            ref_duc_address = ref_link.split('referral=')[1]
+            ref_duc_address = ref_link.split('refferal=')[1]
             ducatus_user.ref_address = ref_duc_address
             ducatus_user.save()
         except IndexError:
