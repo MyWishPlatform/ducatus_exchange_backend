@@ -1,7 +1,8 @@
 import sys
 import traceback
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.core.mail import get_connection, send_mail
+from django.core.mail.message import EmailMessage
 
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
@@ -9,7 +10,7 @@ from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
 from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body
 from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, \
-    PROMO_END_TIMESTAMP
+    PROMO_END_TIMESTAMP, CONFIRMATION_HOST, EMAIL_PORT, EMAIL_USE_TLS
 
 
 class LotteryRegister:
@@ -94,13 +95,21 @@ class LotteryRegister:
                 e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
                 e_commerce_code=lottery_player.e_commerce_code,
             )
+
+            connection = get_connection(
+                host=CONFIRMATION_HOST,
+                port=EMAIL_PORT,
+                username=CONFIRMATION_FROM_EMAIL,
+                password=CONFIRMATION_FROM_PASSWORD,
+                use_tls=EMAIL_USE_TLS,
+            )
+
             send_mail(
                 '',
                 '',
                 DEFAULT_FROM_EMAIL,
                 [to_email],
-                # auth_user=CONFIRMATION_FROM_EMAIL,
-                # auth_password=CONFIRMATION_FROM_PASSWORD,
+                connection=connection,
                 html_message=lottery_html_style + html_body,
             )
 
