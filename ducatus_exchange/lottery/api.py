@@ -107,7 +107,7 @@ class LotteryRegister:
             send_mail(
                 '',
                 '',
-                DEFAULT_FROM_EMAIL,
+                CONFIRMATION_FROM_EMAIL,
                 [to_email],
                 connection=connection,
                 html_message=lottery_html_style + html_body,
