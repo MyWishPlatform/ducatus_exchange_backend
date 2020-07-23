@@ -24,7 +24,8 @@ class LotteryRegister:
         active_lotteries = self.get_active_lotteries()
         for lottery in active_lotteries:
             lottery_player = self.register_to_lottery(lottery)
-            self.send_confirmation_mail(lottery_player)
+            if lottery_player:
+                self.send_confirmation_mail(lottery_player)
 
     def get_active_lotteries(self):
         active_lotteries = Lottery.objects.filter(ended=False, started_at__lt=timezone.now().timestamp())
