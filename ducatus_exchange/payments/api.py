@@ -94,8 +94,8 @@ def parse_payment_message(message):
 
             if user.ref_address and user.platform == 'DUC':
                 make_ref_transfer(payment)
-                payment.exchange_request.user.ref_address = None
-                payment.exchange_request.user.save()
+                # payment.exchange_request.user.ref_address = None
+                # payment.exchange_request.user.save()
 
         except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
             print('Transfer not completed, reverting payment', flush=True)

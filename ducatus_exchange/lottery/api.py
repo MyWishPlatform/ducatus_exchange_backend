@@ -23,7 +23,7 @@ class LotteryRegister:
         active_lotteries = self.get_active_lotteries()
         for lottery in active_lotteries:
             lottery_player = self.register_to_lottery(lottery)
-            self.send_confirmation(lottery_player)
+            self.send_confirmation_mail(lottery_player)
 
     def get_active_lotteries(self):
         active_lotteries = Lottery.objects.filter(ended=False, started_at__lt=timezone.now().timestamp())
@@ -34,6 +34,7 @@ class LotteryRegister:
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
         if not tickets_amount:
+            self.send_warning_mail()
             return
 
         lottery_player = LotteryPlayer()
@@ -76,14 +77,10 @@ class LotteryRegister:
         usd_amount = usd_prices[currency] * amount / DECIMALS[currency]
         return usd_amount
 
-    @staticmethod
-    def send_confirmation(lottery_player):
+    @classmethod
+    def send_confirmation_mail(cls, lottery_player):
         try:
             to_email = lottery_player.transfer.payment.exchange_request.user.email
-            # text_body = lottery_text.format(
-            #     tx_hash=lottery_player.transfer.tx_hash,
-            #     tickets_amount=lottery_player.tickets_amount,
-            # )
             if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
                 lottery_player.generate_promo_codes()
 
@@ -97,13 +94,7 @@ class LotteryRegister:
                 e_commerce_code=lottery_player.e_commerce_code,
             )
 
-            connection = get_connection(
-                host=CONFIRMATION_HOST,
-                port=EMAIL_PORT,
-                username=CONFIRMATION_FROM_EMAIL,
-                password=CONFIRMATION_FROM_PASSWORD,
-                use_tls=EMAIL_USE_TLS,
-            )
+            connection = cls.get_mail_connection()
 
             send_mail(
                 '',
@@ -117,3 +108,18 @@ class LotteryRegister:
             print('conformation message sent successfully to {}'.format(to_email))
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+
+    @classmethod
+    def send_warning_mail(cls):
+        connection = cls.get_mail_connection()
+
+    @staticmethod
+    def get_mail_connection():
+        connection = get_connection(
+            host=CONFIRMATION_HOST,
+            port=EMAIL_PORT,
+            username=CONFIRMATION_FROM_EMAIL,
+            password=CONFIRMATION_FROM_PASSWORD,
+            use_tls=EMAIL_USE_TLS,
+        )
+        return connection
