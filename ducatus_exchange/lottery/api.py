@@ -5,10 +5,11 @@ from django.core.mail import get_connection, send_mail
 from django.core.mail.message import EmailMessage
 
 from ducatus_exchange.rates.serializers import get_usd_prices
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
-from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body
+from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body, warning_html_style, warning_html_body
 from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, \
     PROMO_END_TIMESTAMP, CONFIRMATION_HOST, EMAIL_PORT, EMAIL_USE_TLS
 
@@ -34,7 +35,7 @@ class LotteryRegister:
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
         if not tickets_amount:
-            self.send_warning_mail()
+            self.send_warning_mail(usd_amount, self.payment)
             return
 
         lottery_player = LotteryPlayer()
@@ -79,23 +80,22 @@ class LotteryRegister:
 
     @classmethod
     def send_confirmation_mail(cls, lottery_player):
+        to_email = lottery_player.transfer.payment.exchange_request.user.email
+        if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+            lottery_player.generate_promo_codes()
+
+        html_body = lottery_html_body.format(
+            usd_amount=round(lottery_player.sent_usd_amount, 2),
+            tx_hash=lottery_player.transfer.tx_hash,
+            tickets_amount=lottery_player.tickets_amount,
+            back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
+            back_office_code=lottery_player.back_office_code,
+            e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
+            e_commerce_code=lottery_player.e_commerce_code,
+        )
+
+        connection = cls.get_mail_connection()
         try:
-            to_email = lottery_player.transfer.payment.exchange_request.user.email
-            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
-                lottery_player.generate_promo_codes()
-
-            html_body = lottery_html_body.format(
-                usd_amount=round(lottery_player.sent_usd_amount, 2),
-                tx_hash=lottery_player.transfer.tx_hash,
-                tickets_amount=lottery_player.tickets_amount,
-                back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
-                back_office_code=lottery_player.back_office_code,
-                e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
-                e_commerce_code=lottery_player.e_commerce_code,
-            )
-
-            connection = cls.get_mail_connection()
-
             send_mail(
                 '',
                 '',
@@ -110,8 +110,27 @@ class LotteryRegister:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
     @classmethod
-    def send_warning_mail(cls):
+    def send_warning_mail(cls, usd_amount, payment: Payment):
         connection = cls.get_mail_connection()
+
+        html_body = warning_html_body.format(
+            usd_amount=round(usd_amount, 2),
+            duc_amount=round(payment.sent_amount/DECIMALS['DUC'], 5)
+        )
+        to_email = payment.exchange_request.user.email
+
+        try:
+            send_mail(
+                '',
+                '',
+                CONFIRMATION_FROM_EMAIL,
+                [to_email],
+                connection=connection,
+                html_message=warning_html_style + html_body,
+            )
+            print('warning message sent successfully to {}'.format(to_email))
+        except Exception as e:
+            print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
     @staticmethod
     def get_mail_connection():
