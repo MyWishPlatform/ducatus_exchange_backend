@@ -35,7 +35,7 @@ class LotteryPlayer(models.Model):
     e_commerce_code = models.CharField(max_length=50, null=True, default=None)
 
     def generate_promo_codes(self):
-        chars = string.ascii_letters + string.digits + '!#$%&()*+,-./:;<=>?@[]'
+        chars = string.ascii_letters + string.digits + '!#$%&()*+,-./:;=?@[]'
         back_office_code = ''.join(random.choices(chars, k=PROMO_CODES_LEN))
         e_commerce_code = ''.join(random.choices(chars, k=PROMO_CODES_LEN))
 

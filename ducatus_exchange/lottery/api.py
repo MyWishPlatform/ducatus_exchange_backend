@@ -76,7 +76,8 @@ class LotteryRegister:
         usd_amount = usd_prices[currency] * amount / DECIMALS[currency]
         return usd_amount
 
-    def send_confirmation(self, lottery_player):
+    @staticmethod
+    def send_confirmation(lottery_player):
         try:
             to_email = lottery_player.transfer.payment.exchange_request.user.email
             # text_body = lottery_text.format(
