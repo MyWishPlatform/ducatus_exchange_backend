@@ -116,7 +116,6 @@ lottery_html_style = """<!DOCTYPE html
 
     .voucher-code {
       padding: 0px 10px 15px 10px;
-      text-transform: uppercase;
     }
 
     .voucher-text {
@@ -196,7 +195,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                     extra DSV:</td>
                 </tr>
                 <tr>
-                  <td class="voucher-code"><i>{back_office_code}</i></td>
+                  <td class="voucher-code">{back_office_code}</td>
                 </tr>
                 <tr>
                   <td class="voucher-info">*Valid from now until 15 Aug 2020, one-time purchase only.</td>
@@ -225,7 +224,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                     discount:</td>
                 </tr>
                 <tr>
-                  <td class="voucher-code"><i>{e_commerce_code}</i></td>
+                  <td class="voucher-code">{e_commerce_code}</td>
                 </tr>
                 <tr>
                   <td class="voucher-info">*Valid from now until 31 Dec 2020, one-time purchase only.</td>
