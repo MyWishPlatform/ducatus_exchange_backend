@@ -87,7 +87,7 @@ class LotteryRegister:
                 lottery_player.generate_promo_codes()
 
             html_body = lottery_html_body.format(
-                usd_amount=lottery_player.sent_usd_amount,
+                usd_amount=round(lottery_player.sent_usd_amount, 2),
                 tx_hash=lottery_player.transfer.tx_hash,
                 tickets_amount=lottery_player.tickets_amount,
                 back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
