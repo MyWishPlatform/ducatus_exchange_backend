@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
-from ducatus_exchange.consts import DECIMALS
+from ducatus_exchange.consts import DECIMALS, BONUSES_FOR_TICKETS
 
 
 class LotterySerializer(serializers.ModelSerializer):
@@ -38,4 +38,6 @@ class LotteryPlayerSerializer(serializers.ModelSerializer):
         if is_admin:
             res['back_office_code'] = instance.back_office_code
             res['e_commerce_code'] = instance.e_commerce_code
+            res['back_office_percent'] = BONUSES_FOR_TICKETS[instance.tickets_amount]['back_office_bonus']
+            res['e_commerce_percent'] = BONUSES_FOR_TICKETS[instance.tickets_amount]['e_commerce_bonus']
         return res
