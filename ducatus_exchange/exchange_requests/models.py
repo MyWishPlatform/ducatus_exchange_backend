@@ -12,7 +12,7 @@ from ducatus_exchange.bip32_ducatus import DucatusWallet
 class DucatusUser(models.Model):
     address = models.CharField(max_length=50, unique=False)
     platform = models.CharField(max_length=25, null=True, default=None)
-    email = models.EmailField(null=True, default=None)
+    email = models.CharField(max_length=50, null=True, default=None)
     ref_address = models.CharField(max_length=50, null=True, default=None)
 
 

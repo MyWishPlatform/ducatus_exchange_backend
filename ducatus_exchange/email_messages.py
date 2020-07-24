@@ -161,7 +161,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                 </tr>
                 <tr>
                   <td class="bodycopy">We have received your payment and your hash has been added to our list of
-                    elogible entries:</td>
+                    eligible entries:</td>
                 </tr>
                 <tr>
                   <td class="bodycopy" style="padding: 10px 0px 20px 0;">{tx_hash}</td>
@@ -198,7 +198,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                   <td class="voucher-code">{back_office_code}</td>
                 </tr>
                 <tr>
-                  <td class="voucher-info">*Valid from now until 15 Aug 2020, one-time purchase only.</td>
+                  <td class="voucher-info">*Valid from now until <b>15 Aug 2020</b>, one-time purchase only.</td>
                 </tr>
               </table>
             </td>
@@ -213,7 +213,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                   <td class="voucher-title">{e_commerce_bonus}% discount for any purchase at D-Shop</td>
                 </tr>
                 <tr>
-                  <td class="voucher-text">To redeem, purchase any DSV item at D-Shop on our eCommerce site Remus Nation
+                  <td class="voucher-text">To redeem, purchase any item at D-Shop on our eCommerce site Remus Nation
                     <a href="https://remusnation.com/dshop/" class="voucher-link">https://remusnation.com/dshop</a></td>
                 </tr>
                 <tr>
@@ -227,7 +227,7 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
                   <td class="voucher-code">{e_commerce_code}</td>
                 </tr>
                 <tr>
-                  <td class="voucher-info">*Valid from now until 31 Dec 2020, one-time purchase only.</td>
+                  <td class="voucher-info">*Valid from now until <b>31 Dec 2020</b>, one-time purchase only.</td>
                 </tr>
               </table>
             </td>

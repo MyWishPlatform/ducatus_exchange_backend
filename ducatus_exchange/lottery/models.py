@@ -33,6 +33,7 @@ class LotteryPlayer(models.Model):
     lottery = models.ForeignKey(Lottery, on_delete=models.CASCADE)
     back_office_code = models.CharField(max_length=50, null=True, default=None)
     e_commerce_code = models.CharField(max_length=50, null=True, default=None)
+    email = models.CharField(max_length=50, null=True, default=None)
 
     def generate_promo_codes(self):
         chars = string.ascii_letters + string.digits + '!#$%()*+,-./:;=?@[]'

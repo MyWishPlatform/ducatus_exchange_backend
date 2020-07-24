@@ -46,6 +46,7 @@ class LotteryRegister:
         lottery_player.user = self.payment.exchange_request.user
         lottery_player.transfer = self.transfer
         lottery_player.lottery = lottery
+        lottery_player.email = self.payment.exchange_request.user.email
         lottery_player.save()
 
         lottery.gave_tickets_amount += tickets_amount
