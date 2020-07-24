@@ -152,11 +152,6 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
             <td class="innerpadding">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td class="h2">
-                    Your DUC Purchase Confirmation for ${usd_amount}
-                  </td>
-                </tr>
-                <tr>
                   <td class="accent">Thank you for purchasing DUC.</td>
                 </tr>
                 <tr>
@@ -387,12 +382,6 @@ warning_html_body = """<body ducatus bgcolor="#ffffff">
             <tr>
               <td class="innerpadding" style="padding-bottom: 5px;">
                 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td class="body-text">
-                      Your DUC Purchase Confirmation for
-                      <span class="text-heavy-underline">${usd_amount}</span>
-                    </td>
-                  </tr>
                   <tr>
                     <td class="accent">Thank you for purchasing DUC.</td>
                   </tr>

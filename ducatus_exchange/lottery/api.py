@@ -87,7 +87,6 @@ class LotteryRegister:
             lottery_player.generate_promo_codes()
 
         html_body = lottery_html_body.format(
-            usd_amount=round(lottery_player.sent_usd_amount, 2),
             tx_hash=lottery_player.transfer.tx_hash,
             tickets_amount=lottery_player.tickets_amount,
             back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
@@ -99,7 +98,7 @@ class LotteryRegister:
         connection = cls.get_mail_connection()
         try:
             send_mail(
-                '',
+                'Your DUC Purchase Confirmation for ${}'.format(round(lottery_player.sent_usd_amount, 2)),
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
@@ -116,14 +115,13 @@ class LotteryRegister:
         connection = cls.get_mail_connection()
 
         html_body = warning_html_body.format(
-            usd_amount=round(usd_amount, 2),
             duc_amount=round(payment.sent_amount/DECIMALS['DUC'], 5)
         )
         to_email = payment.exchange_request.user.email
 
         try:
             send_mail(
-                '',
+                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
