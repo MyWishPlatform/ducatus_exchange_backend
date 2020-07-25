@@ -83,6 +83,7 @@ class ExchangeRequestView(APIView):
                 ducatus_user.save()
 
         ref_address = request.COOKIES.get('referral')
+        print('REF ADDRESS', ref_address, flush=True)
         if ref_address and ref_address != ducatus_user.address:
             ducatus_user.ref_address = ref_address
             ducatus_user.save()
