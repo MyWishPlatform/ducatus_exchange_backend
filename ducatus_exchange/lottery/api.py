@@ -85,7 +85,7 @@ class LotteryRegister:
 
     @classmethod
     def send_confirmation_mail(cls, lottery_player):
-        to_email = lottery_player.transfer.payment.exchange_request.user.email
+        to_email = lottery_player.email
 
         html_body = lottery_html_body.format(
             tx_hash=lottery_player.transfer.tx_hash,
