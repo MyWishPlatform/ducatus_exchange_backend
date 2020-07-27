@@ -49,6 +49,9 @@ class LotteryRegister:
         lottery_player.email = self.payment.exchange_request.user.email
         lottery_player.save()
 
+        if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+            lottery_player.generate_promo_codes()
+
         lottery.gave_tickets_amount += tickets_amount
         lottery.sent_duc_amount += self.payment.sent_amount
         if lottery.sent_duc_amount >= lottery.duc_amount and not lottery.filled_at:
@@ -83,8 +86,6 @@ class LotteryRegister:
     @classmethod
     def send_confirmation_mail(cls, lottery_player):
         to_email = lottery_player.transfer.payment.exchange_request.user.email
-        if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
-            lottery_player.generate_promo_codes()
 
         html_body = lottery_html_body.format(
             tx_hash=lottery_player.transfer.tx_hash,
