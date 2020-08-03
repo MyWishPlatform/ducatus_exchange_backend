@@ -10,7 +10,7 @@ from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.consts import CURRENCIES
+from ducatus_exchange.consts import CURRENCIES, DECIMALS
 from ducatus_exchange.settings import ROOT_KEYS, COLLECTION_ADDRESSES, IS_TESTNET_PAYMENTS, NETWORK_SETTINGS
 
 
@@ -40,7 +40,7 @@ def get_output_balance():
     ducx_balance = int(eth_interface.eth_getBalance(NETWORK_SETTINGS['DUCX']['address']), 16)
 
     res = {
-        'DUC': duc_balance,
+        'DUC': duc_balance * DECIMALS['DUC'],
         'DUCX': ducx_balance,
     }
 
@@ -93,6 +93,7 @@ def collect_eth(payment: Payment):
           flush=True)
     try:
         tx_hash = interface.eth_sendRawTransaction(signed.rawTransaction.hex())
+        print('tx hash', tx_hash, flush=True)
     except Exception:
         raise InterfaceError
 
