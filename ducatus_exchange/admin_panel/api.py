@@ -11,7 +11,7 @@ from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import CURRENCIES
-from ducatus_exchange.settings import ROOT_KEYS, COLLECTION_ADDRESSES, IS_TESTNET_PAYMENTS
+from ducatus_exchange.settings import ROOT_KEYS, COLLECTION_ADDRESSES, IS_TESTNET_PAYMENTS, NETWORK_SETTINGS
 
 
 class LowBalance(Exception):
@@ -37,7 +37,7 @@ def get_output_balance():
     duc_balance = btc_interface.rpc.getbalance('')
 
     eth_interface = ParityInterface('DUCX')
-    ducx_balance = int(eth_interface.eth_getBalance(), 16)
+    ducx_balance = int(eth_interface.eth_getBalance(NETWORK_SETTINGS['DUCX']['address']), 16)
 
     res = {
         'DUC': duc_balance,
