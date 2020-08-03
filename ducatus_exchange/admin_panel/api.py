@@ -89,6 +89,8 @@ def collect_eth(payment: Payment):
 
     signed = Account.sign_transaction(tx, child_private)
 
+    print('try collect {amount} ETH from payment {payment_id}'.format(amount=tx['value'], payment_id=payment.id),
+          flush=True)
     try:
         tx_hash = interface.eth_sendRawTransaction(signed.rawTransaction.hex())
     except Exception:
