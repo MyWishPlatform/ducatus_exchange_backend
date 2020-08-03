@@ -53,7 +53,7 @@ def transfer_ducatusx(payment):
     print('ducatusX transfer started: sending {amount} DUCX to {addr}'.format(amount=amount, addr=receiver), flush=True)
     currency = 'DUCX'
 
-    parity = ParityInterface()
+    parity = ParityInterface('DUCX')
     tx = parity.transfer(receiver, amount)
     transfer = save_transfer(payment, tx, amount, currency)
 
@@ -90,28 +90,3 @@ def confirm_transfer(message):
     transfer.payment.save()
     print('transfer completed ok')
     return
-
-
-def collect_duc(payment):
-    duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['private'])
-    duc_child = duc_root_key.get_child(payment.exchange_request.user.id, is_prime=False)
-    child_private = duc_child.export_to_wif().decode()
-    tx_hashes = [payment.tx_hash]
-    address_from = payment.exchange_request.duc_address
-    amount = payment.original_amount
-    rpc = DucatuscoreInterface()
-    address_to = rpc.rpc.getaccountaddress('')
-    try:
-        tx = rpc.internal_transfer(tx_hashes, address_from, address_to, amount, child_private)
-        payment.collection_state = 'COLLECTED'
-        payment.collection_tx_hash = tx
-        payment.save()
-    except Exception as e:
-        print('Error in internal transfer from {addr_from} to {addr_to} with amount {amount} DUC'.format(
-            addr_from=address_from,
-            addr_to=address_to,
-            amount=amount
-        ), flush=True)
-        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
-        payment.collection_state = 'ERROR'
-        payment.save()

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.transfers',
     'ducatus_exchange.exchange_requests',
     'ducatus_exchange.lottery',
+    'ducatus_exchange.admin_panel',
 ]
 
 MIDDLEWARE = [

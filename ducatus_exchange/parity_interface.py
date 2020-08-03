@@ -28,9 +28,9 @@ class ParityInterface:
     endpoint = None
     settings = None
 
-    def __init__(self):
+    def __init__(self, network):
 
-        self.settings = NETWORK_SETTINGS['DUCX']
+        self.settings = NETWORK_SETTINGS[network]
         self.setup_endpoint()
         # self.check_connection()
 
