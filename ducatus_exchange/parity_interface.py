@@ -100,13 +100,3 @@ class ParityInterface:
             raise ParityInterfaceException(err)
 
 
-
-
-
-
-
-
-
-
-
-

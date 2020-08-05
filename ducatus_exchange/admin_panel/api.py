@@ -55,6 +55,8 @@ def withdraw_coins(currency):
             try:
                 collect_eth(payment)
             except (LowBalance, InterfaceError):
+                payment.collection_state = 'ERROR'
+                payment.save()
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
     elif currency in ['DUC', 'BTC']:
         pass
@@ -62,8 +64,14 @@ def withdraw_coins(currency):
         raise NotFound
 
 
-def collect_eth(payment: Payment):
-    net_name = 'testnet' if IS_TESTNET_PAYMENTS else 'mainnet'
+def collect_parity(payment: Payment, currency: str):
+    if currency == 'ETH':
+        net_name = 'testnet' if IS_TESTNET_PAYMENTS else 'mainnet'
+    elif currency == 'DUCX':
+        net_name = 'ducatusx'
+    else:
+        print(f'currency {currency} not supported', flush=True)
+        return
 
     x = BIP32Key.fromExtendedKey(ROOT_KEYS[net_name]['private'])
 
@@ -71,9 +79,11 @@ def collect_eth(payment: Payment):
     amount = payment.original_amount
     address = payment.exchange_request.eth_address
 
-    interface = ParityInterface('ETH')
+    interface = ParityInterface(currency)
 
-    if amount < int(interface.eth_getBalance(), 16):
+    interface.raw_transfer()
+
+    if int(interface.eth_getBalance(payment.exchange_request.eth_address), 16) < amount:
         raise LowBalance
 
     gas_price = int(interface.eth_gasPrice(), 16)
@@ -82,14 +92,16 @@ def collect_eth(payment: Payment):
     tx = {
         'gasPrice': gas_price,
         'gas': gas,
-        'to': COLLECTION_ADDRESSES['ETH'],
+        'to': COLLECTION_ADDRESSES[currency],
         'nonce': interface.eth_getTransactionCount(address, 'pending'),
-        'value': amount - gas * gas_price,
+        'value': int(amount - gas * gas_price),
     }
 
     signed = Account.sign_transaction(tx, child_private)
 
-    print('try collect {amount} ETH from payment {payment_id}'.format(amount=tx['value'], payment_id=payment.id),
+    print('try collect {amount} {currency} from payment {payment_id}'.format(amount=tx['value'],
+                                                                             currency=currency,
+                                                                             payment_id=payment.id),
           flush=True)
     try:
         tx_hash = interface.eth_sendRawTransaction(signed.rawTransaction.hex())
