@@ -15,7 +15,7 @@ from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY, RATES_CHECKER_TIMEO
 
 api_url = 'https://min-api.cryptocompare.com/data/price'
 
-query_tsyms = ['ETH', 'BTC']
+query_tsyms = ['ETH', 'BTC', 'USDC']
 query_fsym = 'USD'
 
 
@@ -53,8 +53,9 @@ if __name__ == '__main__':
             rate = UsdRate.objects.first()
             rate.eth_price = usd_prices['ETH']
             rate.btc_price = usd_prices['BTC']
+            rate.usdc_price = usd_prices['USDC']
         else:
-            rate = UsdRate(eth_price=usd_prices['ETH'], btc_price=usd_prices['BTC'])
+            rate = UsdRate(eth_price=usd_prices['ETH'], btc_price=usd_prices['BTC'], usdc_price=usd_prices['USDC'])
         rate.save()
 
         print('saved ok', flush=True)
