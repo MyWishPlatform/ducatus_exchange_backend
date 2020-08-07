@@ -9,7 +9,8 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
-from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body, warning_html_style, warning_html_body
+from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body, warning_html_style, \
+    warning_html_body, lottery_bonuses_html_body
 from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, \
     PROMO_END_TIMESTAMP, CONFIRMATION_HOST, EMAIL_PORT, EMAIL_USE_TLS
 
@@ -25,7 +26,9 @@ class LotteryRegister:
         for lottery in active_lotteries:
             lottery_player = self.register_to_lottery(lottery)
             if lottery_player:
-                self.send_confirmation_mail(lottery_player)
+                self.send_confirmation_mail(lottery_player.sent_usd_amount,
+                                            lottery_player.transfer,
+                                            lottery_player=lottery_player)
 
     def get_active_lotteries(self):
         active_lotteries = Lottery.objects.filter(ended=False, started_at__lt=timezone.now().timestamp())
@@ -36,8 +39,12 @@ class LotteryRegister:
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
         if not tickets_amount:
-            self.send_warning_mail(usd_amount, self.payment)
-            return
+            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+                self.send_warning_mail(usd_amount, self.payment)
+                return
+            else:
+                self.send_confirmation_mail(usd_amount, self.transfer)
+                return
 
         lottery_player = LotteryPlayer()
         lottery_player.sent_usd_amount = usd_amount
@@ -84,22 +91,27 @@ class LotteryRegister:
         return usd_amount
 
     @classmethod
-    def send_confirmation_mail(cls, lottery_player):
-        to_email = lottery_player.email
+    def send_confirmation_mail(cls, usd_amount, transfer, lottery_player=None):
+        to_email = transfer.exchange_request.user.email
 
-        html_body = lottery_html_body.format(
-            tx_hash=lottery_player.transfer.tx_hash,
-            tickets_amount=lottery_player.tickets_amount,
-            back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
-            back_office_code=lottery_player.back_office_code,
-            e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
-            e_commerce_code=lottery_player.e_commerce_code,
-        )
+        if not lottery_player or not lottery_player.e_commerce_code and not lottery_player.back_office_code:
+            html_body = lottery_html_body.format(
+                tx_hash=transfer.tx_hash
+            )
+        else:
+            html_body = lottery_bonuses_html_body.format(
+                tx_hash=lottery_player.transfer.tx_hash,
+                tickets_amount=lottery_player.tickets_amount,
+                back_office_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['back_office_bonus'],
+                back_office_code=lottery_player.back_office_code,
+                e_commerce_bonus=BONUSES_FOR_TICKETS[lottery_player.tickets_amount]['e_commerce_bonus'],
+                e_commerce_code=lottery_player.e_commerce_code,
+            )
 
         connection = cls.get_mail_connection()
         try:
             send_mail(
-                'Your DUC Purchase Confirmation for ${}'.format(round(lottery_player.sent_usd_amount, 2)),
+                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
@@ -116,7 +128,7 @@ class LotteryRegister:
         connection = cls.get_mail_connection()
 
         html_body = warning_html_body.format(
-            duc_amount=round(payment.sent_amount/DECIMALS['DUC'], 5)
+            duc_amount=round(payment.sent_amount / DECIMALS['DUC'], 5)
         )
         to_email = payment.exchange_request.user.email
 

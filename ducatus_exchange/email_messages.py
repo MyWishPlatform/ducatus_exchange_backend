@@ -137,7 +137,42 @@ lottery_html_style = """<!DOCTYPE html
     }
   </style>
 </head>"""
+
 lottery_html_body = """<body ducatus bgcolor="#ffffff">
+  <table width="100%" bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <table bgcolor="#ffffff" class="content" align="center" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="border-radius: 0px;" bgcolor="#f1f2f4" class="header">
+              <img class="fix" src="https://www.ducatuscoins.com/assets/img/ducatus-logo-first.png" width="150"
+                height="150" border="0" alt="" />
+            </td>
+          </tr>
+          <tr>
+            <td class="innerpadding">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td class="accent">Thank you for purchasing DUC.</td>
+                </tr>
+                <tr>
+                  <td class="bodycopy">We have received your payment and your hash has been added to our list of
+                    eligible entries:</td>
+                </tr>
+                <tr>
+                  <td class="bodycopy" style="padding: 10px 0px 20px 0;">{tx_hash}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+lottery__bonuses_html_body = """<body ducatus bgcolor="#ffffff">
   <table width="100%" bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
     <tr>
       <td>
@@ -237,7 +272,6 @@ lottery_html_body = """<body ducatus bgcolor="#ffffff">
 </body>
 
 </html>"""
-
 
 warning_html_style = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
