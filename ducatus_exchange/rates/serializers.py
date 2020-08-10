@@ -1,6 +1,10 @@
+import json
+import requests
+
 from rest_framework import serializers
 
 from ducatus_exchange.rates.models import UsdRate
+from ducatus_exchange.settings import RATES_API_URL
 
 
 def get_usd_prices():
@@ -8,8 +12,8 @@ def get_usd_prices():
     rate = UsdRate.objects.first()
     usd_prices['ETH'] = rate.eth_price
     usd_prices['BTC'] = rate.btc_price
-    usd_prices['DUC'] = 0.06
-    usd_prices['DUCX'] = 0.50
+    usd_prices['DUC'] = json.loads(requests.get(RATES_API_URL.format(fsym='DUC', tsyms='USD')).content).get('USD')
+    usd_prices['DUCX'] = json.loads(requests.get(RATES_API_URL.format(fsym='DUCX', tsyms='USD')).content).get('USD')
 
     print('current rates', usd_prices, flush=True)
 
