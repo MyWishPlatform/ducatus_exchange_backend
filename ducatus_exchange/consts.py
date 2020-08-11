@@ -7,6 +7,7 @@ DECIMALS = {
     'BTC': 10 ** 8,
     'DUC': 10 ** 8,
     'DUCX': 10 ** 18,
+    'USDC': 10 ** 6,
 }
 
 TICKETS_FOR_USD = {

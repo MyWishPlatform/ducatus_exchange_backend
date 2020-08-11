@@ -24,7 +24,7 @@ def calculate_amount(original_amount, from_currency):
     rates = AllRatesSerializer({})
     currency_rate = rates.data[to_currency][from_currency]
 
-    if from_currency in ['ETH', 'DUCX', 'BTC']:
+    if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:
         value = original_amount * DECIMALS['DUC'] / DECIMALS[from_currency]
     elif from_currency == 'DUC':
         value = original_amount * DECIMALS[to_currency] / DECIMALS['DUC']
@@ -85,7 +85,7 @@ def parse_payment_message(message):
 
             user = payment.exchange_request.user
 
-            if payment.currency in ['ETH', 'BTC'] and user.platform == 'DUC' and user.email:
+            if payment.currency in ['ETH', 'BTC', 'USDC'] and user.platform == 'DUC' and user.email:
 
                 lottery_entrypoint = LotteryRegister(transfer)
                 lottery_entrypoint.try_register_to_lotteries()
