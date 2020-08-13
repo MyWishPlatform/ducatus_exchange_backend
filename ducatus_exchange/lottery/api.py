@@ -2,7 +2,6 @@ import sys
 import traceback
 from django.utils import timezone
 from django.core.mail import get_connection, send_mail
-from django.core.mail.message import EmailMessage
 
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.payments.models import Payment
@@ -11,7 +10,7 @@ from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
 from ducatus_exchange.email_messages import lottery_html_style, lottery_html_body, warning_html_style, \
     warning_html_body, lottery_bonuses_html_body
-from ducatus_exchange.settings import DEFAULT_FROM_EMAIL, CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, \
+from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM_PASSWORD, PROMO_START_TIMESTAMP, \
     PROMO_END_TIMESTAMP, CONFIRMATION_HOST, EMAIL_PORT, EMAIL_USE_TLS
 
 
@@ -39,7 +38,7 @@ class LotteryRegister:
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
         if not tickets_amount:
-            if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+            if PROMO_START_TIMESTAMP < timezone.now().timestamp() < PROMO_END_TIMESTAMP:
                 self.send_warning_mail(usd_amount, self.payment)
                 return
             else:
@@ -56,7 +55,7 @@ class LotteryRegister:
         lottery_player.email = self.payment.exchange_request.user.email
         lottery_player.save()
 
-        if timezone.now().timestamp() < PROMO_END_TIMESTAMP:
+        if PROMO_START_TIMESTAMP < timezone.now().timestamp() < PROMO_END_TIMESTAMP:
             lottery_player.generate_promo_codes()
 
         lottery.gave_tickets_amount += tickets_amount
