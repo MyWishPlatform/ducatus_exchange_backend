@@ -36,14 +36,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'drf_yasg',
     'django_extensions',
+
     'ducatus_exchange.payments',
     'ducatus_exchange.rates',
     'ducatus_exchange.transfers',
     'ducatus_exchange.exchange_requests',
     'ducatus_exchange.lottery',
+    'ducatus_exchange.quantum',
 ]
 
 MIDDLEWARE = [
