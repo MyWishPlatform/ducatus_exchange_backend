@@ -24,18 +24,19 @@ from drf_yasg import openapi
 
 from ducatus_exchange.views import FeedbackForm
 from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress
-from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants
+from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants, \
+    get_lotteries_info
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="Ducatus Widget API",
-      default_version='v1',
-      description="API for widget backend",
-      contact=openapi.Contact(email="ephdtrg@mintyclouds.in"),
-      license=openapi.License(name="MIT License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="Ducatus Widget API",
+        default_version='v1',
+        description="API for widget backend",
+        contact=openapi.Contact(email="ephdtrg@mintyclouds.in"),
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 router = DefaultRouter(trailing_slash=True)
@@ -53,5 +54,6 @@ urlpatterns = [
     url(r'api/v1/validate_ducatus_address/', ValidateDucatusAddress.as_view(), name='validate-ducatus-address'),
     url(r'api/v1/send_ducatus_feedback/', FeedbackForm.as_view(), name='send-ducatus-feedback'),
     url(r'api/v1/lottery_participants/', lottery_participants),
+    url(r'^api/v1/get_lotteries_info', get_lotteries_info),
     url(r'^api/v1/', include(router.urls)),
 ]

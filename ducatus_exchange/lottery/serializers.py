@@ -15,12 +15,17 @@ class LotterySerializer(serializers.ModelSerializer):
             'sent_duc_amount': {'read_only': True}
         }
 
-    def to_representation(self, instance):
+    def to_representation(self, instance, with_description=True):
         res = super().to_representation(instance)
         res['sent_duc_amount'] = int(res['sent_duc_amount']) // DECIMALS['DUC']
         res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
         res['winner_address'] = instance.winner_user.address if instance.winner_user else None
         res['winner_tx_hash'] = instance.winner_transfer.tx_hash if instance.winner_transfer else None
+
+        if not with_description:
+            res.pop('description')
+            res.pop('image')
+            res.pop('video')
 
         return res
 
