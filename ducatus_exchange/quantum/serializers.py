@@ -35,4 +35,9 @@ class ChargeSerializer(serializers.ModelSerializer):
                 raise ValidationError(detail=f'currency must be in {self.currencies}')
             return False
 
+        if self.data['amount'] < 1:
+            if raise_exception:
+                raise ValidationError(detail=f'amount must be greater or equal then 1')
+            return False
+
         return True

@@ -1,8 +1,15 @@
 import json
 import requests
+import datetime
 from django.utils import timezone
 
 from ducatus_exchange.quantum.models import QuantumAccount
+from ducatus_exchange.settings import QUANTUM_CLIENT_ID, QUANTUM_CLIENT_SECRET
+
+
+
+class QuantumApiError(Exception):
+    pass
 
 
 def initiate_charge(validated_data):
@@ -25,19 +32,23 @@ def initiate_charge(validated_data):
                                                               access_token=quantum_account.access_token)
     }
 
-    creation_request = requests.post('https://sandbox.quantumclearance.com/api/v1/merchant/charges',
-                                     json=new_charge_data,
-                                     headers=headers)
+    try:
+        creation_request = requests.post('https://sandbox.quantumclearance.com/api/v1/merchant/charges',
+                                         json=new_charge_data,
+                                         headers=headers)
+    except Exception:
+        raise QuantumApiError
 
     return json.loads(creation_request.content)
 
 
 def update_access_token(quantum_account: QuantumAccount):
-    if quantum_account.token_expires_at < timezone.now().timestamp():
+    token_expiration_delta = quantum_account.token_expires_at + datetime.timedelta(minutes=5).seconds
+    if not quantum_account.access_token or token_expiration_delta < timezone.now().timestamp():
         request_data = {
-            'client_id': 'Gh8fvjbhKUpE9XGK',
-            'client_secret': 'vjY8yRxmCCPaydWy',
-            'grant_type': 'client_credentials'
+            'client_id': QUANTUM_CLIENT_ID,
+            'client_secret': QUANTUM_CLIENT_SECRET,
+            'grant_type': 'client_credentials',
         }
         new_token_request = requests.post('https://sandbox.quantumclearance.com/connect/token', data=request_data)
         token_info = json.loads(new_token_request.content)
