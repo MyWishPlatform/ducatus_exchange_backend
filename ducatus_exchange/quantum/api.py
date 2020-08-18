@@ -7,7 +7,6 @@ from ducatus_exchange.quantum.models import QuantumAccount
 from ducatus_exchange.settings import QUANTUM_CLIENT_ID, QUANTUM_CLIENT_SECRET
 
 
-
 class QuantumApiError(Exception):
     pass
 
