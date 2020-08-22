@@ -28,11 +28,12 @@ def get_charge(request: Request, charge_id: int):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'currency': openapi.Schema(type=openapi.TYPE_STRING),
             'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'currency': openapi.Schema(type=openapi.TYPE_STRING),
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
             'email': openapi.Schema(type=openapi.TYPE_STRING),
         },
-        required=['currency', 'amount', 'email']
+        required=['amount', 'currency', 'duc_address', 'email']
     ),
 )
 @api_view(http_method_names=['POST'])
