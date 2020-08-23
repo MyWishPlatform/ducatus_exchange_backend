@@ -1,12 +1,16 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 
+from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
+from ducatus_exchange.rates.serializers import get_usd_prices
+from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.transfers.models import DucatusTransfer
 
 
 @swagger_auto_schema(
@@ -60,14 +64,49 @@ def add_charge(request: Request):
                     'status': openapi.Schema(type=openapi.TYPE_STRING),
                 }),
         },
-        required=['currency', 'amount', 'email']
     ),
 )
 @api_view(http_method_names=['POST'])
 def change_charge_status(request: Request):
     if request.data['type'] == 'Charge':
+        status = request.data['data']['status']
         charge_id = request.data['data']['id']
-        if request.data['data']['status'] == 'Charged':
+        if status == 'Charged':
+            charge = Charge.objects.get(charge_id=charge_id)
+            charge.status = status
+            charge.save()
 
             # here should be transfer logic execution
             print(f'try transfer DUC for charge {charge_id}', flush=True)
+            transfer_duc(charge.duc_address, charge.currency, charge.amount)
+
+
+def transfer_duc(duc_address, original_curr, original_amount):
+    # Calc rate and amount
+    rates = get_usd_prices()
+    duc_rate = rates['DUC']
+    # TODO how to apply USD decimals?
+    sent_amount = int(original_amount / float(duc_rate))
+
+    # Create payment obj
+    payment = Payment(
+        currency=original_curr,
+        original_amount=original_amount,
+        rate=duc_rate,
+        sent_amount=sent_amount
+    )
+
+    # Sent tx
+    rpc = DucatuscoreInterface()
+    tx = rpc.transfer(duc_address, original_amount)
+
+    # Save tx
+    transfer = DucatusTransfer(
+        tx_hash=tx,
+        amount=sent_amount,
+        payment=payment,
+        currency='DUC',
+        state='WAITING_FOR_CONFIRMATION'
+    )
+    transfer.save()
+    print('transfer saved', flush=True)
