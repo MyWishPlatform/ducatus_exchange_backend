@@ -70,17 +70,9 @@ class ExchangeRequestView(APIView):
         if platform is None:
             return Response({'error': 'to_platform not passed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
-        user_created = False
-        if not ducatus_user_filter:
-            user_created = True
-            ducatus_user = DucatusUser(address=address, platform=platform, email=email)
-            ducatus_user.save()
-        else:
-            ducatus_user = ducatus_user_filter.last()
-            if email:
-                ducatus_user.email = email
-                ducatus_user.save()
+        ducatus_user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
+            address, platform, email
+        )
 
         ref_address = request.COOKIES.get('referral')
         print('REF ADDRESS', ref_address, flush=True)
@@ -88,16 +80,6 @@ class ExchangeRequestView(APIView):
             ducatus_user.ref_address = ref_address
             ducatus_user.save()
             print('REF ADDRESS', ref_address, flush=True)
-
-        if user_created:
-            exchange_request = ExchangeRequest(user=ducatus_user)
-            exchange_request.save()
-            exchange_request.generate_keys()
-            exchange_request.save()
-        else:
-            exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
-
-        print('addresses:', exchange_request.__dict__, flush=True)
 
         if platform == 'DUC':
             response_data = {
@@ -136,4 +118,24 @@ class ValidateDucatusAddress(APIView):
         return Response({'address_valid': valid}, status=status.HTTP_200_OK)
 
 
+def get_or_create_ducatus_user_and_exchange_request(address, platform, email):
+    ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
+    if not ducatus_user_filter:
+        # Create user
+        ducatus_user = DucatusUser(address=address, platform=platform, email=email)
+        ducatus_user.save()
+        # And create ER
+        exchange_request = ExchangeRequest(user=ducatus_user)
+        exchange_request.save()
+        exchange_request.generate_keys()
+        exchange_request.save()
+    else:
+        # Else just get them from db
+        ducatus_user = ducatus_user_filter.last()
+        exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
+        if email:
+            ducatus_user.email = email
+            ducatus_user.save()
+    print('addresses:', exchange_request.__dict__, flush=True)
+    return ducatus_user, exchange_request
 
