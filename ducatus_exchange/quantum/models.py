@@ -12,8 +12,8 @@ class QuantumAccount(models.Model):
 
 
 class Charge(models.Model):
-    exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     charge_id = models.IntegerField(unique=True)
+    exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=50)
     currency = models.CharField(max_length=10)
     amount = models.IntegerField()

@@ -5,13 +5,12 @@ from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
+from ducatus_exchange.payments.api import transfer_with_handle_lottery_and_referral
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.serializers import get_usd_prices
-from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 
 
 @swagger_auto_schema(
@@ -88,10 +87,11 @@ def change_charge_status(request: Request):
 
             # here should be transfer logic execution
             print(f'try transfer DUC for charge {charge_id}', flush=True)
-            transfer_duc(charge.duc_address, charge.currency, charge.amount)
+            transfer_duc(charge.duc_address, charge.currency,
+                         charge.amount, charge.exchange_request)
 
 
-def transfer_duc(duc_address, original_curr, original_amount):
+def transfer_duc(duc_address, original_curr, original_amount, exchange_request):
     # Calc rate and amount
     rates = get_usd_prices()
     duc_rate = rates['DUC']
@@ -100,23 +100,12 @@ def transfer_duc(duc_address, original_curr, original_amount):
 
     # Create payment obj
     payment = Payment(
+        exchange_request=exchange_request,
         currency=original_curr,
         original_amount=original_amount,
         rate=duc_rate,
         sent_amount=sent_amount
     )
+    payment.save()
 
-    # Sent tx
-    rpc = DucatuscoreInterface()
-    tx = rpc.transfer(duc_address, original_amount)
-
-    # Save tx
-    transfer = DucatusTransfer(
-        tx_hash=tx,
-        amount=sent_amount,
-        payment=payment,
-        currency='DUC',
-        state='WAITING_FOR_CONFIRMATION'
-    )
-    transfer.save()
-    print('transfer saved', flush=True)
+    transfer_with_handle_lottery_and_referral(payment)

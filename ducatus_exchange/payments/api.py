@@ -79,29 +79,32 @@ def parse_payment_message(message):
         receiving_address = message.get('address')
         print('PAYMENT:', tx, request_id, amount, currency, flush=True)
         payment = register_payment(request_id, tx, currency, amount)
-        print('starting transfer', flush=True)
-        try:
-            transfer = transfer_currency(payment)
 
-            user = payment.exchange_request.user
-
-            if payment.currency in ['ETH', 'BTC', 'USDC'] and user.platform == 'DUC' and user.email:
-
-                lottery_entrypoint = LotteryRegister(transfer)
-                lottery_entrypoint.try_register_to_lotteries()
-
-            payment.transfer_state = 'DONE'
-
-            if user.ref_address and user.platform == 'DUC':
-                make_ref_transfer(payment)
-                # payment.exchange_request.user.ref_address = None
-                # payment.exchange_request.user.save()
-
-        except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-            print('Transfer not completed, reverting payment', flush=True)
-            payment.transfer_state = 'ERROR'
-            payment.save()
-            raise TransferException
-        print('transfer completed', flush=True)
+        transfer_with_handle_lottery_and_referral(payment)
     else:
         print('tx {} already registered'.format(tx), flush=True)
+
+
+def transfer_with_handle_lottery_and_referral(payment):
+    print('starting transfer', flush=True)
+    try:
+        transfer = transfer_currency(payment)
+
+        user = payment.exchange_request.user
+
+        if payment.currency in ['ETH', 'BTC', 'USDC'] and user.platform == 'DUC' and user.email:
+            lottery_entrypoint = LotteryRegister(transfer)
+            lottery_entrypoint.try_register_to_lotteries()
+
+        payment.transfer_state = 'DONE'
+
+        if user.ref_address and user.platform == 'DUC':
+            make_ref_transfer(payment)
+            # payment.exchange_request.user.ref_address = None
+            # payment.exchange_request.user.save()
+    except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
+        print('Transfer not completed, reverting payment', flush=True)
+        payment.transfer_state = 'ERROR'
+        payment.save()
+        raise TransferException
+    print('transfer completed', flush=True)
