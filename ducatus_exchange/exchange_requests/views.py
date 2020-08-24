@@ -74,12 +74,7 @@ class ExchangeRequestView(APIView):
             address, platform, email
         )
 
-        ref_address = request.COOKIES.get('referral')
-        print('REF ADDRESS', ref_address, flush=True)
-        if ref_address and ref_address != ducatus_user.address:
-            ducatus_user.ref_address = ref_address
-            ducatus_user.save()
-            print('REF ADDRESS', ref_address, flush=True)
+        referral_check(request, ducatus_user)
 
         if platform == 'DUC':
             response_data = {
@@ -139,3 +134,11 @@ def get_or_create_ducatus_user_and_exchange_request(address, platform, email):
     print('addresses:', exchange_request.__dict__, flush=True)
     return ducatus_user, exchange_request
 
+
+def referral_check(request, user: DucatusUser):
+    ref_address = request.COOKIES.get('referral')
+    print('REF ADDRESS', ref_address, flush=True)
+    if ref_address and ref_address != user.address:
+        user.ref_address = ref_address
+        user.save()
+        print('REF ADDRESS', ref_address, flush=True)
