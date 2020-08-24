@@ -71,10 +71,8 @@ class ExchangeRequestView(APIView):
             return Response({'error': 'to_platform not passed'}, status=status.HTTP_400_BAD_REQUEST)
 
         ducatus_user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
-            address, platform, email
+            request, address, platform, email
         )
-
-        referral_check(request, ducatus_user)
 
         if platform == 'DUC':
             response_data = {
@@ -113,7 +111,7 @@ class ValidateDucatusAddress(APIView):
         return Response({'address_valid': valid}, status=status.HTTP_200_OK)
 
 
-def get_or_create_ducatus_user_and_exchange_request(address, platform, email):
+def get_or_create_ducatus_user_and_exchange_request(request, address, platform, email):
     ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
     if not ducatus_user_filter:
         # Create user
@@ -132,13 +130,12 @@ def get_or_create_ducatus_user_and_exchange_request(address, platform, email):
             ducatus_user.email = email
             ducatus_user.save()
     print('addresses:', exchange_request.__dict__, flush=True)
-    return ducatus_user, exchange_request
 
-
-def referral_check(request, user: DucatusUser):
     ref_address = request.COOKIES.get('referral')
     print('REF ADDRESS', ref_address, flush=True)
-    if ref_address and ref_address != user.address:
-        user.ref_address = ref_address
-        user.save()
+    if ref_address and ref_address != ducatus_user.address:
+        ducatus_user.ref_address = ref_address
+        ducatus_user.save()
         print('REF ADDRESS', ref_address, flush=True)
+
+    return ducatus_user, exchange_request
