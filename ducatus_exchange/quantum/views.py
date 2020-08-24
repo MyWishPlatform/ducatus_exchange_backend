@@ -6,11 +6,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.serializers import get_usd_prices
-from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.transfers.models import DucatusTransfer
+from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 
 
 @swagger_auto_schema(
@@ -29,7 +30,7 @@ def get_charge(request: Request, charge_id: int):
 
 @swagger_auto_schema(
     method='post',
-    request_body=openapi.Schema(
+    reqcduest_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
             'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
@@ -43,6 +44,15 @@ def get_charge(request: Request, charge_id: int):
 @api_view(http_method_names=['POST'])
 def add_charge(request: Request):
     data = request.data
+
+    duc_address = data.get('duc_address')
+    email = data.get('email')
+    platform = 'DUC'
+
+    user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
+        request, duc_address, platform, email
+    )
+    data['exchange_request'] = exchange_request.id
 
     serializer = ChargeSerializer(data=data)
     if serializer.is_valid(raise_exception=True):
