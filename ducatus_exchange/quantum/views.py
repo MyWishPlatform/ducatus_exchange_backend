@@ -87,25 +87,16 @@ def change_charge_status(request: Request):
 
             # here should be transfer logic execution
             print(f'try transfer DUC for charge {charge_id}', flush=True)
-            transfer_duc(charge.duc_address, charge.currency,
-                         charge.amount, charge.exchange_request)
+            transfer_duc(charge)
 
 
-def transfer_duc(duc_address, original_curr, original_amount, exchange_request):
+def transfer_duc(charge):
     # Calc rate and amount
     rates = get_usd_prices()
     duc_rate = rates['DUC']
     # TODO how to apply USD decimals?
-    sent_amount = int(original_amount / float(duc_rate))
+    sent_amount = int(charge.original_amount / float(duc_rate))
 
-    # Create payment obj
-    payment = Payment(
-        exchange_request=exchange_request,
-        currency=original_curr,
-        original_amount=original_amount,
-        rate=duc_rate,
-        sent_amount=sent_amount
-    )
-    payment.save()
+    payment = charge.create_payment(sent_amount, duc_rate)
 
     transfer_with_handle_lottery_and_referral(payment)
