@@ -1,9 +1,7 @@
-from django.apps import apps
 from django.db import models
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-
-Payment = apps.get_model('payment', 'Payment')
+from ducatus_exchange.payments.models import Payment
 
 
 class QuantumAccount(models.Model):
