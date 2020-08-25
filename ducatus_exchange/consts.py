@@ -8,6 +8,8 @@ DECIMALS = {
     'DUC': 10 ** 8,
     'DUCX': 10 ** 18,
     'USDC': 10 ** 6,
+
+    'USD': 10 ** 2,
 }
 
 TICKETS_FOR_USD = {

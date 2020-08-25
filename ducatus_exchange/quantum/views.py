@@ -5,9 +5,9 @@ from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 from ducatus_exchange.payments.api import transfer_with_handle_lottery_and_referral
-from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.serializers import get_usd_prices
@@ -85,7 +85,6 @@ def change_charge_status(request: Request):
             charge.status = status
             charge.save()
 
-            # here should be transfer logic execution
             print(f'try transfer DUC for charge {charge_id}', flush=True)
             transfer_duc(charge)
 
@@ -94,8 +93,9 @@ def transfer_duc(charge):
     # Calc rate and amount
     rates = get_usd_prices()
     duc_rate = rates['DUC']
-    # TODO how to apply USD decimals?
-    sent_amount = int(charge.original_amount / float(duc_rate))
+
+    value = charge.original_amount * DECIMALS['DUC'] / DECIMALS[charge.currency]
+    sent_amount = int(value / float(duc_rate))
 
     payment = charge.create_payment(sent_amount, duc_rate)
 
