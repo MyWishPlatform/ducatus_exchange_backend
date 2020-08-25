@@ -1,9 +1,11 @@
+from django.apps import apps
 from django.db import models
 from django.contrib.auth.models import User
 
 from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from ducatus_exchange.quantum.models import Charge
+
+Charge = apps.get_model('quantum', 'Charge')
 
 
 class Payment(models.Model):
