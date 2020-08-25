@@ -29,7 +29,7 @@ def get_charge(request: Request, charge_id: int):
 
 @swagger_auto_schema(
     method='post',
-    reqcduest_body=openapi.Schema(
+    request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
             'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
@@ -39,6 +39,13 @@ def get_charge(request: Request, charge_id: int):
         },
         required=['amount', 'currency', 'duc_address', 'email']
     ),
+    responses={"201": openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "charge_id": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "redirect_url": openapi.Schema(type=openapi.TYPE_STRING),
+        }
+    )},
 )
 @api_view(http_method_names=['POST'])
 def add_charge(request: Request):
@@ -57,7 +64,12 @@ def add_charge(request: Request):
     if serializer.is_valid(raise_exception=True):
         serializer.save()
 
-    return Response(serializer.data)
+    model = serializer.instance
+    answer = {
+        "charge_id": model.charge_id,
+        "redirect_url": model.redirect_url
+    }
+    return Response(answer)
 
 
 @swagger_auto_schema(

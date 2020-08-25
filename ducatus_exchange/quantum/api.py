@@ -42,7 +42,8 @@ def initiate_charge(validated_data):
 
 
 def update_access_token(quantum_account: QuantumAccount):
-    token_expiration_delta = quantum_account.token_expires_at + datetime.timedelta(minutes=5).seconds
+    token_expires_at = quantum_account.token_expires_at or 0
+    token_expiration_delta = token_expires_at + datetime.timedelta(minutes=5).seconds
     if not quantum_account.access_token or token_expiration_delta < timezone.now().timestamp():
         request_data = {
             'client_id': QUANTUM_CLIENT_ID,
