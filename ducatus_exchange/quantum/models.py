@@ -5,11 +5,10 @@ from ducatus_exchange.payments.models import Payment
 
 
 class QuantumAccount(models.Model):
-    account_id = models.IntegerField()
     address = models.CharField(max_length=50)
-    access_token = models.TextField()
-    token_type = models.CharField(max_length=20)
-    token_expires_at = models.BigIntegerField()
+    access_token = models.TextField(null=True)
+    token_type = models.CharField(max_length=20, null=True)
+    token_expires_at = models.BigIntegerField(null=True)
 
 
 class Charge(models.Model):

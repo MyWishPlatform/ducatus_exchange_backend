@@ -10,7 +10,7 @@ class ChargeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Charge
-        fields = '__all__'
+        fields = ['amount', 'currency', 'duc_address', 'email']
 
     def create(self, validated_data):
         charge_info = initiate_charge(validated_data)
@@ -28,15 +28,12 @@ class ChargeSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-    def is_valid(self, raise_exception=False):
-        if self.data['currency'] not in self.currencies:
-            if raise_exception:
-                raise ValidationError(detail=f'currency must be in {self.currencies}')
-            return False
+    def validate_currency(self, value):
+        if value not in self.currencies:
+            raise ValidationError(detail=f'currency must be in {self.currencies}')
+        return value
 
-        if self.data['amount'] < 1:
-            if raise_exception:
-                raise ValidationError(detail=f'amount must be greater or equal then 1')
-            return False
-
-        return True
+    def validate_amount(self, value):
+        if value < 1:
+            raise ValidationError(detail=f'amount must be greater or equal then 1')
+        return value
