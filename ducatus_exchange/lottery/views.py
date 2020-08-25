@@ -25,6 +25,12 @@ class LotteryPlayerViewSet(viewsets.ModelViewSet):
 
 
 @api_view(http_method_names=['GET'])
+def get_lottery_info(request: Request):
+    lotteries = Lottery.objects.order_by('id').first()
+    return Response(LotterySerializer().to_representation(lotteries, with_description=False))
+
+
+@api_view(http_method_names=['GET'])
 def lottery_participants(request: Request):
     request_api_key = request.query_params.get('api_key')
     start_ts = int(request.query_params.get('start_ts', 0))
