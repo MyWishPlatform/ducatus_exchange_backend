@@ -17,13 +17,13 @@ def get_rates():
     usd_prices = {}
     rate = UsdRate.objects.first()
 
-    usd_prices['USD'] = 1  # rate.usd_price
-    usd_prices['EUR'] = 1.18  # rate.eur_price
-    usd_prices['GBP'] = 1.32  # rate.gbp_price
-    usd_prices['CHF'] = 1.10  # rate.chf_price
+    usd_prices['USD'] = rate.usd_price
+    usd_prices['EUR'] = rate.eur_price
+    usd_prices['GBP'] = rate.gbp_price
+    usd_prices['CHF'] = rate.chf_price
     usd_prices['DUC'] = 0.05
 
-    print('current quantum rates:', usd_prices)
+    print('current quantum rates:', usd_prices, flush=True)
     return usd_prices
 
 
