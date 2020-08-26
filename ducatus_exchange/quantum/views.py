@@ -15,7 +15,7 @@ from ducatus_exchange.rates.serializers import get_usd_prices
 
 @swagger_auto_schema(
     method='get',
-    responses={200: ChargeSerializer()},
+    responses={"200": ChargeSerializer()},
 )
 @api_view(http_method_names=['GET'])
 def get_charge(request: Request, charge_id: int):
@@ -99,6 +99,7 @@ def change_charge_status(request: Request):
 
             print(f'try transfer DUC for charge {charge_id}', flush=True)
             transfer_duc(charge)
+    return Response(200)
 
 
 def transfer_duc(charge):
