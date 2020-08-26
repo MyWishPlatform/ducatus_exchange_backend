@@ -228,7 +228,7 @@ lottery_bonuses_html_body = """<body ducatus bgcolor="#ffffff">
                   <td class="voucher-code">{back_office_code}</td>
                 </tr>
                 <tr>
-                  <td class="voucher-info">*Valid from now until <b>15 Aug 2020</b>, one-time purchase only.</td>
+                  <td class="voucher-info">*Valid from now until <b>15 Oct 2020</b>, one-time purchase only.</td>
                 </tr>
               </table>
             </td>
