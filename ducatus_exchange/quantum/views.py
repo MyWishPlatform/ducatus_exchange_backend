@@ -10,7 +10,19 @@ from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_
 from ducatus_exchange.payments.api import transfer_with_handle_lottery_and_referral
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
-from ducatus_exchange.rates.serializers import get_usd_prices
+from ducatus_exchange.rates.models import UsdRate
+
+
+def get_rates():
+    usd_prices = {}
+    rate = UsdRate.objects.first()
+
+    usd_prices['USD'] = 1  # rate.usd_price
+    usd_prices['EUR'] = 1.18  # rate.eur_price
+    usd_prices['GBP'] = 1.32  # rate.gbp_price
+    usd_prices['CHF'] = 1.10  # rate.chf_price
+    usd_prices['DUC'] = 0.05
+    return usd_prices
 
 
 @swagger_auto_schema(
@@ -53,12 +65,18 @@ def add_charge(request: Request):
 
     duc_address = data.get('duc_address')
     email = data.get('email')
+    usd_amount = data.get('amount')
+    currency = data.get('currency')
     platform = 'DUC'
 
     user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
         request, duc_address, platform, email
     )
     data['exchange_request'] = exchange_request.id
+
+    curr_rate = get_rates()[currency]
+    amount = int(usd_amount / float(curr_rate))
+    data['amount'] = amount
 
     serializer = ChargeSerializer(data=data)
     if serializer.is_valid(raise_exception=True):
@@ -104,7 +122,7 @@ def change_charge_status(request: Request):
 
 def transfer_duc(charge):
     # Calc rate and amount
-    rates = get_usd_prices()
+    rates = get_rates()
     duc_rate = rates['DUC']
 
     value = charge.original_amount * DECIMALS['DUC'] / DECIMALS[charge.currency]
