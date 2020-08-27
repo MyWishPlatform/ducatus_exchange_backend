@@ -77,7 +77,7 @@ def add_charge(request: Request):
     data['exchange_request'] = exchange_request.id
 
     curr_rate = get_rates()[currency]
-    amount = int(usd_amount / float(curr_rate))
+    amount = round(usd_amount / float(curr_rate), 2)
     data['amount'] = amount
 
     serializer = ChargeSerializer(data=data)

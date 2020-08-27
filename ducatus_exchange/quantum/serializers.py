@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.api import initiate_charge
 
@@ -15,11 +16,12 @@ class ChargeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         charge_info = initiate_charge(validated_data)
 
+        currency = charge_info['chargeAmount']['currencyCode']
         validated_data = {
             'charge_id': charge_info['id'],
             'status': charge_info['status'],
-            'currency': charge_info['chargeAmount']['currencyCode'],
-            'amount': charge_info['chargeAmount']['value'],
+            'currency': currency,
+            'amount': charge_info['chargeAmount']['value'] * DECIMALS[currency],
             'hash': charge_info['hash'],
             'redirect_url': charge_info['url'],
             'email': validated_data['email'],
