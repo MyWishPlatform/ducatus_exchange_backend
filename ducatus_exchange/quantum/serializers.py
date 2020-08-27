@@ -23,7 +23,8 @@ class ChargeSerializer(serializers.ModelSerializer):
             'hash': charge_info['hash'],
             'redirect_url': charge_info['url'],
             'email': validated_data['email'],
-            'duc_address': validated_data['duc_address']
+            'duc_address': validated_data['duc_address'],
+            'exchange_request': validated_data['exchange_request']
         }
 
         return super().create(validated_data)
@@ -34,6 +35,6 @@ class ChargeSerializer(serializers.ModelSerializer):
         return value
 
     def validate_amount(self, value):
-        if value < 1:
+        if value < 0:
             raise ValidationError(detail=f'amount must be greater or equal then 1')
         return value

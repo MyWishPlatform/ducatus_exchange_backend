@@ -92,7 +92,7 @@ def transfer_with_handle_lottery_and_referral(payment):
 
         user = payment.exchange_request.user
 
-        if payment.currency in ['ETH', 'BTC', 'USDC'] and user.platform == 'DUC' and user.email:
+        if payment.currency in ['ETH', 'BTC', 'USDC', 'USD', 'EUR', 'GBP', 'CHF'] and user.platform == 'DUC' and user.email:
             lottery_entrypoint = LotteryRegister(transfer)
             lottery_entrypoint.try_register_to_lotteries()
 

@@ -127,7 +127,7 @@ def transfer_duc(charge):
     rates = get_rates()
     duc_rate = rates['DUC']
 
-    value = charge.original_amount * DECIMALS['DUC'] / DECIMALS[charge.currency]
+    value = charge.amount * DECIMALS['DUC'] / DECIMALS[charge.currency]
     sent_amount = int(value / float(duc_rate))
 
     payment = charge.create_payment(sent_amount, duc_rate)
