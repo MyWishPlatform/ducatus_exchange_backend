@@ -63,28 +63,32 @@ def get_charge(request: Request, charge_id: int):
 )
 @api_view(http_method_names=['POST'])
 def add_charge(request: Request):
+    # Prepare data
     data = request.data
-
     duc_address = data.get('duc_address')
     email = data.get('email')
     usd_amount = data.get('amount')
     currency = data.get('currency')
     platform = 'DUC'
 
+    # Calculate amount with rate
+    if currency and usd_amount:
+        curr_rate = get_rates()[currency]
+        amount = round(usd_amount / float(curr_rate), 2)
+        data['amount'] = amount
+
+    # raise error if not valid before all logic. Should be 400
+    serializer = ChargeSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+
     user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
         request, duc_address, platform, email
     )
-    data['exchange_request'] = exchange_request.id
 
-    curr_rate = get_rates()[currency]
-    amount = round(usd_amount / float(curr_rate), 2)
-    data['amount'] = amount
+    model = serializer.save()
+    model.exchange_request = exchange_request
+    model.save()
 
-    serializer = ChargeSerializer(data=data)
-    if serializer.is_valid(raise_exception=True):
-        serializer.save()
-
-    model = serializer.instance
     answer = {
         "charge_id": model.charge_id,
         "redirect_url": model.redirect_url
