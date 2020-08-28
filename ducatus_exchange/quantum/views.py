@@ -68,14 +68,15 @@ def add_charge(request: Request):
     data = request.data
     duc_address = data.get('duc_address')
     email = data.get('email')
-    usd_amount = data.get('amount')
+    raw_usd_amount = data.get('amount')
     currency = data.get('currency')
     platform = 'DUC'
 
     # Calculate amount with rate
-    if currency and usd_amount:
+    if currency and raw_usd_amount:
         curr_rate = get_rates()[currency]
-        amount = round(usd_amount / float(curr_rate), 2)
+        usd_amount = raw_usd_amount * DECIMALS[currency]
+        amount = round(usd_amount / float(curr_rate))
         data['amount'] = amount
 
     # raise error if not valid before all logic. Should be 400

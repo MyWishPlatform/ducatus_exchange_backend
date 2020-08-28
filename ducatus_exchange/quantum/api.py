@@ -11,17 +11,17 @@ class QuantumApiError(Exception):
     pass
 
 
-def initiate_charge(validated_data):
+def initiate_charge(currency, amount, email):
     quantum_account = QuantumAccount.objects.first()
     update_access_token(quantum_account)
 
     new_charge_data = {
         'amount': {
-            'currencyCode': validated_data['currency'],
-            'value': validated_data['amount'],
+            'currencyCode': currency,
+            'value': amount,
         },
-        'email': validated_data['email'],
-        'tokenCurrencyCode': f'Q{validated_data["currency"]}',
+        'email': email,
+        'tokenCurrencyCode': f'Q{currency}',
         'receivingAccountAddress': quantum_account.address,
         'returnUrl': 'https://ducsite.rocknblock.io/buy',
     }

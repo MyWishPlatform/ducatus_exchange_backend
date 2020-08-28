@@ -14,17 +14,21 @@ class ChargeSerializer(serializers.ModelSerializer):
         fields = ['amount', 'currency', 'duc_address', 'email']
 
     def create(self, validated_data):
-        charge_info = initiate_charge(validated_data)
+        amount = validated_data['amount']
+        currency = validated_data['currency']
+        email = validated_data['email']
 
-        currency = charge_info['chargeAmount']['currencyCode']
+        raw_amount = amount / DECIMALS[currency]
+        charge_info = initiate_charge(currency, raw_amount, email)
+
         validated_data = {
             'charge_id': charge_info['id'],
             'status': charge_info['status'],
             'currency': currency,
-            'amount': charge_info['chargeAmount']['value'] * DECIMALS[currency],
+            'amount': amount,
             'hash': charge_info['hash'],
             'redirect_url': charge_info['url'],
-            'email': validated_data['email'],
+            'email': email,
             'duc_address': validated_data['duc_address'],
         }
 
@@ -36,6 +40,7 @@ class ChargeSerializer(serializers.ModelSerializer):
         return value
 
     def validate_amount(self, value):
-        if value < 0:
+        # Validating all fiat with same decimals
+        if value < 1 * DECIMALS['USD']:
             raise ValidationError(detail=f'amount must be greater or equal then 1')
         return value
