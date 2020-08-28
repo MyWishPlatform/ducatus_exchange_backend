@@ -123,7 +123,7 @@ def change_charge_status(request: Request):
             if Payment.objects.filter(charge_id=charge.id):
                 print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
                     charge.id, charge.charge_id
-                ))
+                ), flush=True)
                 return Response(200)
 
             print(f'try transfer DUC for charge {charge_id}', flush=True)
