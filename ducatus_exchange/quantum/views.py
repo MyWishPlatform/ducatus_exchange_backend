@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 from ducatus_exchange.payments.api import transfer_with_handle_lottery_and_referral
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.models import UsdRate
@@ -116,13 +117,20 @@ def change_charge_status(request: Request):
     if request.data['type'] == 'Charge':
         status = request.data['data']['status']
         charge_id = request.data['data']['id']
-        if status == 'Charged':
-            charge = Charge.objects.get(charge_id=charge_id)
-            charge.status = status
-            charge.save()
+
+        charge = Charge.objects.filter(charge_id=charge_id).first()
+        if charge and status == 'Withdrawn':
+            if Payment.objects.filter(charge_id=charge.id):
+                print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
+                    charge.id, charge.charge_id
+                ))
+                return Response(200)
 
             print(f'try transfer DUC for charge {charge_id}', flush=True)
             transfer_duc(charge)
+
+            charge.status = status
+            charge.save()
     return Response(200)
 
 
