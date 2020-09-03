@@ -1,9 +1,10 @@
 import sys
 import traceback
+
 from django.utils import timezone
 from django.core.mail import get_connection, send_mail
 
-from ducatus_exchange.rates.serializers import get_usd_prices
+from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
@@ -34,7 +35,7 @@ class LotteryRegister:
         return active_lotteries
 
     def register_to_lottery(self, lottery):
-        usd_prices = get_usd_prices()
+        usd_prices = self.get_usd_prices()
         usd_amount = self.get_usd_amount(usd_prices)
         tickets_amount = self.get_tickets_amount(usd_amount)
         if not tickets_amount:
@@ -154,3 +155,23 @@ class LotteryRegister:
             use_tls=EMAIL_USE_TLS,
         )
         return connection
+
+    @staticmethod
+    def get_usd_prices():
+        # TODO merge this with same from quantum.views; rates.serializers
+        usd_prices = {}
+        rate = UsdRate.objects.first()
+        usd_prices['ETH'] = rate.eth_price
+        usd_prices['BTC'] = rate.btc_price
+        usd_prices['USDC'] = rate.usdc_price
+        usd_prices['DUC'] = 0.05
+        usd_prices['DUCX'] = 0.50
+
+        usd_prices['USD'] = rate.usd_price
+        usd_prices['EUR'] = rate.eur_price
+        usd_prices['GBP'] = rate.gbp_price
+        usd_prices['CHF'] = rate.chf_price
+
+        print('current rates', usd_prices, flush=True)
+
+        return usd_prices

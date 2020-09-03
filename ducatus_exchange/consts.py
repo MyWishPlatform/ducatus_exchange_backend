@@ -8,6 +8,12 @@ DECIMALS = {
     'DUC': 10 ** 8,
     'DUCX': 10 ** 18,
     'USDC': 10 ** 6,
+
+    # quantum currencies
+    'USD': 10 ** 2,
+    'EUR': 10 ** 2,
+    'GBP': 10 ** 2,
+    'CHF': 10 ** 2,
 }
 
 TICKETS_FOR_USD = {

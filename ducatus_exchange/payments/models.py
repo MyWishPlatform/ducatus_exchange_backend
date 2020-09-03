@@ -6,7 +6,13 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
 class Payment(models.Model):
+    """
+    Model which store information about user payments
+
+    Can link to tx_hash or Charge object, depending on what type of payment user choose
+    """
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
+    charge = models.ForeignKey('quantum.Charge', on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')
     currency = models.CharField(max_length=50, null=True, default='')
     original_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)

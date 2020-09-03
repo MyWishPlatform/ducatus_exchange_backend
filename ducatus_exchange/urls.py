@@ -26,6 +26,7 @@ from ducatus_exchange.views import FeedbackForm
 from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress
 from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants, \
     get_lottery_info
+from ducatus_exchange.quantum.views import get_charge, add_charge, change_charge_status
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -55,5 +56,8 @@ urlpatterns = [
     url(r'api/v1/send_ducatus_feedback/', FeedbackForm.as_view(), name='send-ducatus-feedback'),
     url(r'api/v1/lottery_participants/', lottery_participants),
     url(r'^api/v1/get_lotteries_info', get_lottery_info),
+    url(r'api/v1/get_charge/', get_charge),
+    url(r'api/v1/add_charge/', add_charge),
+    url(r'api/v1/change_charge_status/', change_charge_status),
     url(r'^api/v1/', include(router.urls)),
 ]
