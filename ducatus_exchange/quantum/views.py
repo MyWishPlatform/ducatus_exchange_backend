@@ -1,3 +1,4 @@
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -7,9 +8,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ducatus_exchange.consts import DECIMALS
+from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
+from ducatus_exchange.lottery.api import LotteryRegister
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.models import UsdRate
+from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
 
 
 def get_rates():
@@ -113,11 +117,13 @@ def change_charge_status(request: Request):
             print(f'try create voucher for charge {charge_id}', flush=True)
             usd_amount = calculate_usd_amount(charge)
             try:
-                charge.create_voucher(usd_amount)
+                voucher = charge.create_voucher(usd_amount)
             except IntegrityError as e:
-                if 'voucher code' in e.args[0]:
-                    charge.create_voucher(usd_amount)
+                if 'voucher code' not in e.args[0]:
+                    raise e
+                voucher = charge.create_voucher(usd_amount)
 
+            send_voucher_email(voucher, charge.email, usd_amount)
             charge.status = status
             charge.save()
     return Response(200)
@@ -130,3 +136,21 @@ def calculate_usd_amount(charge):
     value = charge.amount * DECIMALS['USD'] / DECIMALS[charge.currency]
     usd_amount = int(value / float(usd_rate))
     return usd_amount
+
+
+def send_voucher_email(voucher, to_email, usd_amount):
+    conn = LotteryRegister.get_mail_connection()
+
+    html_body = voucher_html_body.format(
+        voucher_code=voucher['voucher_code']
+    )
+
+    send_mail(
+        'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+        '',
+        CONFIRMATION_FROM_EMAIL,
+        [to_email],
+        connection=conn,
+        html_message=warning_html_style + html_body,
+    )
+    print('warning message sent successfully to {}'.format(to_email))

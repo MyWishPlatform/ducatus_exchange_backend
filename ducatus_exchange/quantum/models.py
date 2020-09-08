@@ -4,9 +4,9 @@ import string
 import requests
 from django.db import models, IntegrityError
 
+from ducatus_exchange import settings_local
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange import settings_local
 
 chars_for_random = string.ascii_uppercase + string.digits
 
@@ -39,13 +39,19 @@ class Charge(models.Model):
         api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
         if not domain or not api_key:
             raise Exception
+
         voucher_code = get_random_string()
 
         url = 'https://{}/api/v3/register_voucher/'.format(domain)
-        data = {"api_key": api_key, "voucher_code": voucher_code, "usd_amount": usd_amount}
+        data = {
+            "api_key": api_key,
+            "voucher_code": voucher_code,
+            "usd_amount": usd_amount,
+        }
         r = requests.post(url, json=data)
 
         if r.status_code != 200:
             if 'voucher with this voucher code already exists' in r.content.decode():
                 raise IntegrityError('voucher code')
+        return r.json()
 
