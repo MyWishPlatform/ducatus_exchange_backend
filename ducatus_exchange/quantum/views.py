@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view
@@ -111,7 +112,11 @@ def change_charge_status(request: Request):
         if charge and status == 'Withdrawn':
             print(f'try create voucher for charge {charge_id}', flush=True)
             usd_amount = calculate_usd_amount(charge)
-            charge.create_voucher(usd_amount)
+            try:
+                charge.create_voucher(usd_amount)
+            except IntegrityError as e:
+                if 'voucher code' in e.args[0]:
+                    charge.create_voucher(usd_amount)
 
             charge.status = status
             charge.save()
