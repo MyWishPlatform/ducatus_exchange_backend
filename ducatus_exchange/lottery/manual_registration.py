@@ -35,10 +35,7 @@ def make_register(username, quantity, package, address, email):
     print(ducatus_user.__dict__, flush=True)
     print(exchange_request.__dict__, flush=True)
 
-    for i in range(quantity):
-        if i > 0:
-            time.sleep(1)
-
+    for _ in range(quantity):
         fake_tx_hash = f'{username}_{int(datetime.datetime.now().timestamp())}'
         message = {
             'exchangeId': exchange_request.id,
@@ -56,6 +53,7 @@ def make_register(username, quantity, package, address, email):
         payment.save()
 
         print(payment.__dict__, flush=True)
+        time.sleep(2)
 
 
 def register_payments_data(data):
