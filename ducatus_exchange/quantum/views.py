@@ -6,9 +6,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ducatus_exchange.consts import DECIMALS
-from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
-from ducatus_exchange.payments.api import transfer_with_handle_lottery_and_referral
-from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.models import UsdRate
@@ -49,10 +46,9 @@ def get_charge(request: Request, charge_id: int):
         properties={
             'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
             'currency': openapi.Schema(type=openapi.TYPE_STRING),
-            'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
             'email': openapi.Schema(type=openapi.TYPE_STRING),
         },
-        required=['amount', 'currency', 'duc_address', 'email']
+        required=['amount', 'currency', 'email']
     ),
     responses={"201": openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -66,11 +62,8 @@ def get_charge(request: Request, charge_id: int):
 def add_charge(request: Request):
     # Prepare data
     data = request.data
-    duc_address = data.get('duc_address')
-    email = data.get('email')
     raw_usd_amount = data.get('amount')
     currency = data.get('currency')
-    platform = 'DUC'
 
     # Calculate amount with rate
     if currency and raw_usd_amount:
@@ -83,12 +76,7 @@ def add_charge(request: Request):
     serializer = ChargeSerializer(data=data)
     serializer.is_valid(raise_exception=True)
 
-    user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
-        request, duc_address, platform, email
-    )
-
     model = serializer.save()
-    model.exchange_request = exchange_request
     model.save()
 
     answer = {
@@ -121,28 +109,19 @@ def change_charge_status(request: Request):
 
         charge = Charge.objects.filter(charge_id=charge_id).first()
         if charge and status == 'Withdrawn':
-            if Payment.objects.filter(charge_id=charge.id):
-                print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
-                    charge.id, charge.charge_id
-                ), flush=True)
-                return Response(200)
-
-            print(f'try transfer DUC for charge {charge_id}', flush=True)
-            transfer_duc(charge)
+            print(f'try create voucher for charge {charge_id}', flush=True)
+            usd_amount = calculate_usd_amount(charge)
+            charge.create_voucher(usd_amount)
 
             charge.status = status
             charge.save()
     return Response(200)
 
 
-def transfer_duc(charge):
-    # Calc rate and amount
+def calculate_usd_amount(charge):
     rates = get_rates()
-    duc_rate = rates['DUC']
-
-    value = charge.amount * DECIMALS['DUC'] / DECIMALS[charge.currency]
-    sent_amount = int(value / float(duc_rate))
-
-    payment = charge.create_payment(sent_amount, duc_rate)
-
-    transfer_with_handle_lottery_and_referral(payment)
+    usd_rate = rates['USD']
+    # FIXME do i need to count dec for fiat?
+    value = charge.amount * DECIMALS['USD'] / DECIMALS[charge.currency]
+    usd_amount = int(value / float(usd_rate))
+    return usd_amount

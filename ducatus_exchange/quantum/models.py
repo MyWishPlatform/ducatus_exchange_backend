@@ -1,7 +1,18 @@
+import random
+import string
+
+import requests
 from django.db import models
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
+from ducatus_exchange import settings_local
+
+chars_for_random = string.ascii_uppercase + string.digits
+
+
+def get_random_string():
+    return ''.join(random.choices(chars_for_random, k=12))
 
 
 class QuantumAccount(models.Model):
@@ -23,15 +34,17 @@ class Charge(models.Model):
     email = models.CharField(max_length=50)
     duc_address = models.CharField(max_length=50)
 
-    def create_payment(self, sent_amount, rate):
-        payment = Payment(
-            exchange_request=self.exchange_request,
-            charge=self,
-            currency=self.currency,
-            original_amount=self.amount,
-            rate=rate,
-            sent_amount=sent_amount
-        )
-        payment.save()
+    def create_voucher(self, usd_amount):
+        domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
+        api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
+        if not domain or not api_key:
+            raise Exception
+        voucher_code = get_random_string()
 
-        return payment
+        url = 'https://{}/api/v3/register_voucher/'.format(domain)
+        data = {"api_key": api_key, "voucher_code": voucher_code, "usd_amount": usd_amount}
+        r = requests.get(url, data=data)
+
+        if r.status_code == 200:
+            # TODO error logic
+            ...
