@@ -156,7 +156,7 @@ def send_voucher_email(voucher, to_email, usd_amount):
     conn = LotteryRegister.get_mail_connection()
 
     html_body = voucher_html_body.format(
-        voucher_code=voucher['voucher_code']
+        voucher_code=voucher['activation_code']
     )
 
     send_mail(
