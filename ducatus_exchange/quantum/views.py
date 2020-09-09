@@ -117,6 +117,12 @@ def change_charge_status(request: Request):
 
         charge = Charge.objects.filter(charge_id=charge_id).first()
         if charge and status == 'Withdrawn':
+            if Payment.objects.filter(charge_id=charge.id):
+                print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
+                    charge.id, charge.charge_id
+                ), flush=True)
+                return Response(200)
+
             print(f'try create voucher for charge {charge_id}', flush=True)
             usd_amount, _ = calculate_amount(charge, 'USD')
             raw_usd_amount = usd_amount / DECIMALS['USD']
@@ -183,25 +189,26 @@ def register_voucher_in_lottery(request: Request):
     duc_address = transfer_dict.get('duc_address')
     # Prepare values for create transfer object
     _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, charge.email)
-    payment = Payment.objects.get(charge_id=charge_id)
+    payment = Payment.objects.get(charge__charge_id=charge_id)
     transfer_dict['exchange_request'] = exchange_request.id
     transfer_dict['payment'] = payment.id
     transfer_dict['currency'] = platform
     transfer_dict['state'] = 'DONE'
 
-    transfer_serializer = DucatusTransferSerializer(transfer_dict)
-    if transfer_serializer.is_valid():
-        transfer = transfer_serializer.save()
-        transfer.payment.update_collection_transfer()
+    transfer_serializer = DucatusTransferSerializer(data=transfer_dict)
+    transfer_serializer.is_valid(raise_exception=True)
+    transfer = transfer_serializer.save()
+    transfer.payment.update_collection_transfer(transfer)
 
-        lottery_entrypoint = LotteryRegister(transfer)
-        lottery_entrypoint.try_register_to_lotteries()
+    lottery_entrypoint = LotteryRegister(transfer)
+    lottery_entrypoint.try_register_to_lotteries()
 
-        conn = lottery_entrypoint.get_mail_connection()
-        send_mail(
-            'register_voucher_in_lottery',
-            charge_id,
-            CONFIRMATION_FROM_EMAIL,
-            [charge.email],
-            connection=conn
-        )
+    conn = lottery_entrypoint.get_mail_connection()
+    send_mail(
+        'register_voucher_in_lottery',
+        str(charge_id),
+        CONFIRMATION_FROM_EMAIL,
+        [charge.email],
+        connection=conn
+    )
+    return Response(200)

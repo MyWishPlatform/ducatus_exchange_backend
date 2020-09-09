@@ -28,5 +28,5 @@ class Payment(models.Model):
         self.sent_amount = transfer.amount
         self.collection_tx_hash = transfer.tx_hash
         self.transfer_state = transfer.state
-        self.transfer_state = 'COLLECTED'
+        self.collection_state = 'COLLECTED'
         self.save()

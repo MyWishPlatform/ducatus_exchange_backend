@@ -87,7 +87,7 @@ class LotteryRegister:
     def get_usd_amount(self, usd_prices):
         currency = self.payment.currency
         amount = self.payment.original_amount
-        usd_amount = usd_prices[currency] * amount / DECIMALS[currency]
+        usd_amount = usd_prices[currency] * int(amount) / DECIMALS[currency]
         return usd_amount
 
     @classmethod
