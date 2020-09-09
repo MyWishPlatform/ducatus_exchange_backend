@@ -38,7 +38,8 @@ class Charge(models.Model):
         domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
         api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
         if not domain or not api_key:
-            raise Exception
+            raise NameError(f'Cant create voucher for charge with charge_id {self.charge_id}, '
+                            'VOUCHER_DOMAIN and VOUCHER_API_KEY should be defined in settings_local.py')
 
         voucher_code = get_random_string()
 
