@@ -32,6 +32,15 @@ class Charge(models.Model):
     redirect_url = models.CharField(max_length=200)
     email = models.CharField(max_length=50)
 
+    def create_payment(self):
+        payment = Payment(
+            charge=self,
+            currency=self.currency,
+            original_amount=self.amount,
+        )
+        payment.save()
+        return payment
+
     def create_voucher(self, usd_amount):
         domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
         api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
@@ -54,4 +63,3 @@ class Charge(models.Model):
             if 'voucher with this voucher code already exists' in r.content.decode():
                 raise IntegrityError('voucher code')
         return r.json()
-
