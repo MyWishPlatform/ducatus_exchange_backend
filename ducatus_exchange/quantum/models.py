@@ -25,14 +25,12 @@ class QuantumAccount(models.Model):
 
 class Charge(models.Model):
     charge_id = models.IntegerField(unique=True)
-    exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=50)
     currency = models.CharField(max_length=10)
     amount = models.IntegerField()
     hash = models.CharField(max_length=100)
     redirect_url = models.CharField(max_length=200)
     email = models.CharField(max_length=50)
-    duc_address = models.CharField(max_length=50)
 
     def create_voucher(self, usd_amount):
         domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
