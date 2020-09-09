@@ -4,8 +4,8 @@ from ducatus_exchange.transfers.models import DucatusTransfer
 
 
 class DucatusTransferSerializer(serializers.ModelSerializer):
-    exchange_request = serializers.PrimaryKeyRelatedField()
-    payment = serializers.PrimaryKeyRelatedField()
+    exchange_request = serializers.PrimaryKeyRelatedField(read_only=True)
+    payment = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = DucatusTransfer

@@ -11,6 +11,7 @@ from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
 from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 from ducatus_exchange.lottery.api import LotteryRegister
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.models import UsdRate
@@ -117,7 +118,7 @@ def change_charge_status(request: Request):
         charge = Charge.objects.filter(charge_id=charge_id).first()
         if charge and status == 'Withdrawn':
             print(f'try create voucher for charge {charge_id}', flush=True)
-            usd_amount = calculate_usd_amount(charge)
+            usd_amount, _ = calculate_amount(charge, 'USD')
             try:
                 voucher = charge.create_voucher(usd_amount)
             except IntegrityError as e:
@@ -125,20 +126,23 @@ def change_charge_status(request: Request):
                     raise e
                 voucher = charge.create_voucher(usd_amount)
 
-            charge.create_payment()
+            sent_amount, duc_rate = calculate_amount(charge, 'DUC')
+            charge.create_payment(sent_amount, duc_rate)
             send_voucher_email(voucher, charge.email, usd_amount)
             charge.status = status
             charge.save()
     return Response(200)
 
 
-def calculate_usd_amount(charge):
+def calculate_amount(charge, curr):
     rates = get_rates()
-    usd_rate = rates['USD']
-    # FIXME do i need to count dec for fiat?
-    value = charge.amount * DECIMALS['USD'] / DECIMALS[charge.currency]
-    usd_amount = int(value / float(usd_rate))
-    return usd_amount
+    rate = rates.get(curr, None)
+    dec = DECIMALS.get(curr, None)
+    if not rate and not dec:
+        raise KeyError(f'Cant calculate rate with currency {curr}')
+    value = charge.amount * dec / DECIMALS[charge.currency]
+    usd_amount = int(value / float(rate))
+    return usd_amount, rate
 
 
 def send_voucher_email(voucher, to_email, usd_amount):
@@ -177,7 +181,7 @@ def register_voucher_in_lottery(request: Request):
     duc_address = transfer_dict.get('duc_address')
     # Prepare values for create transfer object
     _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, charge.email)
-    payment = charge.create_payment()
+    payment = Payment.objects.get(charge_id=charge_id)
     transfer_dict['exchange_request'] = exchange_request.id
     transfer_dict['payment'] = payment.id
     transfer_dict['currency'] = platform

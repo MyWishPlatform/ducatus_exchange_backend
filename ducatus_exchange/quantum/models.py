@@ -32,11 +32,13 @@ class Charge(models.Model):
     redirect_url = models.CharField(max_length=200)
     email = models.CharField(max_length=50)
 
-    def create_payment(self):
+    def create_payment(self, sent_amount, rate):
         payment = Payment(
             charge=self,
             currency=self.currency,
             original_amount=self.amount,
+            rate=rate,
+            sent_amount=sent_amount
         )
         payment.save()
         return payment
