@@ -29,7 +29,6 @@ class ChargeSerializer(serializers.ModelSerializer):
             'hash': charge_info['hash'],
             'redirect_url': charge_info['url'],
             'email': email,
-            'duc_address': validated_data['duc_address'],
         }
 
         return super().create(validated_data)
