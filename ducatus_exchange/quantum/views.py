@@ -163,6 +163,7 @@ def send_voucher_email(voucher, to_email, usd_amount):
     )
     print('warning message sent successfully to {}'.format(to_email))
 
+
 @swagger_auto_schema(
     method='post',
     request_body=openapi.Schema(

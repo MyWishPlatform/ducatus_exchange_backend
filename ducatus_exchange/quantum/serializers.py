@@ -11,7 +11,7 @@ class ChargeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Charge
-        fields = ['amount', 'currency', 'duc_address', 'email']
+        fields = ['amount', 'currency', 'email']
 
     def create(self, validated_data):
         amount = validated_data['amount']
