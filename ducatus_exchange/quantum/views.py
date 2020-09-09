@@ -119,16 +119,17 @@ def change_charge_status(request: Request):
         if charge and status == 'Withdrawn':
             print(f'try create voucher for charge {charge_id}', flush=True)
             usd_amount, _ = calculate_amount(charge, 'USD')
+            raw_usd_amount = usd_amount / DECIMALS['USD']
             try:
-                voucher = charge.create_voucher(usd_amount)
+                voucher = charge.create_voucher(raw_usd_amount)
             except IntegrityError as e:
                 if 'voucher code' not in e.args[0]:
                     raise e
-                voucher = charge.create_voucher(usd_amount)
+                voucher = charge.create_voucher(raw_usd_amount)
 
             sent_amount, duc_rate = calculate_amount(charge, 'DUC')
             charge.create_payment(sent_amount, duc_rate)
-            send_voucher_email(voucher, charge.email, usd_amount)
+            send_voucher_email(voucher, charge.email, raw_usd_amount)
             charge.status = status
             charge.save()
     return Response(200)
