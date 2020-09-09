@@ -154,3 +154,25 @@ def send_voucher_email(voucher, to_email, usd_amount):
         html_message=warning_html_style + html_body,
     )
     print('warning message sent successfully to {}'.format(to_email))
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'charge_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+    ),
+)
+@api_view(http_method_names=['POST'])
+def register_voucher_in_lottery(request: Request):
+    charge_id = request.data.get('charge_id')
+    charge = Charge.objects.filter(charge_id=charge_id).first()
+    conn = LotteryRegister.get_mail_connection()
+    send_mail(
+        'register_voucher_in_lottery',
+        charge_id,
+        CONFIRMATION_FROM_EMAIL,
+        [charge.email],
+        connection=conn
+    )
