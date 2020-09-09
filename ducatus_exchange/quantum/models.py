@@ -47,6 +47,7 @@ class Charge(models.Model):
             "api_key": api_key,
             "voucher_code": voucher_code,
             "usd_amount": usd_amount,
+            "charge_id": self.charge_id
         }
         r = requests.post(url, json=data)
 
