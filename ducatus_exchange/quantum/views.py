@@ -203,12 +203,4 @@ def register_voucher_in_lottery(request: Request):
     lottery_entrypoint = LotteryRegister(transfer)
     lottery_entrypoint.try_register_to_lotteries()
 
-    conn = lottery_entrypoint.get_mail_connection()
-    send_mail(
-        'register_voucher_in_lottery',
-        str(charge_id),
-        CONFIRMATION_FROM_EMAIL,
-        [charge.email],
-        connection=conn
-    )
     return Response(200)
