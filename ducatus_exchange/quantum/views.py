@@ -176,6 +176,14 @@ def send_voucher_email(voucher, to_email, usd_amount):
         type=openapi.TYPE_OBJECT,
         properties={
             'charge_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'transfer': openapi.Schema(
+                type=openapi.TYPE_INTEGER,
+                properties={
+                    "duc_address": openapi.Schema(type=openapi.TYPE_STRING),
+                    "tx_hash": openapi.Schema(type=openapi.TYPE_STRING),
+                    "amount": openapi.Schema(type=openapi.TYPE_INTEGER),
+                }
+            ),
         },
     ),
 )
