@@ -22,11 +22,3 @@ class Payment(models.Model):
     transfer_state = models.CharField(max_length=50, null=True, default='WAITING_FOR_TRANSFER')
     collection_state = models.CharField(max_length=50, default='NOT_COLLECTED')
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
-
-    def update_collection_transfer(self, transfer):
-        self.exchange_request = transfer.exchange_request
-        self.sent_amount = transfer.amount
-        self.collection_tx_hash = transfer.tx_hash
-        self.transfer_state = transfer.state
-        self.collection_state = 'COLLECTED'
-        self.save()

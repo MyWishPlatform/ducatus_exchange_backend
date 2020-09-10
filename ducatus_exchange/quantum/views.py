@@ -181,12 +181,19 @@ def send_voucher_email(voucher, to_email, usd_amount):
 )
 @api_view(http_method_names=['POST'])
 def register_voucher_in_lottery(request: Request):
+    """
+    Allows to register voucher in lottery.
+
+    Cause of splitted logic of ducatus_exchange and ducatus_voucher,
+    it cannot be done easier. After merging this two backends this workflow should be simplify
+    """
     platform = 'DUC'
     # Get values from request
     charge_id = request.data.get('charge_id')
     charge = Charge.objects.filter(charge_id=charge_id).first()
     transfer_dict = request.data.get('transfer', {})
     duc_address = transfer_dict.get('duc_address')
+
     # Prepare values for create transfer object
     _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, charge.email)
     payment = Payment.objects.get(charge__charge_id=charge_id)
@@ -195,11 +202,15 @@ def register_voucher_in_lottery(request: Request):
     transfer_dict['currency'] = platform
     transfer_dict['state'] = 'DONE'
 
+    # Validate and save transfer
     transfer_serializer = DucatusTransferSerializer(data=transfer_dict)
     transfer_serializer.is_valid(raise_exception=True)
     transfer = transfer_serializer.save()
-    transfer.payment.update_collection_transfer(transfer)
 
+    # Fill payment exchange request
+    payment.exchange_request = exchange_request
+
+    # Register all prepared values in lottery
     lottery_entrypoint = LotteryRegister(transfer)
     lottery_entrypoint.try_register_to_lotteries()
 
