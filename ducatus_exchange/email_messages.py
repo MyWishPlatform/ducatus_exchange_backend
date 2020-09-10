@@ -383,7 +383,7 @@ warning_html_style = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitiona
     </style>
   </head>"""
 
-warning_html_body = """<body ducatus bgcolor="#ffffff">
+warning_html_body_base_template = """<body ducatus bgcolor="#ffffff">
     <table
       width="100%"
       bgcolor="#ffffff"
@@ -420,11 +420,7 @@ warning_html_body = """<body ducatus bgcolor="#ffffff">
                     <td class="accent">Thank you for purchasing DUC.</td>
                   </tr>
                   <tr>
-                    <td class="body-text">
-                      We have received your payment and you will receive
-                      <span class="text-heavy-underline">{duc_amount}</span> in your
-                      wallet soon.
-                    </td>
+                    <td class="body-text">{}</td>
                   </tr>
                 </table>
               </td>
@@ -483,3 +479,16 @@ warning_html_body = """<body ducatus bgcolor="#ffffff">
   </body>
 </html>
 """
+
+warning_insert_text = """We have received your payment and you will receive
+<span class="text-heavy-underline">{duc_amount}</span> in your
+wallet soon.
+"""
+
+warning_html_body = warning_html_body_base_template.format(warning_insert_text)
+
+voucher_insert_text = """We have received your payment and to receive yout DUC, 
+redeem this voucher in the Ducatus wallet: {voucher_code}.
+"""
+
+voucher_html_body = warning_html_body_base_template.format(voucher_insert_text)

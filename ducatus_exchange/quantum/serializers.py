@@ -11,7 +11,7 @@ class ChargeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Charge
-        fields = ['amount', 'currency', 'duc_address', 'email']
+        fields = ['amount', 'currency', 'email']
 
     def create(self, validated_data):
         amount = validated_data['amount']
@@ -29,7 +29,6 @@ class ChargeSerializer(serializers.ModelSerializer):
             'hash': charge_info['hash'],
             'redirect_url': charge_info['url'],
             'email': email,
-            'duc_address': validated_data['duc_address'],
         }
 
         return super().create(validated_data)
