@@ -23,7 +23,7 @@ def initiate_charge(currency, amount, email):
         'email': email,
         'tokenCurrencyCode': f'Q{currency}',
         'receivingAccountAddress': quantum_account.address,
-        'returnUrl': 'https://ducsite.rocknblock.io/buy',
+        'returnUrl': 'https://www.ducatuscoins.com/buy',
     }
 
     headers = {
