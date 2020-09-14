@@ -1,6 +1,8 @@
 import time
 import datetime
 
+from rest_framework.exceptions import ValidationError
+
 from ducatus_exchange.payments.api import parse_payment_message
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 from ducatus_exchange.payments.models import Payment
@@ -58,4 +60,7 @@ def make_register(username, quantity, package, address, email):
 
 def register_payments_data(data):
     for i in data:
-        make_register(i['username'], i['quantity'], i['package'], i['address'], i['email'])
+        try:
+            make_register(i['username'], i['quantity'], i['package'], i['address'], i['email'])
+        except Exception as err:
+            raise ValidationError(detail=f'fail with address {i["address"]}, registration stopped : {str(err)}')

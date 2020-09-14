@@ -85,9 +85,6 @@ def register_payments_manually(request: Request):
 
     payments_data = request.data.get('data')
 
-    try:
-        register_payments_data(payments_data)
-    except:
-        raise APIException
+    register_payments_data(payments_data)
 
     return Response({'success': 'ok'})
