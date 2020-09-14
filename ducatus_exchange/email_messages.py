@@ -487,8 +487,120 @@ wallet soon.
 
 warning_html_body = warning_html_body_base_template.format(warning_insert_text)
 
-voucher_insert_text = """We have received your payment and to receive yout DUC, 
-redeem this voucher in the Ducatus wallet: {voucher_code}.
+voucher_insert_text = """We have received your payment. 
+To now receive your DUC and complete the process, please go to your Ducatus Wallet 
+(
+<a href="https://play.google.com/store/apps/details?id=io.ducatus.walnew&hl=en">Google Play</a>
+/
+<a href="https://apps.apple.com/us/app/ducatus-wallet-2-0/id1489722627">App Store</a>
+) 
+and redeem the following voucher: {voucher_code}
 """
 
-voucher_html_body = warning_html_body_base_template.format(voucher_insert_text)
+voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
+    <table
+      width="100%"
+      bgcolor="#ffffff"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+    >
+      <tr>
+        <td>
+          <table
+            bgcolor="#ffffff"
+            class="content"
+            align="center"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+          >
+            <tr>
+              <td style="border-radius: 0px;" bgcolor="#f1f2f4" class="header">
+                <img
+                  class="fix"
+                  src="https://www.ducatuscoins.com/assets/img/ducatus-logo-first.png"
+                  width="150"
+                  height="150"
+                  border="0"
+                  alt=""
+                />
+              </td>
+            </tr>
+            <tr>
+              <td class="innerpadding" style="padding-bottom: 5px;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td class="accent">Thank you for purchasing DUC.</td>
+                  </tr>
+                  <tr>
+                    <td class="body-text">{}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td
+                class="bg-lightpink innerpadding"
+                style="padding: 20px 0px 10px 0px;"
+              >
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td class="body-text ta-c">
+                      Don't miss this once in a lifetime opportunity!
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="body-text ta-c">
+                      After all is completed, you will receive another email with your hash 
+                      entry for the raffle to win our limited-edition luxury watch worth $329.000.
+                      <br />
+                      You will also receive codes in the same email to redeem 
+                      extra DSV (Digital Shopping Vouchers) in our network 
+                      backoffice and discount vouchers at our e-Commerce site
+                      <a href="https://remusnation.com/dshop/" class="body-link"
+                        >https://remusnation.com/dshop/</a
+                      >
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+            <tr>
+              <td class="body-text ta-c" style="padding-bottom: 5px;">
+                The more DUC you buy through this promotion the more chances you get for winning.
+              </td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+            <tr>
+              <td class="body-text ta-c" style="padding-bottom: 5px;">
+                Good luck.
+              </td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+            <tr>
+              <td class="ta-c">
+                <a class="btn" href="https://www.ducatuscoins.com/buy/"
+                  >BUY AGAIN</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+"""
+
+voucher_html_body = voucher_html_body_base_template.format(voucher_insert_text)
