@@ -106,5 +106,5 @@ def transfer_with_handle_lottery_and_referral(payment):
         print('Transfer not completed, reverting payment', flush=True)
         payment.transfer_state = 'ERROR'
         payment.save()
-        raise TransferException
+        raise TransferException(e)
     print('transfer completed', flush=True)
