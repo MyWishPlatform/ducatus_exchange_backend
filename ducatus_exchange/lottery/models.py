@@ -2,6 +2,7 @@ import random
 import string
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import ArrayField
 
 from ducatus_exchange.exchange_requests.models import DucatusUser
 from ducatus_exchange.transfers.models import DucatusTransfer
@@ -20,8 +21,8 @@ class Lottery(models.Model):
     ended = models.BooleanField(default=False)
     filled_at = models.BigIntegerField(null=True, default=None)
     gave_tickets_amount = models.IntegerField(default=0)
-    winner_transfer = models.ForeignKey(DucatusTransfer, on_delete=models.SET_NULL, null=True, default=None)
-    winner_user = models.ForeignKey(DucatusUser, on_delete=models.SET_NULL, null=True, default=None)
+    winner_numbers = ArrayField(models.IntegerField())
+    winner_players_ids = ArrayField(models.IntegerField())
 
 
 class LotteryPlayer(models.Model):

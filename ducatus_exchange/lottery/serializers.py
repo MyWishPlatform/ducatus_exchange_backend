@@ -19,8 +19,16 @@ class LotterySerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
         res['sent_duc_amount'] = int(res['sent_duc_amount']) // DECIMALS['DUC']
         res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
-        res['winner_address'] = instance.winner_user.address if instance.winner_user else None
-        res['winner_tx_hash'] = instance.winner_transfer.tx_hash if instance.winner_transfer else None
+
+        if instance.winner_numbers and instance.winner_players_ids:
+            res['winner_numbers'] = instance.winner_numbers
+            res['winners_data'] = []
+            for winner_id in instance.winner_players_ids:
+                winner_player = LotteryPlayer.objects.get(id=winner_id)
+                res['winners_data'].append({
+                    'address': winner_player.user.address,
+                    'tx_hash': winner_player.transfer.tx_hash,
+                })
 
         if not with_description:
             res.pop('description')

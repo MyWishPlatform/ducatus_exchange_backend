@@ -7,22 +7,37 @@ import django
 django.setup()
 
 from django.utils import timezone
-from ducatus_exchange.lottery.models import Lottery, DucatusUser
-from ducatus_exchange.transfers.models import DucatusTransfer
+from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.settings import LOTTERY_CLOSING_INTERVAL, LOTTERY_CHECKER_INTERVAL
-from ducatus_exchange.consts import DECIMALS
+from random_contract.executor import finalize_lottery
+
 
 if __name__ == '__main__':
     while True:
         for lottery in Lottery.objects.filter(ended=False):
-            if lottery.sent_duc_amount // DECIMALS['DUC'] >= lottery.duc_amount // DECIMALS[
-                'DUC'] and lottery.filled_at:
+            if lottery.sent_duc_amount >= lottery.duc_amount and lottery.filled_at:
                 if timezone.now().timestamp() - lottery.filled_at > LOTTERY_CLOSING_INTERVAL:
+                    winners = finalize_lottery(lottery.gave_tickets_amount)
+
+                    lottery.winner_numbers = winners
+                    winner_users = [None] * len(winners)
+
+                    tickets_amount = 0
+                    for lottery_player in LotteryPlayer.objects.order_by('id'):
+                        if not all(winner_users):
+                            prev_tickets_amount = tickets_amount
+                            tickets_amount += lottery_player.tickets_amount
+                            for i, winner_number in enumerate(winners):
+                                if prev_tickets_amount < winner_number <= tickets_amount:
+                                    winner_users[i] = lottery_player.id
+                        else:
+                            break
+
+                    lottery.winner_players_ids = winner_users
+
                     lottery.ended = True
-                    # temporarily hardcode
-                    lottery.winner_transfer = DucatusTransfer.objects.first()
-                    lottery.winner_user = lottery.winner_transfer.payment.exchange_request.user
                     lottery.save()
+
                     print('lottery {} with id {} closed'.format(lottery.name, lottery.id), flush=True)
 
         time.sleep(LOTTERY_CHECKER_INTERVAL)
