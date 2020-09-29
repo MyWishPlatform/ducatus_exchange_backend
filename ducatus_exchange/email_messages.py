@@ -604,3 +604,227 @@ voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
 """
 
 voucher_html_body = voucher_html_body_base_template.format(voucher_insert_text)
+
+congratulations_html_style = """<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Ducatus Email</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      min-width: 100% !important;
+      font-family: sans-serif;
+    }
+
+    img {
+      height: auto;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .innerpadding {
+      padding: 30px 20px 30px 20px;
+    }
+
+    .spacer {
+      padding: 10px 20px 10px 20px;
+    }
+
+    .subhead {
+      font-size: 15px;
+      color: #ffffff;
+      font-family: sans-serif;
+      letter-spacing: 10px;
+    }
+
+    .h2 {
+      padding: 0 0 15px 0;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 28px;
+      text-align: center;
+    }
+
+    .accent {
+      padding: 10px 0 60px 0;
+      font-size: 18px;
+      font-weight: 400;
+      color: #892734;
+      text-align: center;
+    }
+
+    .bodycopy {
+      padding: 0 10px 15px 10px;
+      font-size: 15px;
+      font-weight: 300;
+      text-align: center;
+      line-height: 18px;
+    }
+
+    table {
+      border-collapse: separate;
+    }
+
+    tr:first-child td:first-child {
+      border-top-left-radius: 20px;
+    }
+
+    tr:first-child td:last-child {
+      border-top-right-radius: 20px;
+    }
+
+    tr:last-child td:first-child {
+      border-bottom-left-radius: 20px;
+    }
+
+    tr:last-child td:last-child {
+      border-bottom-right-radius: 20px;
+    }
+
+    .bg-lightpink {
+      background-color: #eededf;
+    }
+
+    .bg-lightgray {
+      background-color: #f1f2f4;
+    }
+
+    .voucher-title {
+      font-size: 16px;
+      color: #4c4949;
+      font-weight: 500;
+      padding: 0px 10px 15px 10px;
+    }
+
+    .voucher-text {
+      font-size: 15px;
+      color: #4c4949;
+      font-weight: 300;
+      padding: 0px 10px 15px 10px;
+    }
+
+    .voucher-link {
+      font-size: 15px;
+      color: #4c4949;
+      font-weight: 300;
+    }
+
+    .voucher-code {
+      padding: 0px 10px 15px 10px;
+    }
+
+    .voucher-text {
+      font-size: 15px;
+      color: #4c4949;
+      font-weight: 300;
+      padding: 0px 10px 15px 10px;
+    }
+
+    .voucher-info {
+      font-size: 13px;
+      color: #4c4949;
+      font-weight: 300;
+      padding: 20px 10px 0px 10px;
+    }
+
+    .borderbottom {
+      border-bottom: 1px solid black;
+    }
+  </style>
+</head>"""
+
+congratulations_html_body = """<body ducatus bgcolor="#ffffff">
+    <table
+      width="100%"
+      bgcolor="#ffffff"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+    >
+      <tr>
+        <td>
+          <table
+            bgcolor="#ffffff"
+            class="content"
+            align="center"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+          >
+            <tr>
+              <td style="border-radius: 0px;" bgcolor="#f1f2f4" class="header">
+                <img
+                  class="fix"
+                  src="https://www.ducatuscoins.com/assets/img/ducatus-logo-first.png"
+                  width="150"
+                  height="150"
+                  border="0"
+                  alt=""
+                />
+              </td>
+            </tr>
+            <tr>
+              <td class="innerpadding" style="padding-bottom: 5px;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td class="accent"><strong>Congratulations!</strong></td>
+                  </tr>
+                  <tr>
+                    <td class="body-text"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td
+                class="bg-lightpink innerpadding"
+                style="padding: 20px 10px 10px 10px;"
+              >
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td class="body-text ta-c">
+                      You are the winner of {prize}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="body-text ta-c">
+                    </br> To claim your prize, please reply to this email within 7 days with your answers to the following questions:<br />
+                      <ol>
+                      <li>What is your name?</li>
+                      <li>What is your winning hash?</li>
+                      <li>Do you accept your prize? (Yes or No)</li>
+                      <li>Do you consent to having your identity published as one of our winners on this website and Ducatus-owned social media pages (Yes or No)?</li>
+                      <li>What is the address of the Ducatus Wallet where you want your prize to be deposited?</li>
+                      </ol>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+            <tr>
+              <td class="spacer"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>"""
