@@ -197,7 +197,7 @@ lottery_bonuses_html_body = """<body ducatus bgcolor="#ffffff">
                   <td class="bodycopy" style="padding: 10px 0px 20px 0;">{tx_hash}</td>
                 </tr>
                 <tr>
-                  <td class="bodycopy">In addition to your {tickets_amount} entries to win a limited-edition luxury watch, you have
+                  <td class="bodycopy">In addition to your {tickets_amount} entries to win a Kingsquare luxury apartment, you have
                     also earned:</td>
                 </tr>
               </table>
@@ -438,8 +438,8 @@ warning_html_body_base_template = """<body ducatus bgcolor="#ffffff">
                   </tr>
                   <tr>
                     <td class="body-text ta-c">
-                      Stand a chance to win a limited-edition luxury watch worth
-                      $329,000 on your next DUC purchase.<br />
+                      Stand a chance to win a Kingsquare luxury apartment
+                      on your next DUC purchase.<br />
                       Buy a minimum $10 to get 1 entry plus extra Digital
                       Shopping Voucher and Discount Voucher at our e-Commerce
                       site
@@ -553,7 +553,7 @@ voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
                   <tr>
                     <td class="body-text ta-c">
                       After all is completed, you will receive another email with your hash 
-                      entry for the raffle to win our limited-edition luxury watch worth $329.000.
+                      entry for the raffle to win a Kingsquare luxury apartment.
                       <br />
                       You will also receive codes in the same email to redeem 
                       extra DSV (Digital Shopping Vouchers) in our network 
