@@ -4,15 +4,20 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import PermissionDenied, APIException
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.pagination import PageNumberPagination
 
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.lottery.serializers import LotterySerializer, LotteryPlayerSerializer
 from ducatus_exchange.lottery.manual_registration import register_payments_data
 from ducatus_exchange.settings import API_KEY
+
+
+class CustomizedPagination(PageNumberPagination):
+    page_size = 10
 
 
 class LotteryViewSet(viewsets.ModelViewSet):
@@ -25,7 +30,14 @@ class LotteryPlayerViewSet(viewsets.ModelViewSet):
     queryset = LotteryPlayer.objects.order_by('id')
     serializer_class = LotteryPlayerSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = CustomizedPagination
 
+    def get_queryset(self):
+        lottery_id = self.request.query_params.get('lottery_id')
+        if lottery_id:
+            queryset = LotteryPlayer.objects.filter(lottery__id=lottery_id).order_by('id')
+            return queryset
+        return LotteryPlayer.objects.order_by('id')
 
 @api_view(http_method_names=['GET'])
 def get_lottery_info(request: Request):
@@ -88,3 +100,4 @@ def register_payments_manually(request: Request):
     register_payments_data(payments_data)
 
     return Response({'success': 'ok'})
+
