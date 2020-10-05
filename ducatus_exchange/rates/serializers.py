@@ -9,8 +9,8 @@ def get_usd_prices():
     usd_prices['ETH'] = rate.eth_price
     usd_prices['BTC'] = rate.btc_price
     usd_prices['USDC'] = rate.usdc_price
-    usd_prices['DUC'] = 0.05
-    usd_prices['DUCX'] = 0.50
+    usd_prices['DUC'] = 0.06
+    usd_prices['DUCX'] = 0.60
 
     print('current rates', usd_prices, flush=True)
 
