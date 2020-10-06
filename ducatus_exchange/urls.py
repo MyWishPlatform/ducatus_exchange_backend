@@ -23,10 +23,10 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from ducatus_exchange.views import FeedbackForm
-from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress
+from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress, register_voucher_in_lottery
 from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants, \
     get_lottery_info, register_payments_manually
-from ducatus_exchange.quantum.views import get_charge, add_charge, change_charge_status, register_voucher_in_lottery
+from ducatus_exchange.quantum.views import get_charge, add_charge, change_charge_status
 
 schema_view = get_schema_view(
     openapi.Info(

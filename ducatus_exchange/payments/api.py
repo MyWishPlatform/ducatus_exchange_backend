@@ -1,6 +1,9 @@
+from django.db import IntegrityError
+
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
+from ducatus_exchange.exchange_requests.api import create_voucher, send_voucher_email
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.rates.serializers import AllRatesSerializer
+from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
 from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
@@ -76,7 +79,6 @@ def parse_payment_message(message):
         request_id = message.get('exchangeId')
         amount = message.get('amount')
         currency = message.get('currency')
-        receiving_address = message.get('address')
         print('PAYMENT:', tx, request_id, amount, currency, flush=True)
         payment = register_payment(request_id, tx, currency, amount)
 
@@ -88,20 +90,18 @@ def parse_payment_message(message):
 def transfer_with_handle_lottery_and_referral(payment):
     print('starting transfer', flush=True)
     try:
-        transfer = transfer_currency(payment)
-
-        user = payment.exchange_request.user
-
-        if payment.currency in ['ETH', 'BTC', 'USDC', 'USD', 'EUR', 'GBP', 'CHF'] and user.platform == 'DUC' and user.email:
-            lottery_entrypoint = LotteryRegister(transfer)
-            lottery_entrypoint.try_register_to_lotteries()
-
-        payment.transfer_state = 'DONE'
-
-        if user.ref_address and user.platform == 'DUC':
-            make_ref_transfer(payment)
-            # payment.exchange_request.user.ref_address = None
-            # payment.exchange_request.user.save()
+        if not payment.exchange_request.user.address.startswith('voucher'):
+            transfer_currency(payment)
+            payment.transfer_state = 'DONE'
+        elif payment.exchange_request.user.platform == 'DUC':
+            usd_amount = get_usd_prices()['DUC'] * payment.sent_amount / DECIMALS['DUC']
+            try:
+                voucher = create_voucher(usd_amount)
+            except IntegrityError as e:
+                if 'voucher code' not in e.args[0]:
+                    raise e
+                voucher = create_voucher(usd_amount)
+            send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)
         payment.transfer_state = 'ERROR'

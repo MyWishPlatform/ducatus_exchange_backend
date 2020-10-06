@@ -22,9 +22,6 @@ class ExchangeRequest(models.Model):
     ducx_address = models.CharField(max_length=50, null=True, default=None)
     btc_address = models.CharField(max_length=50, null=True, default=None)
     eth_address = models.CharField(max_length=50, null=True, default=None)
-    # from_currency = models.CharField(max_length=25, null=True, default=None)
-    # to_currency = models.CharField(max_length=25, null=True, default=None)
-    # state = models.CharField(max_length=50, null=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_keys(self):
