@@ -11,7 +11,7 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.quantum.serializers import ChargeSerializer
 from ducatus_exchange.rates.models import UsdRate
-from ducatus_exchange.exchange_requests.api import create_voucher, send_voucher_email
+from ducatus_exchange.payments.api import create_voucher, send_voucher_email
 
 
 def get_rates():

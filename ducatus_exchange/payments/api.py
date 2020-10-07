@@ -1,13 +1,20 @@
+import string
+import random
+
+import requests
+from django.core.mail import send_mail
 from django.db import IntegrityError
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from ducatus_exchange.exchange_requests.api import create_voucher, send_voucher_email
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
-from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
+from ducatus_exchange.transfers.api import transfer_currency
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
+from ducatus_exchange import settings_local
+from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
+from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
 from ducatus_exchange.lottery.api import LotteryRegister
 
 
@@ -108,3 +115,54 @@ def transfer_with_handle_lottery_and_referral(payment):
         payment.save()
         raise TransferException(e)
     print('transfer completed', flush=True)
+
+
+chars_for_random = string.ascii_uppercase + string.digits
+
+
+def get_random_string():
+    return ''.join(random.choices(chars_for_random, k=12))
+
+
+def create_voucher(usd_amount, charge_id=None, payment_id=None):
+    domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
+    api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
+    if not domain or not api_key:
+        raise NameError(f'Cant create voucher for charge with {usd_amount} USD, '
+                        'VOUCHER_DOMAIN and VOUCHER_API_KEY should be defined in settings_local.py')
+
+    voucher_code = get_random_string()
+
+    url = 'https://{}/api/v3/register_voucher/'.format(domain)
+    data = {
+        "api_key": api_key,
+        "voucher_code": voucher_code,
+        "usd_amount": usd_amount,
+        "charge_id": charge_id,
+        "payment_id": payment_id,
+    }
+    r = requests.post(url, json=data)
+
+    if r.status_code != 200:
+        if 'voucher with this voucher code already exists' in r.content.decode():
+            raise IntegrityError('voucher code')
+    return r.json()
+
+
+def send_voucher_email(voucher, to_email, usd_amount):
+    conn = LotteryRegister.get_mail_connection()
+
+    html_body = voucher_html_body.format(
+        voucher_code=voucher['activation_code']
+    )
+
+    send_mail(
+        'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+        '',
+        CONFIRMATION_FROM_EMAIL,
+        [to_email],
+        connection=conn,
+        html_message=warning_html_style + html_body,
+    )
+    print('warning message sent successfully to {}'.format(to_email))
+

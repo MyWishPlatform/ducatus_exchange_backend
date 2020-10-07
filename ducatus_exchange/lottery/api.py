@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.mail import get_connection, send_mail
 
 from ducatus_exchange.rates.models import UsdRate
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.consts import TICKETS_FOR_USD, DECIMALS, RATES_PRECISION, BONUSES_FOR_TICKETS
@@ -123,7 +124,7 @@ class LotteryRegister:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
     @classmethod
-    def send_warning_mail(cls, usd_amount, payment):
+    def send_warning_mail(cls, usd_amount, payment: Payment):
         connection = cls.get_mail_connection()
 
         html_body = warning_html_body.format(
