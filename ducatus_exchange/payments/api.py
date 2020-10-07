@@ -103,11 +103,11 @@ def transfer_with_handle_lottery_and_referral(payment):
         elif payment.exchange_request.user.platform == 'DUC':
             usd_amount = get_usd_prices()['DUC'] * payment.sent_amount / DECIMALS['DUC']
             try:
-                voucher = create_voucher(usd_amount)
+                voucher = create_voucher(usd_amount, payment_id=payment.id)
             except IntegrityError as e:
                 if 'voucher code' not in e.args[0]:
                     raise e
-                voucher = create_voucher(usd_amount)
+                voucher = create_voucher(usd_amount, payment_id=payment.id)
             send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)
