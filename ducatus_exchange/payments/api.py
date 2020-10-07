@@ -164,5 +164,5 @@ def send_voucher_email(voucher, to_email, usd_amount):
         connection=conn,
         html_message=warning_html_style + html_body,
     )
-    print('warning message sent successfully to {}'.format(to_email))
+    print('voucher message sent successfully to {}'.format(to_email), flush=True)
 
