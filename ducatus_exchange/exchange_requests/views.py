@@ -183,7 +183,6 @@ def register_voucher_in_lottery(request: Request):
     elif payment_id:
         payment = Payment.objects.get(id=payment_id)
         exchange_request = payment.exchange_request
-        exchange_request.user.address = duc_address
         exchange_request.user.save()
     else:
         raise ValidationError
