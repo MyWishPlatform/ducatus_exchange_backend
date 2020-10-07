@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
-from ducatus_exchange.transfers.api import transfer_currency
+from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
@@ -109,6 +109,8 @@ def transfer_with_handle_lottery_and_referral(payment):
                     raise e
                 voucher = create_voucher(usd_amount, payment_id=payment.id)
             send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
+            if payment.exchange_request.user.ref_address:
+                make_ref_transfer(payment)
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
         print('Transfer not completed, reverting payment', flush=True)
         payment.transfer_state = 'ERROR'
