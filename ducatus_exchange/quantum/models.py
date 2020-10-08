@@ -1,18 +1,7 @@
-import random
-import string
+from django.db import models
 
-import requests
-from django.db import models, IntegrityError
-
-from ducatus_exchange import settings_local
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
-
-chars_for_random = string.ascii_uppercase + string.digits
-
-
-def get_random_string():
-    return ''.join(random.choices(chars_for_random, k=12))
 
 
 class QuantumAccount(models.Model):
@@ -42,26 +31,3 @@ class Charge(models.Model):
         )
         payment.save()
         return payment
-
-    def create_voucher(self, usd_amount):
-        domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
-        api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
-        if not domain or not api_key:
-            raise NameError(f'Cant create voucher for charge with charge_id {self.charge_id}, '
-                            'VOUCHER_DOMAIN and VOUCHER_API_KEY should be defined in settings_local.py')
-
-        voucher_code = get_random_string()
-
-        url = 'https://{}/api/v3/register_voucher/'.format(domain)
-        data = {
-            "api_key": api_key,
-            "voucher_code": voucher_code,
-            "usd_amount": usd_amount,
-            "charge_id": self.charge_id
-        }
-        r = requests.post(url, json=data)
-
-        if r.status_code != 200:
-            if 'voucher with this voucher code already exists' in r.content.decode():
-                raise IntegrityError('voucher code')
-        return r.json()

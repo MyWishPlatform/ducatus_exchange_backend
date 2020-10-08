@@ -1,13 +1,21 @@
+import datetime
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from rest_framework.request import Request
+from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
-
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.quantum.models import Charge
+from ducatus_exchange.transfers.serializers import DucatusTransferSerializer
+from ducatus_exchange.lottery.api import LotteryRegister
+from ducatus_exchange.payments.models import Payment
+
 
 exchange_response_duc = openapi.Response(
     description='Response with ETH, BTC, DUCX addresses if `DUC` passed in `to_currency`',
@@ -61,14 +69,9 @@ class ExchangeRequestView(APIView):
     def post(self, request):
         request_data = request.data
         print('request data:', request_data, flush=True)
-        address = request_data.get('to_address')
+        address = request_data.get('to_address', f'voucher_{datetime.datetime.now().timestamp()}')
         platform = request_data.get('to_currency')
         email = request_data.get('email')
-
-        if address is None:
-            return Response({'error': 'to_address not passed'}, status=status.HTTP_400_BAD_REQUEST)
-        if platform is None:
-            return Response({'error': 'to_platform not passed'}, status=status.HTTP_400_BAD_REQUEST)
 
         ducatus_user, exchange_request = get_or_create_ducatus_user_and_exchange_request(
             request, address, platform, email
@@ -82,7 +85,6 @@ class ExchangeRequestView(APIView):
             }
         else:
             response_data = {'duc_address': exchange_request.duc_address}
-            # response_data = {}
 
         print('res:', response_data)
 
@@ -111,7 +113,7 @@ class ValidateDucatusAddress(APIView):
         return Response({'address_valid': valid}, status=status.HTTP_200_OK)
 
 
-def get_or_create_ducatus_user_and_exchange_request(request, address, platform, email):
+def get_or_create_ducatus_user_and_exchange_request(request, address, platform, email=None):
     ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
     if not ducatus_user_filter:
         # Create user
@@ -139,3 +141,69 @@ def get_or_create_ducatus_user_and_exchange_request(request, address, platform, 
         print('REF ADDRESS', ref_address, flush=True)
 
     return ducatus_user, exchange_request
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'charge_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'transfer': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "duc_address": openapi.Schema(type=openapi.TYPE_STRING),
+                    "tx_hash": openapi.Schema(type=openapi.TYPE_STRING),
+                    "amount": openapi.Schema(type=openapi.TYPE_INTEGER),
+                }
+            ),
+        },
+    ),
+)
+@api_view(http_method_names=['POST'])
+def register_voucher_in_lottery(request: Request):
+    """
+    Allows to register voucher in lottery.
+
+    Cause of splitted logic of ducatus_exchange and ducatus_voucher,
+    it cannot be done easier. After merging this two backends this workflow should be simplify
+    """
+    platform = 'DUC'
+    # Get values from request
+    charge_id = request.data.get('charge_id')
+    payment_id = request.data.get('payment_id')
+    transfer_dict = request.data.get('transfer', {})
+    duc_address = transfer_dict.get('duc_address')
+
+    if charge_id:
+        charge = Charge.objects.get(id=charge_id)
+        email = charge.email
+        payment = Payment.objects.get(charge__charge_id=charge_id)
+        _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, email)
+    elif payment_id:
+        payment = Payment.objects.get(id=payment_id)
+        exchange_request = payment.exchange_request
+        exchange_request.user.save()
+    else:
+        raise ValidationError
+
+    # Prepare values for create transfer object
+    transfer_dict['exchange_request'] = exchange_request.id
+    transfer_dict['payment'] = payment.id
+    transfer_dict['currency'] = platform
+    transfer_dict['state'] = 'DONE'
+
+    # Validate and save transfer
+    transfer_serializer = DucatusTransferSerializer(data=transfer_dict)
+    transfer_serializer.is_valid(raise_exception=True)
+    transfer = transfer_serializer.save()
+
+    # Fill payment exchange request
+    payment.exchange_request = exchange_request
+    payment.save()
+
+    # Register all prepared values in lottery
+    lottery_entrypoint = LotteryRegister(transfer)
+    lottery_entrypoint.try_register_to_lotteries()
+
+    return Response(200)

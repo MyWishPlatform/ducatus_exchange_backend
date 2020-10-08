@@ -119,7 +119,7 @@ class LotteryRegister:
                 html_message=lottery_html_style + html_body,
             )
 
-            print('conformation message sent successfully to {}'.format(to_email))
+            print('conformation message sent successfully to {}'.format(to_email), flush=True)
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
@@ -141,7 +141,7 @@ class LotteryRegister:
                 connection=connection,
                 html_message=warning_html_style + html_body,
             )
-            print('warning message sent successfully to {}'.format(to_email))
+            print('warning message sent successfully to {}'.format(to_email), flush=True)
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 

@@ -4,7 +4,7 @@ import datetime
 from django.utils import timezone
 
 from ducatus_exchange.quantum.models import QuantumAccount
-from ducatus_exchange.settings import QUANTUM_CLIENT_ID, QUANTUM_CLIENT_SECRET
+from ducatus_exchange.settings import QUANTUM_CLIENT_ID, QUANTUM_CLIENT_SECRET, QUANTUM_API_URL, QUANTUM_REDIRECT_URL
 
 
 class QuantumApiError(Exception):
@@ -23,7 +23,7 @@ def initiate_charge(currency, amount, email):
         'email': email,
         'tokenCurrencyCode': f'Q{currency}',
         'receivingAccountAddress': quantum_account.address,
-        'returnUrl': 'https://www.ducatuscoins.com/buy',
+        'returnUrl': QUANTUM_REDIRECT_URL,
     }
 
     headers = {
@@ -32,7 +32,7 @@ def initiate_charge(currency, amount, email):
     }
 
     try:
-        creation_request = requests.post('https://quantumclearance.com/api/v1/merchant/charges',
+        creation_request = requests.post(QUANTUM_API_URL.format('api/v1/merchant/charges'),
                                          json=new_charge_data,
                                          headers=headers)
     except Exception:
@@ -50,7 +50,7 @@ def update_access_token(quantum_account: QuantumAccount):
             'client_secret': QUANTUM_CLIENT_SECRET,
             'grant_type': 'client_credentials',
         }
-        new_token_request = requests.post('https://quantumclearance.com/connect/token', data=request_data)
+        new_token_request = requests.post(QUANTUM_API_URL.format('connect/token'), data=request_data)
         token_info = json.loads(new_token_request.content)
 
         quantum_account.token_type = token_info['token_type']
