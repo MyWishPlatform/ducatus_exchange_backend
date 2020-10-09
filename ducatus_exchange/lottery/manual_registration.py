@@ -1,38 +1,24 @@
 import time
 import datetime
 
+from django.http import HttpRequest
 from rest_framework.exceptions import ValidationError
 
 from ducatus_exchange.payments.api import parse_payment_message
-from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 from ducatus_exchange.consts import DECIMALS
 
 
-def make_register(username, quantity, package, address, email):
+def make_register(username, quantity, package, email):
     platform = 'DUC'
     currency = 'USDC'
     amount = package * DECIMALS[currency]
 
-    ducatus_user_filter = DucatusUser.objects.filter(address=address, platform=platform)
-    user_created = False
-    if not ducatus_user_filter:
-        user_created = True
-        ducatus_user = DucatusUser(address=address, platform=platform, email=email)
-        ducatus_user.save()
-    else:
-        ducatus_user = ducatus_user_filter.last()
-        if email:
-            ducatus_user.email = email
-            ducatus_user.save()
+    address = f'voucher_{datetime.datetime.now().timestamp()}'
 
-    if user_created:
-        exchange_request = ExchangeRequest(user=ducatus_user)
-        exchange_request.save()
-        exchange_request.generate_keys()
-        exchange_request.save()
-    else:
-        exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
+    ducatus_user, exchange_request = get_or_create_ducatus_user_and_exchange_request(HttpRequest(), address,
+                                                                                     platform, email)
 
     print(ducatus_user.__dict__, flush=True)
     print(exchange_request.__dict__, flush=True)
@@ -61,6 +47,6 @@ def make_register(username, quantity, package, address, email):
 def register_payments_data(data):
     for i in data:
         try:
-            make_register(i['username'], i['quantity'], i['package'], i['address'], i['email'])
+            make_register(i['username'], i['quantity'], i['package'], i['email'])
         except Exception as err:
-            raise ValidationError(detail=f'fail with address {i["address"]}, registration stopped : {str(err)}')
+            raise ValidationError(detail=f'fail with user {i["username"]}, registration stopped : {str(err)}')
