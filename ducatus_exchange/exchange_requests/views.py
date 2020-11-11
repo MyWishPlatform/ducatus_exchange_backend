@@ -180,6 +180,7 @@ def register_voucher_in_lottery(request: Request):
         email = charge.email
         payment = Payment.objects.get(charge__charge_id=charge_id)
         _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, email)
+        exchange_request.save()
     elif payment_id:
         payment = Payment.objects.get(id=payment_id)
         exchange_request = payment.exchange_request
@@ -201,6 +202,9 @@ def register_voucher_in_lottery(request: Request):
     # Fill payment exchange request
     payment.exchange_request = exchange_request
     payment.save()
+
+    transfer.payment = payment
+    transfer.save()
 
     # Register all prepared values in lottery
     lottery_entrypoint = LotteryRegister(transfer)

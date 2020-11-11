@@ -23,8 +23,13 @@ class LotteryRegister:
 
     def try_register_to_lotteries(self):
         active_lotteries = self.get_active_lotteries()
-        for lottery in active_lotteries:
-            lottery_player = self.register_to_lottery(lottery)
+        for lottery in active_lotteries
+            try:
+                lottery_player = self.register_to_lottery(lottery)
+            except Exception as e:
+                print('Cannot register to lottery at first, retrying', flush=True)
+                print(e, flush=True)
+                lottery_player = self.register_to_lottery(lottery)
             if lottery_player:
                 self.send_confirmation_mail(lottery_player.sent_usd_amount,
                                             lottery_player.transfer,
