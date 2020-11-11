@@ -176,7 +176,7 @@ def register_voucher_in_lottery(request: Request):
     duc_address = transfer_dict.get('duc_address')
 
     if charge_id:
-        charge = Charge.objects.get(id=charge_id)
+        charge = Charge.objects.get(charge_id=charge_id)
         email = charge.email
         payment = Payment.objects.get(charge__charge_id=charge_id)
         _, exchange_request = get_or_create_ducatus_user_and_exchange_request(request, duc_address, platform, email)
