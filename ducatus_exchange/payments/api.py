@@ -136,7 +136,7 @@ def create_voucher(usd_amount, charge_id=None, payment_id=None):
 
     voucher_code = get_random_string()
 
-    url = 'https://{}/api/v3/register_voucher/'.format(local_voucher_url)
+    url = local_voucher_url
     data = {
         "api_key": api_key,
         "voucher_code": voucher_code,
