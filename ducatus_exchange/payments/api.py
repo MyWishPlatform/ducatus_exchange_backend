@@ -128,6 +128,7 @@ def get_random_string():
 
 def create_voucher(usd_amount, charge_id=None, payment_id=None):
     domain = getattr(settings_local, 'VOUCHER_DOMAIN', None)
+    local_voucher_url = getattr(settings_local, 'VOUCHER_LOCAL_URL', None)
     api_key = getattr(settings_local, 'VOUCHER_API_KEY', None)
     if not domain or not api_key:
         raise NameError(f'Cant create voucher for charge with {usd_amount} USD, '
@@ -135,7 +136,7 @@ def create_voucher(usd_amount, charge_id=None, payment_id=None):
 
     voucher_code = get_random_string()
 
-    url = 'https://{}/api/v3/register_voucher/'.format(domain)
+    url = 'https://{}/api/v3/register_voucher/'.format(local_voucher_url)
     data = {
         "api_key": api_key,
         "voucher_code": voucher_code,

@@ -122,11 +122,11 @@ def change_charge_status(request: Request):
             usd_amount, _ = calculate_amount(charge, 'USD')
             raw_usd_amount = usd_amount / DECIMALS['USD']
             try:
-                voucher = create_voucher(raw_usd_amount, charge_id=charge.id)
+                voucher = create_voucher(raw_usd_amount, charge_id=charge_id)
             except IntegrityError as e:
                 if 'voucher code' not in e.args[0]:
                     raise e
-                voucher = create_voucher(raw_usd_amount, charge_id=charge.id)
+                voucher = create_voucher(raw_usd_amount, charge_id=charge_id)
 
             sent_amount, duc_rate = calculate_amount(charge, 'DUC')
             charge.create_payment(sent_amount, duc_rate)
