@@ -23,7 +23,7 @@ class LotteryRegister:
 
     def try_register_to_lotteries(self):
         active_lotteries = self.get_active_lotteries()
-        for lottery in active_lotteries
+        for lottery in active_lotteries:
             try:
                 lottery_player = self.register_to_lottery(lottery)
             except Exception as e:
