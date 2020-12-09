@@ -173,10 +173,11 @@ def send_voucher_email(voucher, to_email, usd_amount):
     print('voucher message sent successfully to {}'.format(to_email), flush=True)
 
 
-def write_payments_to_csv(outfile, payment_list, curr_decimals):
-    writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-    for val in payment_list:
-        writer.writerow([val.tx_hash, val.original_amount / curr_decimals])
+def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
+    with open(outfile_path, 'w') as outfile:
+        writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        for val in payment_list:
+            writer.writerow([val.tx_hash, val.original_amount / curr_decimals])
 
 
 def get_payments_statistics():
