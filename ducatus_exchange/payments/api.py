@@ -192,18 +192,27 @@ def get_payments_statistics():
     os.mkdir(p_dir)
     print('Created directory at:', p_dir, flush=True)
 
-    print('Write ETH payment stats', flush=True)
-    eth_file = os.path.join(p_dir, 'eth.csv')
-    write_payments_to_csv(eth_file, pl_eth, DECIMALS['ETH'])
-    print(f'Done, {len(pl_eth)} items saved to: {eth_file}', flush=True)
+    if len(pl_eth) > 0:
+        print('Write ETH payment stats', flush=True)
+        eth_file = os.path.join(p_dir, 'eth.csv')
+        write_payments_to_csv(eth_file, pl_eth, DECIMALS['ETH'])
+        print(f'Done, {len(pl_eth)} items saved to: {eth_file}', flush=True)
+    else:
+        print('No payments in ETH at this period', flush=True)
 
-    print('Write BTC payment stats', flush=True)
-    btc_file = os.path.join(p_dir, 'btc.csv')
-    write_payments_to_csv(btc_file, pl_btc, DECIMALS['BTC'])
-    print(f'Done, {len(pl_btc)} items saved to: {btc_file}', flush=True)
+    if len(pl_btc) > 0:
+        print('Write BTC payment stats', flush=True)
+        btc_file = os.path.join(p_dir, 'btc.csv')
+        write_payments_to_csv(btc_file, pl_btc, DECIMALS['BTC'])
+        print(f'Done, {len(pl_btc)} items saved to: {btc_file}', flush=True)
+    else:
+        print('No payments in BTC at this period', flush=True)
 
-    print('Write USDC payment stats', flush=True)
-    usdc_file = os.path.join(p_dir, 'usdc.csv')
-    write_payments_to_csv(usdc_file, pl_usdc, DECIMALS['USDC'])
-    print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
+    if len(pl_usdc) > 0:
+        print('Write USDC payment stats', flush=True)
+        usdc_file = os.path.join(p_dir, 'usdc.csv')
+        write_payments_to_csv(usdc_file, pl_usdc, DECIMALS['USDC'])
+        print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
+    else:
+        print('No payments in USDC at this period', flush=True)
 
