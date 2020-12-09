@@ -104,7 +104,7 @@ def transfer_with_handle_lottery_and_referral(payment):
             transfer_currency(payment)
             payment.transfer_state = 'DONE'
         elif payment.exchange_request.user.platform == 'DUC':
-            usd_amount = get_usd_prices()['DUC'] * payment.sent_amount / DECIMALS['DUC']
+            usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
             try:
                 voucher = create_voucher(usd_amount, payment_id=payment.id)
             except IntegrityError as e:
