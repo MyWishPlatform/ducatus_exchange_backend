@@ -1,9 +1,12 @@
+import os
+import csv
 import string
 import random
 
 import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.utils import timezone
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
@@ -168,4 +171,38 @@ def send_voucher_email(voucher, to_email, usd_amount):
         html_message=warning_html_style + html_body,
     )
     print('voucher message sent successfully to {}'.format(to_email), flush=True)
+
+
+def write_payments_to_csv(outfile, payment_list, curr_decimals):
+    writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    for val in payment_list:
+        writer.writerow([val.tx_hash, val.original_amount / curr_decimals])
+
+
+def get_payments_statistics():
+    pl = Payment.objects.filter(collection_state='NOT_COLLECTED')
+    pl_eth = pl.filter(currency='ETH')
+    pl_btc = pl.filter(currency='BTC')
+    pl_usdc = pl.filter(currency='USDC')
+
+    time_now = timezone.datetime.now()
+    time_str = time_now.strftime('%Y_%m_%d')
+    p_dir = os.path.join(os.getcwd(), 'payments_stat', time_str)
+    os.mkdir(p_dir)
+    print('Created directory at:', p_dir, flush=True)
+
+    print('Write ETH payment stats', flush=True)
+    eth_file = os.path.join(p_dir, 'eth.csv')
+    write_payments_to_csv(eth_file, pl_eth, DECIMALS['ETH'])
+    print(f'Done, {len(pl_eth)} items saved to: {eth_file}', flush=True)
+
+    print('Write BTC payment stats', flush=True)
+    btc_file = os.path.join(p_dir, 'btc.csv')
+    write_payments_to_csv(btc_file, pl_btc, DECIMALS['BTC'])
+    print(f'Done, {len(pl_btc)} items saved to: {btc_file}', flush=True)
+
+    print('Write USDC payment stats', flush=True)
+    usdc_file = os.path.join(p_dir, 'usdc.csv')
+    write_payments_to_csv(usdc_file, pl_usdc, DECIMALS['USDC'])
+    print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
 
