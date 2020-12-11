@@ -23,6 +23,8 @@ class ExchangeRequest(models.Model):
     btc_address = models.CharField(max_length=50, null=True, default=None)
     eth_address = models.CharField(max_length=50, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+    dayly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
+    weekly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
 
     def generate_keys(self):
         eth_btc_root_pub_key = get_root_key()
