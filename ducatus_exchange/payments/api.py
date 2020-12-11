@@ -1,14 +1,16 @@
+import os
+import csv
 import string
 import random
 
 import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.utils import timezone
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
-from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
@@ -46,7 +48,7 @@ def calculate_amount(original_amount, from_currency):
 
     return amount, currency_rate
 
-
+from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 def register_payment(request_id, tx_hash, currency, amount):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
@@ -101,7 +103,7 @@ def transfer_with_handle_lottery_and_referral(payment):
             transfer_currency(payment)
             payment.transfer_state = 'DONE'
         elif payment.exchange_request.user.platform == 'DUC':
-            usd_amount = get_usd_prices()['DUC'] * payment.sent_amount / DECIMALS['DUC']
+            usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
             try:
                 voucher = create_voucher(usd_amount, payment_id=payment.id)
             except IntegrityError as e:
@@ -168,4 +170,48 @@ def send_voucher_email(voucher, to_email, usd_amount):
         html_message=warning_html_style + html_body,
     )
     print('voucher message sent successfully to {}'.format(to_email), flush=True)
+
+
+def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
+    with open(outfile_path, 'w') as outfile:
+        writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        for val in payment_list:
+            writer.writerow([val.tx_hash, val.original_amount / curr_decimals])
+
+
+def get_payments_statistics():
+    pl = Payment.objects.filter(collection_state='NOT_COLLECTED')
+    pl_eth = pl.filter(currency='ETH')
+    pl_btc = pl.filter(currency='BTC')
+    pl_usdc = pl.filter(currency='USDC')
+
+    time_now = timezone.datetime.now()
+    time_str = time_now.strftime('%Y_%m_%d')
+    p_dir = os.path.join(os.getcwd(), 'payments_stat', time_str)
+    os.mkdir(p_dir)
+    print('Created directory at:', p_dir, flush=True)
+
+    if len(pl_eth) > 0:
+        print('Write ETH payment stats', flush=True)
+        eth_file = os.path.join(p_dir, 'eth.csv')
+        write_payments_to_csv(eth_file, pl_eth, DECIMALS['ETH'])
+        print(f'Done, {len(pl_eth)} items saved to: {eth_file}', flush=True)
+    else:
+        print('No payments in ETH at this period', flush=True)
+
+    if len(pl_btc) > 0:
+        print('Write BTC payment stats', flush=True)
+        btc_file = os.path.join(p_dir, 'btc.csv')
+        write_payments_to_csv(btc_file, pl_btc, DECIMALS['BTC'])
+        print(f'Done, {len(pl_btc)} items saved to: {btc_file}', flush=True)
+    else:
+        print('No payments in BTC at this period', flush=True)
+
+    if len(pl_usdc) > 0:
+        print('Write USDC payment stats', flush=True)
+        usdc_file = os.path.join(p_dir, 'usdc.csv')
+        write_payments_to_csv(usdc_file, pl_usdc, DECIMALS['USDC'])
+        print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
+    else:
+        print('No payments in USDC at this period', flush=True)
 
