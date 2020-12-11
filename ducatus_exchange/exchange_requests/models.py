@@ -4,6 +4,7 @@ from eth_keys import keys
 from django.db import models
 from django.contrib.auth.models import User
 
+from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.api import get_root_key, registration_btc_address
 from ducatus_exchange.bip32_ducatus import DucatusWallet
