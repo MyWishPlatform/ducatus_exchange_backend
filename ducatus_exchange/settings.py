@@ -87,8 +87,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ducatus_exchange',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'USER': 'ducatus_exchange',
+        'PASSWORD': 'ducatus_exchange',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
