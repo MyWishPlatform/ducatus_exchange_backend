@@ -51,6 +51,7 @@ urlpatterns = [
     url(r'^api/v1/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^api/v1/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     url(r'^api/v1/rates/', include('ducatus_exchange.rates.urls')),
+    url(r'^api/v1/transfers/', include('ducatus_exchange.transfers.urls')),
     url(r'^api/v1/exchange/', include('ducatus_exchange.exchange_requests.urls')),
     url(r'api/v1/validate_ducatus_address/', ValidateDucatusAddress.as_view(), name='validate-ducatus-address'),
     url(r'api/v1/send_ducatus_feedback/', FeedbackForm.as_view(), name='send-ducatus-feedback'),

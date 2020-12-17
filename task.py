@@ -27,7 +27,7 @@ def reset_weekly():
 app.conf.beat_schedule = {
     'dayly_task': {
         'task': 'task.reset_dayly',  # instead 'show'
-        'schedule': crontab(hour=()),
+        'schedule': crontab(minute=0),
     },
     'weekly_task': {
         'task': 'task.reset_weekly',  # instead 'show'

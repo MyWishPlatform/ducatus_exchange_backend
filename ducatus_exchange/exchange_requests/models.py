@@ -4,6 +4,7 @@ from eth_keys import keys
 from django.db import models
 from django.contrib.auth.models import User
 
+from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.api import get_root_key, registration_btc_address
 from ducatus_exchange.bip32_ducatus import DucatusWallet
@@ -31,7 +32,7 @@ class ExchangeRequest(models.Model):
         eth_btc_root_key = BIP32Key.fromExtendedKey(eth_btc_root_pub_key, public=True)
         eth_btc_child_key = eth_btc_root_key.ChildKey(self.user.id)
         btc_address = eth_btc_child_key.Address()
-        registration_btc_address(btc_address)
+        #registration_btc_address(btc_address)
         eth_address = keys.PublicKey(eth_btc_child_key.K.to_string()).to_checksum_address().lower()
 
         duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['public'])
