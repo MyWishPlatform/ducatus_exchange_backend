@@ -44,7 +44,7 @@ def calculate_amount(original_amount, from_currency):
         value = original_amount
 
     print('value: {value}, rate: {rate}'.format(value=value, rate=currency_rate), flush=True)
-    amount = int(value / float(currency_rate))
+    amount = int(float(value) / float(currency_rate))
 
     return amount, currency_rate
 
