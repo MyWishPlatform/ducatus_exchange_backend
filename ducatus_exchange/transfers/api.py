@@ -1,3 +1,4 @@
+import time
 import sys
 import traceback
 from decimal import Decimal
@@ -93,6 +94,8 @@ def transfer_ducatusx(payment):
     transfer = save_transfer(payment, tx, amount, currency)
 
     print('ducatusx transfer ok', flush=True)
+
+    time.sleep(60)    # small timeout in case of multiple payment messages
     return transfer
 
 

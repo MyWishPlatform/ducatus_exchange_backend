@@ -48,7 +48,10 @@ def calculate_amount(original_amount, from_currency):
 
     return amount, currency_rate
 
+
 from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
+
+
 def register_payment(request_id, tx_hash, currency, amount):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
