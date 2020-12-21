@@ -43,8 +43,8 @@ class CheckLimitView(APIView):
         request_data = request.data
         print('request data:', request_data, flush=True)
         address = request_data.get('address')
-        ducatus_user = DucatusUser.objects.get(address = address)
-        exchange_request = ExchangeRequest.objects.filter(user=ducatus_user).last()
+        ducatus_user = DucatusUser.objects.filter(address = address).last()
+        exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
         dayly_available = DAYLY_LIMIT - exchange_request.dayly_swap
         weekly_available = WEEKLY_LIMIT - exchange_request.weekly_swap
 
