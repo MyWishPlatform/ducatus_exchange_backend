@@ -49,7 +49,7 @@ class CheckLimitView(APIView):
         weekly_available = WEEKLY_LIMIT - exchange_request.weekly_swap
 
 
-        response_data = {'dayly_available': dayly_available, 'weekly_available': weekly_available}
+        response_data = {'daily_available': dayly_available, 'weekly_available': weekly_available}
 
         print('res:', response_data)
 
