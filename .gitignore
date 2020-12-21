@@ -6,5 +6,6 @@
 /*/*/__pycache__/
 /ducatus_exchange/settings_local.py
 gunicorn.conf.py
+celerybeat-schedule
 
 /.idea
