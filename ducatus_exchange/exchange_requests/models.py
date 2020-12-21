@@ -4,6 +4,7 @@ from eth_keys import keys
 from django.db import models
 from django.contrib.auth.models import User
 
+from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
 from ducatus_exchange.exchange_requests.api import get_root_key, registration_btc_address
 from ducatus_exchange.bip32_ducatus import DucatusWallet
@@ -23,6 +24,8 @@ class ExchangeRequest(models.Model):
     btc_address = models.CharField(max_length=50, null=True, default=None)
     eth_address = models.CharField(max_length=50, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+    dayly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
+    weekly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
 
     def generate_keys(self):
         eth_btc_root_pub_key = get_root_key()

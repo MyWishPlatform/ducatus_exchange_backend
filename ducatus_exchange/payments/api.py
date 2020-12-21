@@ -11,7 +11,6 @@ from django.utils import timezone
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
-from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
@@ -45,11 +44,11 @@ def calculate_amount(original_amount, from_currency):
         value = original_amount
 
     print('value: {value}, rate: {rate}'.format(value=value, rate=currency_rate), flush=True)
-    amount = int(value / float(currency_rate))
+    amount = int(float(value) / float(currency_rate))
 
     return amount, currency_rate
 
-
+from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 def register_payment(request_id, tx_hash, currency, amount):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
