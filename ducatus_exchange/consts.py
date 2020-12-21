@@ -1,6 +1,6 @@
 MAX_DIGITS = len(str(2 ** 256))
 
-DUCATUS_USD_RATE = 0.05
+DUCATUS_USD_RATE = 0.06
 
 DECIMALS = {
     'ETH': 10 ** 18,

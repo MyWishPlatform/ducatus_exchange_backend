@@ -8,8 +8,8 @@ from ducatus_exchange.consts import DECIMALS
 class LotteryTest(TestCase):
     def setUp(self):
         self.usd_prices = {
-            'DUC': 0.05,
-            'DUCX': 0.5,
+            'DUC': 0.06,
+            'DUCX': 0.6,
             'ETH': 241.2,
             'BTC': 9285.74,
         }
@@ -31,7 +31,7 @@ class LotteryTest(TestCase):
 
     def test_get_usd_amount(self):
         usd_prices = {
-            'DUCX': 0.5,
+            'DUCX': 0.6,
             'ETH': 241.2,
             'BTC': 9285,
         }
@@ -43,7 +43,7 @@ class LotteryTest(TestCase):
             LotteryRegister(Payment(currency='ETH', original_amount=2 * DECIMALS['ETH'])).get_usd_amount(
                 usd_prices=usd_prices), 482.4, places=3)
         self.assertAlmostEqual(
-            LotteryRegister(Payment(currency='BTC', original_amount=0.05 * DECIMALS['BTC'])).get_usd_amount(
+            LotteryRegister(Payment(currency='BTC', original_amount=0.06 * DECIMALS['BTC'])).get_usd_amount(
                 usd_prices=usd_prices), 464.25, places=3)
         self.assertAlmostEqual(
             LotteryRegister(Payment(currency='DUCX', original_amount=0 * DECIMALS['DUCX'])).get_usd_amount(
