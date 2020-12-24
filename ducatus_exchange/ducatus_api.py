@@ -119,10 +119,17 @@ def return_ducatus(payment_hash, amount):
     fee = duc_rpc.get_fee() * DECIMALS['DUC']
     send_amount = (Decimal(amount) - fee) / DECIMALS['DUC']
 
-    input_params = duc_api.get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
+    input_params, input_value, response_ok = duc_api.get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
+    if not response_ok:
+        print('fail to fetch input param', flush=True)
+        return
+
     print('input_params', input_params, flush=True)
 
-    return_address = duc_api.get_return_address(p.tx_hash)
+    return_address, response_ok = duc_api.get_return_address(p.tx_hash)
+    if not response_ok:
+        print('fail to fetch return address', flush=True)
+        return
 
     output_params = {return_address: send_amount}
     print('output_params', output_params, flush=True)
