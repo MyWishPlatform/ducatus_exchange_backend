@@ -116,8 +116,10 @@ def return_ducatus(payment_hash, amount):
     duc_api = DucatusAPI()
     duc_rpc = DucatuscoreInterface()
 
-    fee = duc_rpc.get_fee() * DECIMALS['DUC']
-    send_amount = (Decimal(amount) - fee) / DECIMALS['DUC']
+    raw_fee = duc_rpc.get_fee()
+    fee = raw_fee * DECIMALS['DUC']
+    raw_send_amount = amount - fee
+    send_amount = Decimal(raw_send_amount) / DECIMALS['DUC']
 
     input_params, input_value, response_ok = duc_api.get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
     if not response_ok:
@@ -132,6 +134,10 @@ def return_ducatus(payment_hash, amount):
         return
 
     output_params = {return_address: send_amount}
+    if amount < input_value:
+
+        output_params[p.exchange_request.duc_address] = input_value - fee - raw_send_amount
+
     print('output_params', output_params, flush=True)
 
     tx = duc_rpc.rpc.createrawtransaction(input_params, output_params)
@@ -142,3 +148,4 @@ def return_ducatus(payment_hash, amount):
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
     print('tx', tx_hash, flush=True)
+    print('receive address was:', p.exchange_request.duc_address, flush=True)
