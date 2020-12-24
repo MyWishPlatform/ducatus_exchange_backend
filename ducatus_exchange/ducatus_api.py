@@ -136,7 +136,7 @@ def return_ducatus(payment_hash, amount):
     output_params = {return_address: send_amount}
     if amount < input_value:
 
-        output_params[p.exchange_request.duc_address] = input_value - fee - raw_send_amount
+        output_params[p.exchange_request.duc_address] = input_value - fee - raw_send_amount / DECIMALS['DUC']
 
     print('output_params', output_params, flush=True)
 
