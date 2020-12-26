@@ -26,7 +26,7 @@ def transfer_currency(payment):
         else:
             print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
         if return_amount > MINIMAL_RETURN:
-            return_ducatus(payment.tx_hash, return_amount * DECIMALS['DUC'])
+            return_ducatus(payment.tx_hash, return_amount)
 
 def check_limits(payment):
     dayly_reserve = 0
