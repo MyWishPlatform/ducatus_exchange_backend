@@ -6,12 +6,13 @@ from decimal import Decimal
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT
+from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
-from ducatus_exchange.payments.api import calculate_amount
+from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT, DECIMALS
+from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
+from ducatus_exchange.ducatus_api import return_ducatus
 
 def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
@@ -19,10 +20,13 @@ def transfer_currency(payment):
     if currency == 'DUC':
             return transfer_ducatus(payment)
     else:
-        if check_limits(payment):
+        allowed, return_amount = check_limits(payment)
+        if allowed:
             return transfer_ducatusx(payment)
         else:
             print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
+        if return_amount > MINIMAL_RETURN:
+            return_ducatus(payment.tx_hash, return_amount * DECIMALS['DUC'])
 
 def check_limits(payment):
     dayly_reserve = 0
@@ -33,7 +37,7 @@ def check_limits(payment):
         print(dayly_reserve)
         payment.original_amount = dayly_reserve
         if dayly_reserve <= 0:
-            return False
+            return False, original_amount
     if payment.original_amount + payment.exchange_request.weekly_swap > WEEKLY_LIMIT:
         weekly_reserve = WEEKLY_LIMIT - payment.exchange_request.weekly_swap
         if dayly_reserve > 0:
@@ -41,7 +45,7 @@ def check_limits(payment):
         else:
             payment.original_amount = weekly_reserve
         if weekly_reserve <= 0:
-            return False
+            return False, original_amount
     print(f' amount {payment.original_amount}', flush=True)
     exchange_request=ExchangeRequest.objects.get(id=payment.exchange_request.id)
     exchange_request.dayly_swap += payment.original_amount
@@ -51,8 +55,9 @@ def check_limits(payment):
     if payment.original_amount !=original_amount:
         payment.sent_amount, payment.rate = calculate_amount(payment.original_amount, payment.currency)
         print(f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits", flush=True)
-    payment.save()
-    return True
+        payment.save()
+        return True, original_amount-payment.original_amount
+    return True, 0
 
 
 def make_ref_transfer(payment):
