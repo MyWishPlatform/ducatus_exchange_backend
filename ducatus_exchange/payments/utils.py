@@ -1,4 +1,5 @@
 from ducatus_exchange.rates.serializers import AllRatesSerializer
+from ducatus_exchange.consts import DECIMALS
 
 def calculate_amount(original_amount, from_currency):
     to_currency = 'DUCX' if from_currency == 'DUC' else 'DUC'
