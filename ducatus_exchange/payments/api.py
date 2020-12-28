@@ -18,38 +18,15 @@ from ducatus_exchange import settings_local
 from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
 from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
 from ducatus_exchange.lottery.api import LotteryRegister
+from ducatus_exchange.payments.utils import calculate_amount
+from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 
 
 class TransferException(Exception):
     pass
 
 
-def calculate_amount(original_amount, from_currency):
-    to_currency = 'DUCX' if from_currency == 'DUC' else 'DUC'
-    print('Calculating amount, original: {orig}, from {from_curr} to {to_curr}'.format(
-        orig=original_amount,
-        from_curr=from_currency,
-        to_curr=to_currency
-        ), flush=True
-    )
 
-    rates = AllRatesSerializer({})
-    currency_rate = rates.data[to_currency][from_currency]
-
-    if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:
-        value = original_amount * DECIMALS['DUC'] / DECIMALS[from_currency]
-    elif from_currency == 'DUC':
-        value = original_amount * DECIMALS[to_currency] / DECIMALS['DUC']
-    else:
-        value = original_amount
-
-    print('value: {value}, rate: {rate}'.format(value=value, rate=currency_rate), flush=True)
-    amount = int(float(value) / float(currency_rate))
-
-    return amount, currency_rate
-
-
-from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 
 
 def register_payment(request_id, tx_hash, currency, amount):
