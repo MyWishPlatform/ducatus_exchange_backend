@@ -48,11 +48,11 @@ def draw_numbers():
 
 def get_numbers():
     first_number = contract.functions.firstNumber().call()
-    second_number = contract.functions.secondNumber().call()
-    third_number = contract.functions.thirdNumber().call()
+    #second_number = contract.functions.secondNumber().call()
+    #third_number = contract.functions.thirdNumber().call()
 
-    return (first_number, second_number, third_number,)
-
+    #return (first_number, second_number, third_number,)
+    return (first_number)
 
 def finalize_lottery(tickets_amount):
     print(f'generated future block delta: {BLOCKS_DELTA}', flush=True)
@@ -70,8 +70,10 @@ def finalize_lottery(tickets_amount):
     print(f'waiting next block... sleep {next_block_timeout} seconds', flush=True)
     time.sleep(next_block_timeout)
 
-    result = (0, 0, 0,)
-    while result == (0, 0, 0,):
+    #result = (0, 0, 0,)
+    result=(0,)
+    #while result == (0, 0, 0,):
+    while result == (0,)
         result = get_numbers()
         print(f'lottery result {result}', flush=True)
         time.sleep(AVERAGE_BLOCK_TIME)
