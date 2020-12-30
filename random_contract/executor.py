@@ -73,7 +73,7 @@ def finalize_lottery(tickets_amount):
     #result = (0, 0, 0,)
     result=(0,)
     #while result == (0, 0, 0,):
-    while result == (0,)
+    while result == (0,):
         result = get_numbers()
         print(f'lottery result {result}', flush=True)
         time.sleep(AVERAGE_BLOCK_TIME)
