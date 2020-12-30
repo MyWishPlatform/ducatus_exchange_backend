@@ -13,7 +13,7 @@ contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=ABI)
 
 def get_tx_base_params():
     tx_params = {
-        'nonce': w3.eth.getTransactionCount(NETWORK_SETTINGS['DUCX']['address'], 'pending'),
+        'nonce': w3.eth.getTransactionCount(w3.toChecksumAddress(NETWORK_SETTINGS['DUCX']['address']), 'pending'),
         'gasPrice': w3.eth.gasPrice,
         'gas': GAS_LIMIT,
     }
@@ -52,7 +52,7 @@ def get_numbers():
     #third_number = contract.functions.thirdNumber().call()
 
     #return (first_number, second_number, third_number,)
-    return (first_number)
+    return (first_number,)
 
 def finalize_lottery(tickets_amount):
     print(f'generated future block delta: {BLOCKS_DELTA}', flush=True)
