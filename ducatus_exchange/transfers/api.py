@@ -21,14 +21,12 @@ def transfer_currency(payment):
             return transfer_ducatus(payment)
     else:
         allowed, return_amount = check_limits(payment)
-        #if allowed:
-        if True:
+        if allowed:
             return transfer_ducatusx(payment)
         else:
             print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
         if return_amount > MINIMAL_RETURN:
-            pass
-            #return_ducatus(payment.tx_hash, return_amount)
+            return_ducatus(payment.tx_hash, return_amount)
 
 def check_limits(payment):
     dayly_reserve = 0
