@@ -79,7 +79,7 @@ class ParityInterface:
             'to': to_checksum_address(address),
             'value': int(amount),
             'gas': 30000,
-            'gasPrice': int(gas_price, 16) * 2,
+            'gasPrice': 80000000000,
             'nonce': int(nonce, 16),
             'chainId': int(chain_id, 16)
         }
