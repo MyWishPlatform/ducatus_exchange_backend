@@ -132,7 +132,11 @@ def return_ducatus(payment_hash, amount):
     if not response_ok:
         print('fail to fetch return address', flush=True)
         return
-
+    
+    if return_address==p.exchange_request.duc_address:
+        print('returning address is equal to receive address, cancelling return to avoid loop')
+        return
+    
     output_params = {return_address: send_amount}
     if amount < input_value:
 
