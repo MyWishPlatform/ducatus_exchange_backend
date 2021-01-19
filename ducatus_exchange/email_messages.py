@@ -494,8 +494,9 @@ To now receive your DUC and complete the process, please go to your Ducatus Wall
 /
 <a href="https://apps.apple.com/us/app/ducatus-wallet-2-0/id1489722627">App Store</a>
 ) 
-and redeem the following voucher: {voucher_code}
+and redeem the following voucher:
 """
+voucher_code = """{voucher_code}"""
 
 voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
     <table
@@ -532,6 +533,9 @@ voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
                 <table width="100%" border="0" cellspacing="0" cellpadding="0">
                   <tr>
                     <td class="accent">Thank you for purchasing DUC.</td>
+                  </tr>
+                  <tr>
+                    <td class="body-text">{}</td>
                   </tr>
                   <tr>
                     <td class="body-text">{}</td>
@@ -603,7 +607,7 @@ voucher_html_body_base_template = """<body ducatus bgcolor="#ffffff">
 </html>
 """
 
-voucher_html_body = voucher_html_body_base_template.format(voucher_insert_text)
+voucher_html_body = voucher_html_body_base_template.format(voucher_insert_text, voucher_code)
 
 congratulations_html_style = """<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
