@@ -29,6 +29,8 @@ class Receiver(threading.Thread):
             5672,
             'ducatus_exchange',
             pika.PlainCredentials('ducatus_exchange', 'ducatus_exchange'),
+            heartbeat=3600,
+            blocked_connection_timeout=3600
         ))
 
         channel = connection.channel()
