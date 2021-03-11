@@ -11,10 +11,7 @@ import django
 django.setup()
 
 from ducatus_exchange.rates.models import UsdRate
-from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY, RATES_CHECKER_TIMEOUT
-
-api_url = 'https://min-api.cryptocompare.com/data/price'
-duc_api_url = 'https://ducexpl.rocknblock.io/api/v1/rates/'
+from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY, RATES_CHECKER_TIMEOUT, API_URL, DUC_API_URL
 
 query_tsyms = ['ETH', 'BTC', 'USDC', 'USD', 'EUR', 'GBP', 'CHF']
 query_fsym = 'USD'
@@ -27,7 +24,7 @@ def get_rates(fsym, tsyms, reverse=False):
         'api_key': CRYPTOCOMPARE_API_KEY
     }
 
-    res = requests.get(api_url, params=payload)
+    res = requests.get(API_URL, params=payload)
     if res.status_code != 200:
         raise Exception('cannot get exchange rate for {}'.format(fsym))
     answer = json.loads(res.text)
@@ -37,7 +34,7 @@ def get_rates(fsym, tsyms, reverse=False):
     return answer
 
 def get_duc_rates():
-    res = requests.get(duc_api_url)
+    res = requests.get(DUC_API_URL)
     answer = json.loads(res.text)
 
     return answer
