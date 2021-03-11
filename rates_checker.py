@@ -14,6 +14,7 @@ from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY, RATES_CHECKER_TIMEOUT
 
 api_url = 'https://min-api.cryptocompare.com/data/price'
+duc_api_url = 'https://ducexpl.rocknblock.io/api/v1/rates/'
 
 query_tsyms = ['ETH', 'BTC', 'USDC', 'USD', 'EUR', 'GBP', 'CHF']
 query_fsym = 'USD'
@@ -35,6 +36,12 @@ def get_rates(fsym, tsyms, reverse=False):
 
     return answer
 
+def get_duc_rates():
+    res = requests.get(duc_api_url)
+    answer = json.loads(res.text)
+
+    return answer
+
 
 if __name__ == '__main__':
     while True:
@@ -43,6 +50,9 @@ if __name__ == '__main__':
         try:
             for tsym in query_tsyms:
                 usd_prices[tsym] = get_rates(tsym, query_fsym, reverse=True)
+            duc_prices = get_duc_rates()
+            for key, value in duc_prices.items():
+                usd_prices[key] = value['USD']
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
             time.sleep(RATES_CHECKER_TIMEOUT)
