@@ -1,10 +1,5 @@
-import json
-
-import requests
 from rest_framework import serializers
-
 from ducatus_exchange.rates.models import UsdRate
-from ducatus_exchange.settings import RATES_API_URL
 
 
 def get_usd_prices():
