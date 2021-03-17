@@ -169,8 +169,8 @@ class LotteryRegister:
         usd_prices['ETH'] = rate.eth_price
         usd_prices['BTC'] = rate.btc_price
         usd_prices['USDC'] = rate.usdc_price
-        usd_prices['DUC'] = 0.06
-        usd_prices['DUCX'] = 0.60
+        usd_prices['DUC'] = rate.duc_price
+        usd_prices['DUCX'] = rate.ducx_price
 
         usd_prices['USD'] = rate.usd_price
         usd_prices['EUR'] = rate.eur_price

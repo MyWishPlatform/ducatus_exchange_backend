@@ -9,9 +9,11 @@ class UsdRate(models.Model):
     eur_price = models.FloatField()
     gbp_price = models.FloatField()
     chf_price = models.FloatField()
+    duc_price = models.FloatField()
+    ducx_price = models.FloatField()
     datetime = models.DateTimeField(auto_now=True)
 
-    def update_rates(self, BTC, ETH, USDC, USD, EUR, GBP, CHF):
+    def update_rates(self, BTC, ETH, USDC, USD, EUR, GBP, CHF, DUC, DUCX):
         self.btc_price = BTC
         self.eth_price = ETH
         self.usdc_price = USDC
@@ -19,4 +21,6 @@ class UsdRate(models.Model):
         self.eur_price = EUR
         self.gbp_price = GBP
         self.chf_price = CHF
+        self.duc_price = DUC
+        self.ducx_price = DUCX
 

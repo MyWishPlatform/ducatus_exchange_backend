@@ -22,7 +22,7 @@ def get_rates():
     usd_prices['EUR'] = rate.eur_price
     usd_prices['GBP'] = rate.gbp_price
     usd_prices['CHF'] = rate.chf_price
-    usd_prices['DUC'] = 0.06
+    usd_prices['DUC'] = rate.duc_price
 
     print('current quantum rates:', usd_prices, flush=True)
     return usd_prices
