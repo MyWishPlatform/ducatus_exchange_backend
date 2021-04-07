@@ -21,8 +21,9 @@ def transfer_currency(payment):
     if currency == 'DUC':
             return transfer_ducatus(payment)
     else:
-        status = ExchangeStatus.objects.all().first()
-        if not ExchangeStatus.objects.all().first():
+        status = ExchangeStatus.objects.all().first().status
+        if not status:
+            print('exchange is disabled', flush=True)
             return_ducatus(payment.tx_hash, payment.original_amount)
         else:
             allowed, return_amount = check_limits(payment)
