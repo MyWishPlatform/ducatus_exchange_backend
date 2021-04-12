@@ -13,6 +13,7 @@ from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT, DECIMALS
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus
+from ducatus_exchange.exchange_requests.models import ExchangeStatus
 
 def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
@@ -20,13 +21,18 @@ def transfer_currency(payment):
     if currency == 'DUC':
             return transfer_ducatus(payment)
     else:
-        allowed, return_amount = check_limits(payment)
-        if return_amount > MINIMAL_RETURN:
-            return_ducatus(payment.tx_hash, return_amount)
-        if allowed:
-            return transfer_ducatusx(payment)
+        status = ExchangeStatus.objects.all().first().status
+        if not status:
+            print('exchange is disabled', flush=True)
+            return_ducatus(payment.tx_hash, payment.original_amount)
         else:
-            print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
+            allowed, return_amount = check_limits(payment)
+            if return_amount > MINIMAL_RETURN:
+                return_ducatus(payment.tx_hash, return_amount)
+            if allowed:
+                return transfer_ducatusx(payment)
+            else:
+                print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
         
 
 def check_limits(payment):
