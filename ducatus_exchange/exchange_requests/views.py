@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
+from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest, ExchangeStatus
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.transfers.serializers import DucatusTransferSerializer
@@ -215,3 +215,8 @@ def register_voucher_in_lottery(request: Request):
 @api_view(http_method_names=['GET'])
 def total_id_count(request):
     return Response(ExchangeRequest.objects.all().last().id, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=['GET'])
+def status_check(request):
+    return Response(ExchangeStatus.objects.all().first().status, status=status.HTTP_200_OK)
