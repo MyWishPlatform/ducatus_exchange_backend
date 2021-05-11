@@ -63,4 +63,7 @@ urlpatterns = [
     url(r'api/v1/register_payments_manually/', register_payments_manually),
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
+    url(r'^api/v1/stats/', include('ducatus_exchange.stats.urls'))
+
+
 ]

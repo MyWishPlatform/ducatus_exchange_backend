@@ -1,4 +1,6 @@
 import binascii
+import os
+
 import requests
 
 from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
