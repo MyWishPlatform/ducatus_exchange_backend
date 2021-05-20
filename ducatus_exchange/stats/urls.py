@@ -8,7 +8,7 @@ from . import views
 app_name = "stats"
 # app_name will help us do a reverse look-up latter.
 urlpatterns = [
-    path('statistics/<int:days>', views.StatsHandler.as_view())
+    path('statistics/<str:currency>/<int:days>', views.StatsHandler.as_view())
 
 
 ]
