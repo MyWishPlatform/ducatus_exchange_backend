@@ -20,21 +20,21 @@ def save_transfer(api, tx, network):
     normalized_time = datetime.strptime(tx.get('blockTime'), STATS_NORMALIZED_TIME)
     value = api.get_tx_value(tx)
 
-    net_address_from = None
-    net_address_to = None
+    net_account_from = None
+    net_account_to = None
     if network == 'DUCX':
         address_from = tx.get('from'.lower())
-        net_address_from, new_from = StatisticsAddress.objects.get_or_create(user_address=tx.get('from'), network=network)
-        net_address_from.balance = api.get_address_balance(net_address_from.user_address)
-        net_address_from.save()
+        net_account_from, new_from = StatisticsAddress.objects.get_or_create(user_address=tx.get('from'), network=network)
+        net_account_from.balance = api.get_address_balance(net_account_from.user_address)
+        net_account_from.save()
 
         address_to = tx.get('to').lower()
         if address_to != address_from:
-            net_address_to, new_to = StatisticsAddress.objects.get_or_create(user_address=tx.get('to'), network=network)
-            net_address_to.balance = api.get_address_balance(net_address_to.user_address)
-            net_address_to.save()
+            net_account_to, new_to = StatisticsAddress.objects.get_or_create(user_address=tx.get('to'), network=network)
+            net_account_to.balance = api.get_address_balance(net_account_to.user_address)
+            net_account_to.save()
         else:
-            net_address_to = net_address_from
+            net_account_to = net_account_from
 
     transfer = StatisticsTransfer.objects.filter(tx_hash=tx.get('txid'))
     if not transfer:
@@ -43,13 +43,16 @@ def save_transfer(api, tx, network):
             transaction_value=value,
             tx_hash=tx.get('txid'),
             currency=network,
-            address_from=net_address_from,
-            address_to=net_address_to,
+            address_from=net_account_from,
+            address_to=net_account_to,
             fee_amount=tx.get('fee')
         )
         transfer.save()
 
-    return {'address_from': net_address_from.user_address, 'address_to': net_address_to.user_address}
+    return {
+        'address_from': net_account_from.user_address if net_account_from else None,
+        'address_to': net_account_to.user_address if net_account_to else None
+    }
 
 
 def update_stats(api, network):
