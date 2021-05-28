@@ -27,6 +27,7 @@ from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress, reg
 from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants, \
     get_lottery_info, register_payments_manually
 from ducatus_exchange.quantum.views import get_charge, add_charge, change_charge_status
+from ducatus_exchange.stats.views import DucxWalletsViewSet
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -43,6 +44,7 @@ schema_view = get_schema_view(
 router = DefaultRouter(trailing_slash=True)
 router.register(r'lotteries', LotteryViewSet)
 router.register(r'lotteries_players', LotteryPlayerViewSet)
+router.register(r'statistics/ducx_wallets', DucxWalletsViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -63,7 +65,7 @@ urlpatterns = [
     url(r'api/v1/register_payments_manually/', register_payments_manually),
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
-    url(r'^api/v1/stats/', include('ducatus_exchange.stats.urls'))
+    url(r'^api/v1/', include('ducatus_exchange.stats.urls'))
 
 
 ]

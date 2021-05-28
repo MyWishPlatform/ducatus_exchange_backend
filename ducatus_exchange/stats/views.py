@@ -1,11 +1,15 @@
 # Create your views here.
 from datetime import timedelta, datetime
+import csv
 
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework import status
 
-from ducatus_exchange.stats.models import StatisticsTransfer
+from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress
+from ducatus_exchange.stats.serializers import DucxWalletsSerializer
 
 
 class StatsHandler(APIView):
@@ -48,3 +52,26 @@ class StatsHandler(APIView):
                     'weekly_count': weekly_txs_count,
                     'graph_data': data
                     }, status=status.HTTP_200_OK)
+
+
+class DucxWalletsViewSet(ReadOnlyModelViewSet):
+    queryset = StatisticsAddress.objects.filter(network='DUCX')
+    serializer_class = DucxWalletsSerializer
+
+
+class DucxWalletsToCSV(APIView):
+
+    def get(self, request):
+
+        account_list = []
+        for account in StatisticsAddress.objects.filter(network='DUCX'):
+            account_list.append([account.user_address, account.balance])
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="ducx_wallet_export_{str(datetime.now().date())}.csv"'
+        writer = csv.DictWriter(response, fieldnames=['ducx_address', 'balance'])
+        writer.writeheader()
+        for acc in account_list:
+            writer.writerow({'ducx_address': acc[0], 'balance': int(float(acc[1]))})
+
+        return response

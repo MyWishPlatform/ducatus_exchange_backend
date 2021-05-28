@@ -128,6 +128,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+STATS_NORMALIZED_TIME = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
