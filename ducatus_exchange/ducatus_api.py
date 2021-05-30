@@ -104,7 +104,7 @@ class DucatusAPI:
 
     def get_block_transactions(self, block_number):
         req_string = f'{self.base_url}/tx?blockHeight=' + str(block_number)
-        print(f'block transaction string: {req_string}')
+        # print(f'block transaction string: {req_string}')
         res = requests.get(req_string)
         data = res.json()
 

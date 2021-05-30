@@ -4,7 +4,7 @@ from ducatus_exchange.consts import MAX_DIGITS
 
 
 class StatisticsAddress(models.Model):
-    user_address = models.CharField(max_length=100)
+    user_address = models.CharField(max_length=100, unique=True)
     balance = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, null=True, default=0)
     network = models.CharField(max_length=100)
 
