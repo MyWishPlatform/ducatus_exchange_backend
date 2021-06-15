@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_extensions',
-    'corsheaders'
+    'corsheaders',
 
     'ducatus_exchange.payments',
     'ducatus_exchange.rates',
@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ducatus_exchange',
+        'NAME': 'ducatus_exchzange',
         'USER': 'ducatus_exchange',
         'PASSWORD': 'ducatus_exchange',
         'HOST': '127.0.0.1',

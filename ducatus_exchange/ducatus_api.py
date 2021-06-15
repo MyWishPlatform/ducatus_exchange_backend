@@ -166,6 +166,16 @@ class DucatusAPI:
         data = res.json()
         return data
 
+    def get_tx_addresses(self, tx_hash):
+        endpoint_url = f'{self.base_url}/tx/{tx_hash}/coins'
+        res = requests.get(endpoint_url)
+        data = res.json
+        addresses = []
+        for input in data['inputs']:
+            addresses.append(input['address'])
+        for output in data['outputs']:
+            addresses.append(outpur['address'])
+        return addresses
 
 class DucatusXAPI(DucatusAPI):
     def set_base_url(self):
@@ -236,3 +246,4 @@ def return_ducatus(payment_hash, amount):
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
     print('tx', tx_hash, flush=True)
     print('receive address was:', p.exchange_request.duc_address, flush=True)
+

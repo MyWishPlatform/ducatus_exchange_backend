@@ -43,6 +43,15 @@ def save_transfer(api, tx, network):
             ), flush=True)
             print(e, flush=True)
 
+    else:
+        try:
+            addresses = api.get_tx_addresses(tx.get('txid'))
+            for address in addresses:
+                StatisticsAddress.objects.get_or_create(user_address=address, network=network)
+        except Exception as e:
+            print(e, flush=True)
+
+
     transfer = StatisticsTransfer.objects.filter(tx_hash=tx.get('txid'))
     transfer_saved = False
     if not transfer:
@@ -63,12 +72,14 @@ def save_transfer(api, tx, network):
             flush=True
         )
 
-    return {
-        'address_from': net_account_from.user_address if net_account_from else None,
-        'address_to': net_account_to.user_address if net_account_to else None,
-        'transfer_saved': transfer_saved
-    }
-
+    if network == 'DUCX':
+        return {
+            'address_from': net_account_from.user_address if net_account_from else None,
+            'address_to': net_account_to.user_address if net_account_to else None,
+            'transfer_saved': transfer_saved
+        }
+    else:
+        return addresses
 
 def update_stats(api, network):
     last_saved_block = get_last_block(network)
@@ -84,6 +95,9 @@ def update_stats(api, network):
                 if network == 'DUCX' and transfer_info.get('transfer_saved'):
                     addresses_in_txes.append(transfer_info.get('address_from'))
                     addresses_in_txes.append(transfer_info.get('address_to'))
+                elif network == 'DUC':
+                    for address in transfer_info:
+                        addresses_in_txes.append(address)
 
         print(f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
@@ -91,7 +105,7 @@ def update_stats(api, network):
     return {'current_block': current_block, 'transfer_addresses': addresses_in_txes}
 
 
-def update_ducx_balances(api, addresses):
+def update_balances(api, addresses):
     c = 0
     for addr in addresses:
         try:
@@ -129,7 +143,12 @@ if __name__ == '__main__':
         # takes some time, around 12 minutes for 21k addresse
         ducx_addresses = set(stats_ducx_info.get('transfer_addresses'))
         print(f'Updating current balances for {len(ducx_addresses)} addresses', flush=True)
-        update_ducx_balances(ducx_api, ducx_addresses)
+        update_balances(ducx_api, ducx_addresses)
         print('Current balances of DUCX updated', flush=True)
+
+        duc_addresses = set(stats_duc_info.get('transfer_addresses'))
+        print(f'Updating current balances for {len(duc_addresses)} addresses', flush=True)
+        update_balances(duc_api, duc_addresses)
+        print('Current balances of DUC updated', flush=True)
 
         time.sleep(STATS_CHECKER_TIMEOUT)
