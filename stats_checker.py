@@ -44,7 +44,6 @@ def save_transfer(api, tx, network):
             ), flush=True)
             print(e, flush=True)
 
-
     transfer = StatisticsTransfer.objects.filter(tx_hash=tx.get('txid'))
     transfer_saved = False
     if not transfer:

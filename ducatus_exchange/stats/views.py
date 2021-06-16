@@ -18,7 +18,7 @@ class StatsHandler(APIView):
         data = []
         now = datetime.now()
         time = datetime.now() - timedelta(days=days)
-        period = {1: 2, 7:2, 30:24}
+        period = {1: 2, 7: 2, 30: 24, 365: 168}
         daily_txs = StatisticsTransfer.objects.filter(
                 transaction_time__gt=now - timedelta(hours=24)).filter(transaction_time__lte=now).filter(currency=currency)
         weekly_txs = StatisticsTransfer.objects.filter(
