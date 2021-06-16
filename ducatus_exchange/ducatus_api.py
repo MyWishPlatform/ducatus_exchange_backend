@@ -169,12 +169,12 @@ class DucatusAPI:
     def get_tx_addresses(self, tx_hash):
         endpoint_url = f'{self.base_url}/tx/{tx_hash}/coins'
         res = requests.get(endpoint_url)
-        data = res.json
+        data = res.json()
         addresses = []
         for input in data['inputs']:
             addresses.append(input['address'])
         for output in data['outputs']:
-            addresses.append(outpur['address'])
+            addresses.append(output['address'])
         return addresses
 
 class DucatusXAPI(DucatusAPI):

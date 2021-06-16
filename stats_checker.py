@@ -22,6 +22,8 @@ def save_transfer(api, tx, network):
 
     net_account_from = None
     net_account_to = None
+    addresses = []
+
     if network == 'DUCX':
         try:
             address_from = tx.get('from'.lower())
@@ -43,6 +45,7 @@ def save_transfer(api, tx, network):
             ), flush=True)
             print(e, flush=True)
 
+    # if DUC, just save new addresses
     else:
         try:
             addresses = api.get_tx_addresses(tx.get('txid'))
@@ -72,14 +75,11 @@ def save_transfer(api, tx, network):
             flush=True
         )
 
-    if network == 'DUCX':
-        return {
-            'address_from': net_account_from.user_address if net_account_from else None,
-            'address_to': net_account_to.user_address if net_account_to else None,
-            'transfer_saved': transfer_saved
+    return {
+        'address_from': net_account_from.user_address if net_account_from else None,
+        'address_to': net_account_to.user_address if net_account_to else None,
+        'transfer_saved': transfer_saved
         }
-    else:
-        return addresses
 
 def update_stats(api, network):
     last_saved_block = get_last_block(network)
@@ -102,6 +102,7 @@ def update_stats(api, network):
         print(f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
 
+    print(addresses_in_txes)
     return {'current_block': current_block, 'transfer_addresses': addresses_in_txes}
 
 
@@ -145,10 +146,5 @@ if __name__ == '__main__':
         print(f'Updating current balances for {len(ducx_addresses)} addresses', flush=True)
         update_balances(ducx_api, ducx_addresses)
         print('Current balances of DUCX updated', flush=True)
-
-        duc_addresses = set(stats_duc_info.get('transfer_addresses'))
-        print(f'Updating current balances for {len(duc_addresses)} addresses', flush=True)
-        update_balances(duc_api, duc_addresses)
-        print('Current balances of DUC updated', flush=True)
 
         time.sleep(STATS_CHECKER_TIMEOUT)
