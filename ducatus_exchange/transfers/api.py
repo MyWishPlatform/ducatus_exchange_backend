@@ -107,7 +107,7 @@ def transfer_ducatusx(payment):
 
     print('ducatusx transfer ok', flush=True)
 
-    time.sleep(60)    # small timeout in case of multiple payment messages
+    time.sleep(100)    # small timeout in case of multiple payment messages
     return transfer
 
 
