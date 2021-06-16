@@ -63,7 +63,7 @@ class DucxWalletsViewSet(ReadOnlyModelViewSet):
 class DucxWalletsToCSV(APIView):
 
     def get(self, request, currency):
-        if currency == 'DUCX':
+        if currency.lower() == 'ducx':
             account_list = []
             for account in StatisticsAddress.objects.filter(network='DUCX'):
                 account_list.append([account.user_address, account.balance])
@@ -75,7 +75,7 @@ class DucxWalletsToCSV(APIView):
             for acc in account_list:
                 writer.writerow({'ducx_address': acc[0], 'balance': int(float(acc[1]))})
 
-        elif currency == 'DUC':
+        elif currency.lower() == 'duc':
             try:
                 print(os.path.join(BASE_DIR, 'DUC.csv'))
                 with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
