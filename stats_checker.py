@@ -22,7 +22,6 @@ def save_transfer(api, tx, network):
 
     net_account_from = None
     net_account_to = None
-    addresses = []
 
     if network == 'DUCX':
         try:
@@ -43,15 +42,6 @@ def save_transfer(api, tx, network):
                 from_addr=tx.get('from').lower(),
                 to_addr=tx.get('from'.lower())
             ), flush=True)
-            print(e, flush=True)
-
-    # if DUC, just save new addresses
-    else:
-        try:
-            addresses = api.get_tx_addresses(tx.get('txid'))
-            for address in addresses:
-                StatisticsAddress.objects.get_or_create(user_address=address, network=network)
-        except Exception as e:
             print(e, flush=True)
 
 
