@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_extensions',
-    'corsheaders'
+    'corsheaders',
 
     'ducatus_exchange.payments',
     'ducatus_exchange.rates',
