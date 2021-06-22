@@ -62,6 +62,7 @@ def get_duc_balances():
 
     with open(os.path.join(BASE_DIR, 'DUC.csv'), 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        smapwriter.writerow('user_address', 'balance')
         for i in res:
             if i[1] > 0:
                 spamwriter.writerow([i[0], i[1]])

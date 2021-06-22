@@ -89,3 +89,11 @@ class DucxWalletsToCSV(APIView):
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
 
         return response
+
+class DucWalletsView(APIView):
+    def get(self, request):
+        with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
+            data = [{k: v for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
+        return Response(data, status=status.HTTP_200_OK)
+
+

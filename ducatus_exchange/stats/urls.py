@@ -10,5 +10,6 @@ app_name = "stats"
 urlpatterns = [
     path('statistics/<str:currency>/<int:days>', views.StatsHandler.as_view()),
     # path('statistics/ducx_wallets', views.DucxWalletsHandler.as_view({'get': 'list'})),
+    path('statistics/duc_wallets/', views.DucWalletsView.as_view()),
     path('statistics/<str:currency>_wallets/csv', views.DucxWalletsToCSV.as_view()),
 ]
