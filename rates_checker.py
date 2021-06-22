@@ -33,6 +33,7 @@ def get_rates(fsym, tsyms, reverse=False):
 
     return answer
 
+
 def get_duc_rates():
     res = requests.get(DUC_API_URL)
     answer = json.loads(res.text)

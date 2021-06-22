@@ -1,4 +1,5 @@
 import requests
+import datetime
 from decimal import Decimal
 
 from ducatus_exchange.transfers.models import DucatusTransfer
@@ -6,14 +7,17 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
-from ducatus_exchange.settings import ROOT_KEYS
+from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
 
 class DucatusAPI:
+
     def __init__(self):
+        self.network = 'mainnet'
+        self.base_url = None
         self.set_base_url()
 
     def set_base_url(self):
-        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/mainnet'
+        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/{self.network}'
 
     def get_address_response(self, address):
         endpoint_url = f'{self.base_url}/address/{address}'
@@ -74,13 +78,13 @@ class DucatusAPI:
         endpoint_url = f'{self.base_url}/tx/{tx_hash}/coins'
         res = requests.get(endpoint_url)
         if not res.ok:
-            return '', False
+            return '', False, res
         else:
             tx_info = res.json()
 
         inputs_of_tx = tx_info['inputs']
         if len(inputs_of_tx) == 0:
-            return '', False
+            return '', False, res
 
         first_input = inputs_of_tx[0]
         return_address = first_input['address']
@@ -89,7 +93,96 @@ class DucatusAPI:
         if return_address:
             address_found = True
 
-        return return_address, address_found
+        return return_address, address_found, res
+
+    def get_last_blockchain_block(self):
+        req_string = f'{self.base_url}/block/tip'
+        res = requests.get(req_string)
+        data = res.json()
+        blockchain_last_block = data["height"]
+        return blockchain_last_block
+
+    def get_block_transactions(self, block_number):
+        req_string = f'{self.base_url}/tx?blockHeight=' + str(block_number)
+        # print(f'block transaction string: {req_string}')
+        res = requests.get(req_string)
+        data = res.json()
+
+        sending_transactions = []
+        for tx in data:
+            if tx.get('value') not in (0, -1):
+                sending_transactions.append(tx)
+
+        return sending_transactions
+
+    # def get_transactions_from_blocks(self, now_block, scan_until_block):
+    #     txs = []
+    #     current_block = now_block
+    #
+    #     while current_block <= scan_until_block:
+    #         txs_in_block = self.get_block_transactions(current_block)
+    #         if len(txs_in_block) > 0:
+    #             for transaction in txs_in_block:
+    #                 txs.append(transaction)
+    #
+    #         print(f'Block: {current_block}, tx count: {len(txs)}')
+    #         current_block += 1
+    #
+    #     return txs
+
+    def get_tx_value(self, tx):
+        tx_id = tx.get('txid')
+        return_address, found, tx_request = self.get_return_address(tx_id)
+
+        if found:
+            value = 0
+            for output in tx_request.json().get('outputs'):
+                if output.get('address') != return_address:
+                    value += int(output.get('value'))
+        else:
+            value = tx.get('value')
+
+        return value
+
+    def get_last_block_time(self, block):
+        req_string = f'{self.base_url}/block/{block}'
+        res = requests.get(req_string)
+        data = res.json()
+        time = data.get('time')
+        time_date = datetime.datetime.strptime(time, STATS_NORMALIZED_TIME)
+        return time_date
+
+    def get_address_balance(self, address):
+        req_string = f'{self.base_url}/address/{address}/balance'
+        # print(f'address balance string {req_string}', flush=True)
+        res = requests.get(req_string)
+        data = res.json()
+        balance = int(float(data.get('balance')))
+        return balance
+
+    def get_transaction_by_hash(self, tx_hash):
+        req_string = f'{self.base_url}/tx/{tx_hash}'
+        res = requests.get(req_string)
+        data = res.json()
+        return data
+
+    def get_tx_addresses(self, tx_hash):
+        endpoint_url = f'{self.base_url}/tx/{tx_hash}/coins'
+        res = requests.get(endpoint_url)
+        data = res.json()
+        addresses = []
+        for input in data['inputs']:
+            addresses.append(input['address'])
+        for output in data['outputs']:
+            addresses.append(output['address'])
+        return addresses
+
+class DucatusXAPI(DucatusAPI):
+    def set_base_url(self):
+        self.base_url = f'https://ducapi.rocknblock.io/api/DUCX/{self.network}'
+
+    def get_tx_value(self, tx):
+        return tx.get('value')
 
 
 def return_ducatus(payment_hash, amount):
@@ -128,7 +221,7 @@ def return_ducatus(payment_hash, amount):
 
     print('input_params', input_params, flush=True)
 
-    return_address, response_ok = duc_api.get_return_address(p.tx_hash)
+    return_address, response_ok, return_res = duc_api.get_return_address(p.tx_hash)
     if not response_ok:
         print('fail to fetch return address', flush=True)
         return
@@ -153,3 +246,4 @@ def return_ducatus(payment_hash, amount):
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
     print('tx', tx_hash, flush=True)
     print('receive address was:', p.exchange_request.duc_address, flush=True)
+

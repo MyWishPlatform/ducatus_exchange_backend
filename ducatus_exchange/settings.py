@@ -40,12 +40,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_extensions',
+    'corsheaders',
 
     'ducatus_exchange.payments',
     'ducatus_exchange.rates',
     'ducatus_exchange.transfers',
     'ducatus_exchange.exchange_requests',
     'ducatus_exchange.lottery',
+    'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
 ]
 
@@ -94,6 +96,14 @@ DATABASES = {
     }
 }
 
+CORS_ORIGIN_ALLOW_ALL = True
+
+USE_X_FORWARDED_HOST = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -127,6 +137,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+STATS_NORMALIZED_TIME = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
