@@ -2,6 +2,7 @@ import pymongo
 import json
 import sys
 import csv
+import os
 import asyncio
 import aiohttp
 import traceback
