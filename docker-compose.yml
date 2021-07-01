@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: DOCKERFILE
+    image: ducatus_exchange_backend-image
+    container_name: ducatus_exchange_backend
+    hostname: ducatus_exchange_backend
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/www/ducatus_exchange_backend
+    command: >
+      sh -c "wait-for db:5432 && wait-for rabbit:5672 &&
+             python3 manage.py makemigrations &&
+             python3 manage.py migrate &&
+             python3 manage.py runserver"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - db
+      - rabbit
+    networks:
+      - shared_network
+
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbituser
+      - RABBITMQ_DEFAULT_PASS=rabbitpassword
+      - RABBITMQ_DEFAULT_VHOST=rabbithost
+    ports:
+      - "5682:5672"
+    networks:
+      - shared_network
+
+  worker:
+    image: backend-image
+    restart: on-failure
+    command: >
+      sh -c "wait-for backend:8080 &&
+             celery worker -B -l info -A ducatus_exchange_backend.task -s /tmp/celerybeat-schedule"
+    depends_on:
+      - backend
+      - rabbit
+      - db
+    networks:
+      - shared_network
+
+  db:
+    image: postgres
+    container_name: ducatus_exchange_db
+    hostname: ducatus_exchange
+    environment:
+      - POSTGRES_DB=database
+      - POSTGRES_USER=databaseuser
+      - POSTGRES_PASSWORD=databasepassword
+    ports:
+      - "5432"
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    driver: bridge
