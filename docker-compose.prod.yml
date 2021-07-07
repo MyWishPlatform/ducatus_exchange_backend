@@ -55,7 +55,7 @@ services:
       dockerfile: DOCKERFILE.prod
     restart: unless-stopped
     command: >
-    sh -c "./wait-for rabbit:5672 &&
+      sh -c "./wait-for rabbit:5672 &&
            celery -A ducatus_exchange worker -B -l info
            --logfile=/var/log/celery/celeryworker-shhh.log
            --pidfile=/var/run/celery/celeryworker-shhh.pid"

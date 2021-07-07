@@ -50,8 +50,8 @@ INSTALLED_APPS = [
     'ducatus_exchange.quantum',
     'ducatus_exchange.freezing',
     'ducatus_exchange.vouchers',
-    'ducatus.exchange.vtransfers',
-    'ducatus.exchange.staking',
+    'ducatus_exchange.vtransfers',
+    'ducatus_exchange.staking',
 ]
 
 MIDDLEWARE = [

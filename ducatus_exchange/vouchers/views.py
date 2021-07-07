@@ -18,8 +18,8 @@ from ducatus_exchange.vouchers.serializers import VoucherSerializer, FreezingVou
 from ducatus_exchange.freezing.api import get_unused_frozen_vouchers
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface, JSONRPCException, DucatuscoreInterfaceException
 from ducatus_exchange.vouchers.models import UnlockVoucherTx
-from ducatus_exchange.transfers.api import validate_voucher
-from ducatus_exchange.transfers.api import convert_usd2duc
+from ducatus_exchange.vtransfers.api import validate_voucher
+from ducatus_exchange.vtransfers.api import convert_usd2duc
 from ducatus_exchange.settings import API_KEY_VOUCHER, DUC_CREDIT_CREDENTIALS, RATES_API_CHANGE_URL, RATES_API_CHANGE_KEY
 
 

@@ -32,10 +32,10 @@ from ducatus_exchange.stats.views import DucxWalletsViewSet
 from ducatus_exchange.staking.views import (generate_deposit, get_deposits,
                                            get_deposit_info, send_deposit_transaction,
                                            generate_deposit_without_dividends)
-from ducatus_exchange.vouchers import VoucherViewSet
-from ducatus_exchange.vouchers import get_withdraw_info, get_frozen_vouchers, send_raw_transaction, \
+from ducatus_exchange.vouchers.views import VoucherViewSet
+from ducatus_exchange.vouchers.views import get_withdraw_info, get_frozen_vouchers, send_raw_transaction, \
     register_voucher, get_voucher_activation_code, credit_duc
-from ducatus_exchange.vouchers import ChangeDucRate
+from ducatus_exchange.vouchers.views import ChangeDucRate
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -74,7 +74,7 @@ urlpatterns = [
     url(r'api/v1/register_payments_manually/', register_payments_manually),
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
-    url(r'^api/v1/', include('ducatus_exchange.stats.urls'))
+    url(r'^api/v1/', include('ducatus_exchange.stats.urls')),
     
     url(r'^api/v1/get_withdraw_info/', get_withdraw_info),
     url(r'^api/v1/get_frozen_vouchers/', get_frozen_vouchers),

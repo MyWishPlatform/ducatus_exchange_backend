@@ -15,6 +15,7 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus
 from ducatus_exchange.exchange_requests.models import ExchangeStatus
 
+
 def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
 
