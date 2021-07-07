@@ -8,63 +8,94 @@ services:
     image: ducatus_exchange_backend-image
     container_name: ducatus_exchange_backend
     hostname: ducatus_exchange_backend
-    restart: on-failure
+    restart: always
+    expose:
+      - 8080
     ports:
-      - "8080:8080"
-    volumes:
-      - .:/www/ducatus_exchange_backend
+      - 0.0.0.0:8080:8080
     command: >
-      sh -c "wait-for db:5432 && wait-for rabbit:5672 &&
-             python3 manage.py makemigrations &&
+      sh -c "python3 manage.py makemigrations &&
              python3 manage.py migrate &&
-             python3 manage.py runserver"
+             python3 manage.py runserver 0.0.0.0:8080"
     stdin_open: true
     tty: true
     depends_on:
       - db
       - rabbit
     networks:
-      - shared_network
+      - main
+    volumes:
+      - .:/www
+    links:
+      - db
 
   rabbit:
     image: rabbitmq:3-management
     container_name: rabbit
     hostname: rabbit
     environment:
-      - RABBITMQ_DEFAULT_USER=rabbituser
-      - RABBITMQ_DEFAULT_PASS=rabbitpassword
-      - RABBITMQ_DEFAULT_VHOST=rabbithost
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=/
     ports:
       - "5682:5672"
+      - "15682:15672"
     networks:
-      - shared_network
+      - main
 
-  worker:
-    image: backend-image
-    restart: on-failure
+  celery:
+    build:
+      context: .
+      dockerfile: DOCKERFILE
+    restart: always
     command: >
-      sh -c "wait-for backend:8080 &&
-             celery worker -B -l info -A ducatus_exchange_backend.task -s /tmp/celerybeat-schedule"
+      sh -c "./wait-for rabbit:5672 &&
+             celery -A ducatus_exchange worker -B --loglevel=info"
     depends_on:
       - backend
       - rabbit
       - db
     networks:
-      - shared_network
+      - main
+    links:
+      - rabbit
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: DOCKERFILE
+    restart: always
+    command: >
+      sh -c "./wait-for rabbit:5672 &&
+             celery -A ducatus_exchange beat -l info"
+    depends_on:
+      - backend
+      - rabbit
+      - db
+      - celery
+    networks:
+      - main
+    links:
+      - rabbit
 
   db:
-    image: postgres
-    container_name: ducatus_exchange_db
-    hostname: ducatus_exchange
+    image: postgres:13-alpine
+    container_name: db
+    hostname: db
     environment:
-      - POSTGRES_DB=database
-      - POSTGRES_USER=databaseuser
-      - POSTGRES_PASSWORD=databasepassword
+      - POSTGRES_DB=ducatus_exchange
+      - POSTGRES_USER=ducatus_exchange
+      - POSTGRES_PASSWORD=ducatus_exchange
     ports:
-      - "5432"
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
     networks:
-      - shared_network
+      - main
 
 networks:
-  shared_network:
+  main:
     driver: bridge
+
+volumes:
+  postgresql-data:

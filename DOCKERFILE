@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.7-alpine3.12
 
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -6,20 +6,22 @@ ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /www
 WORKDIR /www
-COPY ./ /www/ducatus_exchange_backend
-COPY ./requirements.txt /requirements.txt
-RUN python3 -m venv /opt/venv
+RUN apk add --no-cache bash
+
+COPY requirements.txt /www/
+RUN apk update && apk add libressl-dev
+RUN apk update && apk add libffi-dev
 RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev
-#RUN apk add --update --no-cache postgresql-client
-#RUN apk add --update --no-cache --virtual .tmp-build-deps \
-#      gcc libc-dev linux-headers postgresql-dev musl-dev
-RUN apk update && apk add libpq
+    && apk add postgresql-dev gcc python3-dev musl-dev libpq g++ jpeg-dev zlib-dev
+RUN apk add --update python3 py3-pip build-base git
+RUN pip3 install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir -U wheel
+RUN pip3 install --no-cache-dir --upgrade setuptools
+RUN apk add --update --no-cache py3-numpy
 
-#RUN pip install --upgrade setuptools
-#RUN /opt/venv/bin/python3 -m pip install --upgrade pip
-RUN . /opt/venv/bin/activate && pip install --upgrade -r /requirements.txt
+RUN pip3 install --no-cache-dir -U git+https://github.com/inkviz96/two1-click.git
 
-#RUN apk del .tmp-build-deps
-
-
+RUN pip3 install --no-cache-dir -U -r requirements.txt
+COPY ./ /www/
+RUN chmod +x /www/wait-for
+EXPOSE 8080

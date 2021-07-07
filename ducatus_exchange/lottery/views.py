@@ -39,6 +39,7 @@ class LotteryPlayerViewSet(viewsets.ModelViewSet):
             return queryset
         return LotteryPlayer.objects.order_by('id')
 
+
 @api_view(http_method_names=['GET'])
 def get_lottery_info(request: Request):
     lotteries = Lottery.objects.order_by('id').first()

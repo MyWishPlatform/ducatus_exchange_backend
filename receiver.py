@@ -15,6 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.payments.api import parse_payment_message, TransferException
 from ducatus_exchange.transfers.api import confirm_transfer
+from ducatus_exchange.vtransfers.api import confirm_voucher_transfer
 
 
 class Receiver(threading.Thread):
@@ -63,6 +64,10 @@ class Receiver(threading.Thread):
         print('TRANSFER CONFIRMATION RECEIVED', flush=True)
         confirm_transfer(message)
 
+    def duc_transfer(self, message):
+        print('PAYMENT MESSAGE RECEIVED', flush=True)
+        confirm_voucher_transfer(message)
+
     def callback(self, ch, method, properties, body):
         print('received', body, properties, method, flush=True)
         try:
@@ -92,6 +97,3 @@ networks = NETWORK_SETTINGS.keys()
 for network in networks:
     rec = Receiver(network)
     rec.start()
-
-
-

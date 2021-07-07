@@ -24,8 +24,7 @@ ROOT = os.path.dirname(os.path.realpath(__file__))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
-
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 # Application definition
 
@@ -49,6 +48,10 @@ INSTALLED_APPS = [
     'ducatus_exchange.lottery',
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
+    'ducatus_exchange.freezing',
+    'ducatus_exchange.vouchers',
+    'ducatus.exchange.vtransfers',
+    'ducatus.exchange.staking',
 ]
 
 MIDDLEWARE = [
@@ -88,10 +91,10 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ducatus_exchange',
-        'USER': 'ducatus_exchange',
-        'PASSWORD': 'ducatus_exchange',
-        'HOST': '127.0.0.1',
+        'NAME': os.getenv('POSTGRE_DB', 'ducatus_exchange'),
+        'USER': os.getenv('POSTGRES_USER', 'ducatus_exchange'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'ducatus_exchange'),
+        'HOST': os.getenv('POSTGRES_HOST', 'db'),
         'PORT': '5432',
     }
 }
@@ -159,6 +162,8 @@ REST_FRAMEWORK = {
 }
 
 SHELL_PLUS = 'ptpython'
+
+CLTV_DIR = os.path.join(BASE_DIR, 'ducatus_exchange/freezing/cltv')
 
 try:
     from ducatus_exchange.settings_local import *

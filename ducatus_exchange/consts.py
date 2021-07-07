@@ -47,6 +47,12 @@ BONUSES_FOR_TICKETS = {
     }
 }
 
+DIVIDENDS_INFO = {
+    5: 8,
+    13: 13,
+    34: 21,
+}
+
 RATES_PRECISION = 0.97
 
 DAYLY_LIMIT = 25000 * DECIMALS['DUC']

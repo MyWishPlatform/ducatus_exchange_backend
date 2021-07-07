@@ -1,0 +1,39 @@
+FROM python:3.7-alpine3.12
+
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+ENV APP_HOME=/www
+RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/staticfiles
+RUN mkdir $APP_HOME/mediafiles
+WORKDIR $APP_HOME
+
+RUN addgroup -S app && adduser -S app -G app
+
+COPY requirements.txt /www/
+
+RUN apk add --no-cache bash
+RUN apk update \
+    && apk add libressl-dev libffi-dev postgresql-dev gcc python3-dev musl-dev libpq g++ jpeg-dev zlib-dev
+RUN apk add --update python3 py3-pip build-base
+RUN pip3 install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir -U wheel
+RUN pip3 install --no-cache-dir --upgrade setuptools
+RUN apk add --update --no-cache py3-numpy
+
+RUN pip3 install --no-cache-dir -U -r requirements.txt
+RUN pip3 install --no-cache-dir --no-deps -U click
+
+COPY ./entrypoint.prod.sh $APP_HOME
+COPY ./ /www/
+RUN chmod +x /www/wait-for
+
+EXPOSE 8000
+
+RUN chown -R app:app $APP_HOME
+
+USER app
+
+ENTRYPOINT ["/www/entrypoint.prod.sh"]

@@ -50,6 +50,7 @@ class ExchangeRequest(models.Model):
 
         self.save()
 
+
 class ExchangeStatus(models.Model):
     status = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now_add=True)

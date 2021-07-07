@@ -23,4 +23,3 @@ class UsdRate(models.Model):
         self.chf_price = CHF
         self.duc_price = DUC
         self.ducx_price = DUCX
-

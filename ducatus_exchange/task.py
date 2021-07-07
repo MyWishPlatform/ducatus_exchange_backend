@@ -13,7 +13,7 @@ from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
 
-app = celery.Celery('task', broker='amqp://')
+app = celery.Celery('task', broker='amqp://admin:admin@rabbit:5672//')
 
 
 @app.task
@@ -22,11 +22,13 @@ def reset_dayly():
     dayly_reset()
     print('dayly reset complete', flush=True)
 
+
 @app.task
 def reset_weekly():
     print('Starting weekly reset', flush=True)
     weekly_reset()
     print('weekly reset complete', flush=True)
+
 
 @app.task
 def update_duc_balances():
@@ -34,11 +36,13 @@ def update_duc_balances():
     get_duc_balances()
     print('DUC balance updating complete', flush=True)
 
+
 @app.task
 def update_ducx_node_balandes():
     print('Starting DUCX node balance updating', flush=True)
     update_nodes()
     print('DUC node balance updating complete', flush=True)
+
 
 app.conf.beat_schedule = {
     'dayly_task': {

@@ -26,9 +26,6 @@ class TransferException(Exception):
     pass
 
 
-
-
-
 def register_payment(request_id, tx_hash, currency, amount):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
@@ -194,4 +191,3 @@ def get_payments_statistics():
         print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
     else:
         print('No payments in USDC at this period', flush=True)
-

@@ -23,11 +23,19 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from ducatus_exchange.views import FeedbackForm
+from ducatus_exchange.vtransfers.views import TransferRequest
 from ducatus_exchange.exchange_requests.views import ValidateDucatusAddress, register_voucher_in_lottery
 from ducatus_exchange.lottery.views import LotteryViewSet, LotteryPlayerViewSet, lottery_participants, \
     get_lottery_info, register_payments_manually
 from ducatus_exchange.quantum.views import get_charge, add_charge, change_charge_status
 from ducatus_exchange.stats.views import DucxWalletsViewSet
+from ducatus_exchange.staking.views import (generate_deposit, get_deposits,
+                                           get_deposit_info, send_deposit_transaction,
+                                           generate_deposit_without_dividends)
+from ducatus_exchange.vouchers import VoucherViewSet
+from ducatus_exchange.vouchers import get_withdraw_info, get_frozen_vouchers, send_raw_transaction, \
+    register_voucher, get_voucher_activation_code, credit_duc
+from ducatus_exchange.vouchers import ChangeDucRate
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -45,6 +53,7 @@ router = DefaultRouter(trailing_slash=True)
 router.register(r'lotteries', LotteryViewSet)
 router.register(r'lotteries_players', LotteryPlayerViewSet)
 router.register(r'statistics/ducx_wallets', DucxWalletsViewSet)
+router.register(r'vouchers', VoucherViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -66,6 +75,20 @@ urlpatterns = [
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
     url(r'^api/v1/', include('ducatus_exchange.stats.urls'))
+    
+    url(r'^api/v1/get_withdraw_info/', get_withdraw_info),
+    url(r'^api/v1/get_frozen_vouchers/', get_frozen_vouchers),
+    url(r'^api/v1/send_raw_transaction', send_raw_transaction),
+    url(r'^api/v1/register_voucher', register_voucher),
+    url(r'^api/v1/voucher_code', get_voucher_activation_code),
+    url(r'^api/v1/credit_duc', credit_duc),
+    url(r'^api/v1/change_duc_rate', ChangeDucRate.as_view()),
+    url(r'^api/v1/vtransfer/', TransferRequest.as_view()),
+    url(r'^api/v1/generate_deposit/', generate_deposit),
+    url(r'^api/v1/get_deposits/', get_deposits),
+    url(r'^api/v1/get_deposit_info', get_deposit_info),
+    url(r'^api/v1/send_deposit_transaction', send_deposit_transaction),
+    url(r'^api/v1/generate_deposit_without_dividends/', generate_deposit_without_dividends),
 
 
 ]

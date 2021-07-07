@@ -7,6 +7,25 @@ from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
 
 
+def retry_on_http_disconnection(req):
+    def wrapper(*args, **kwargs):
+        for attempt in range(10):
+            print('attempt', attempt, flush=True)
+            try:
+                return req(*args, **kwargs)
+            except RemoteDisconnected as e:
+                print(e, flush=True)
+                rpc_response = False
+            if not isinstance(rpc_response, bool):
+                print(rpc_response, flush=True)
+                break
+        else:
+            raise DucatuscoreInterfaceException('cannot get unspent with 10 attempts')
+
+    return wrapper
+
+
+
 class DucatuscoreInterfaceException(Exception):
     pass
 
@@ -127,3 +146,19 @@ class DucatuscoreInterface:
                   )
             print(e, flush=True)
             raise DucatuscoreInterfaceException(e)
+
+    @retry_on_http_disconnection
+    def node_transfer(self, address, amount):
+        try:
+            value = amount / DECIMALS['DUC']
+            print('try sending {value} DUC to {addr}'.format(value=value, addr=address), flush=True)
+            self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
+            res = self.rpc.sendtoaddress(address, value)
+            print(res, flush=True)
+            return res
+        except JSONRPCException as e:
+            err = 'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
+                .format(amount=amount, addr=address)
+            print(err, flush=True)
+            print(e, flush=True)
+            raise DucatuscoreInterfaceException(err + '\n' + str(e))

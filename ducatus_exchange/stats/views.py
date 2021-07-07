@@ -13,6 +13,7 @@ from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress
 from ducatus_exchange.stats.serializers import DucxWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
 
+
 class StatsHandler(APIView):
     def get(self, request, currency, days):
         data = []
@@ -90,10 +91,9 @@ class DucxWalletsToCSV(APIView):
 
         return response
 
+
 class DucWalletsView(APIView):
     def get(self, request):
         with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
             data = [{k: v for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
         return Response(data, status=status.HTTP_200_OK)
-
-

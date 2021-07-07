@@ -54,6 +54,7 @@ def get_numbers():
     #return (first_number, second_number, third_number,)
     return (first_number,)
 
+
 def finalize_lottery(tickets_amount):
     print(f'generated future block delta: {BLOCKS_DELTA}', flush=True)
 
