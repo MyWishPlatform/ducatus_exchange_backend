@@ -8,12 +8,6 @@ import aiohttp
 import traceback
 from ducatus_exchange.settings import MONGO_CONNECTION
 
-conn_str = MONGO_CONNECTION
-client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
-pattern = [{"$match": {"network": "livenet"}}, {"$group": {"_id": "$walletId", "addresses": {"$addToSet": "$address"}}}]
-database = client.bws
-wallets = database.addresses.aggregate(pattern)
-print(wallets)
 URL = 'https://ducapi.rocknblock.io/api/DUC/mainnet/address/{}/balance'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -32,6 +26,13 @@ async def asynchronous(addresses):
 
 
 def get_duc_balances():
+    conn_str = MONGO_CONNECTION
+    client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
+    pattern = [{"$match": {"network": "livenet"}},
+               {"$group": {"_id": "$walletId", "addresses": {"$addToSet": "$address"}}}]
+    database = client.bws
+    wallets = database.addresses.aggregate(pattern)
+    print(wallets)
     res = []
     for ids, wallet in enumerate(wallets):
         try:
@@ -63,7 +64,7 @@ def get_duc_balances():
 
     with open(os.path.join(BASE_DIR, 'DUC.csv'), 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        smapwriter.writerow('user_address', 'balance')
+        spamwriter.writerow('user_address', 'balance')
         for i in res:
             if i[1] > 0:
                 spamwriter.writerow([i[0], i[1]])
