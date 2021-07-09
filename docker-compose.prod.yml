@@ -137,7 +137,19 @@ services:
       dockerfile: dockerfiles/ducex_stats_checker.Dockerfile
     container_name: ducex_stats_checker
     restart: unless-stopped
-
+  scanner:
+    env_file: ./.env.prod
+    build:
+      context: .
+      dockerfile: dockerfiles/scanner.Dockerfile
+    depends_on:
+      - db
+      - rabbit
+    restart: unless-stopped
+    networks:
+      centurion-net:
+    volumes:
+      - ./scanner/settings:/app/mywill_scanner/settings
   db:
     image: postgres
     container_name: potgres_db
