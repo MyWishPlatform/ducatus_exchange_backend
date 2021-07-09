@@ -146,8 +146,6 @@ services:
       - db
       - rabbit
     restart: unless-stopped
-    networks:
-      centurion-net:
     volumes:
       - ./scanner/settings:/app/mywill_scanner/settings
   db:
