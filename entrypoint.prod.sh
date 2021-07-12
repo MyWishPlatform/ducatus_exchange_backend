@@ -1,14 +1,23 @@
 #!/bin/sh
 
-if [ "$DATABASE" = "postgres" ]
-then
-    echo "Postgres not run yet..."
+echo "Flush the manage.py command it any"
 
-    while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
-      sleep 0.1
-    done
+while ! python manage.py makemigrations 2>&1; do
+  echo "Makemigrations is in progress status"
+  sleep 3
+done
 
-    echo "Postgres RUN"
-fi
+while ! python manage.py flush --no-input 2>&1; do
+  echo "Flushing django manage command"
+  sleep 3
+done
+
+# Wait for few minute and run db migration
+while ! python manage.py migrate 2>&1; do
+  echo "Migrate is in progress status"
+  sleep 3
+done
+
+echo "Django docker is fully configured successfully."
 
 exec "$@"
