@@ -141,6 +141,20 @@ services:
     networks:
       - own
 
+  scanner:
+    env_file: ./.env.prod
+    build:
+      context: .
+      dockerfile: dockerfiles/scanner.Dockerfile
+    depends_on:
+      - db
+      - rabbit
+    restart: unless-stopped
+    volumes:
+      - ./scanner/settings:/app/mywill_scanner/settings
+    networks:
+      - own
+
   db:
     image: postgres
     container_name: potgres_db
