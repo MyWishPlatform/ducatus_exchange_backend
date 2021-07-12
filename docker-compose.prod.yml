@@ -2,6 +2,7 @@ version: "3"
 
 services:
   backend:
+    env_file: ./.env.prod
     build:
       context: .
       dockerfile: DOCKERFILE.prod
@@ -10,47 +11,35 @@ services:
     hostname: ducatus_exchange_backend
     restart: on-failure
     expose:
-      - 8000
+      - ${DOCKER_EXPOSE_PORT}
     ports:
-      - 8000:8000
+      - ${DOCKER_PORT}
     volumes:
       - .:/www/ducatus_exchange_backend
-      - static_volume:/www/staticfiles
-      - media_volume:/www/mediafiles
-    command: gunicorn ducatus_exchange.wsgi:application --bind 0.0.0.0:8000
+      - ./static_volume:/www/staticfiles
+      - ./media_volume:/www/mediafiles
+    command: "gunicorn ducatus_exchange.wsgi:application --bind 0.0.0.0:${DPCKER_PORT}"
     stdin_open: true
     tty: true
-    env_file:
-      - ./.env.prod
     depends_on:
       - db
       - rabbit
     links:
       - db
-
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: DOCKERFILE
-    container_name: nginx
-    ports:
-      - 1337:80
-    depends_on:
-      - backend
-    volumes:
-      - static_volume:/www/staticfiles
-      - media_volume:/www/mediafiles
+    networks:
+      - own
 
   rabbit:
     image: rabbitmq:3-management
     container_name: rabbit
     hostname: rabbit
     restart: unless-stopped
-    env_file:
-      - ./.env.prod
+    env_file: ./.env.prod
     ports:
       - 5682:5672
       - 15682:15672
+    networks:
+      - own
 
   celery:
     build:
@@ -69,6 +58,8 @@ services:
       - db
     links:
       - rabbit
+    networks:
+      - own
 
   celery-beat:
     build:
@@ -89,6 +80,8 @@ services:
       - celery
     links:
       - rabbit
+    networks:
+      - own
 
   voucher_withdraw_checker:
     env_file: ./.env.prod
@@ -97,6 +90,8 @@ services:
       dockerfile: dockerfiles/voucher_withdraw_checker.Dockerfile
     container_name: voucher_withdraw_checker
     restart: unless-stopped
+    networks:
+      - own
 
   voucher_inputs_checker:
     env_file: ./.env.prod
@@ -105,6 +100,8 @@ services:
       dockerfile: dockerfiles/voucher_inputs_checker.Dockerfile
     container_name: voucher_inputs_checker
     restart: unless-stopped
+    networks:
+      - own
 
   ducex_receiver:
     env_file: ./.env.prod
@@ -121,6 +118,8 @@ services:
       dockerfile: dockerfiles/ducex_lottery_checker.Dockerfile
     container_name: duce_lottery_checker
     restart: unless-stopped
+    networks:
+      - own
 
   ducex_rates_checker:
     env_file: ./.env.prod
@@ -129,6 +128,8 @@ services:
       dockerfile: dockerfiles/ducex_rates_checker.Dockerfile
     container_name: ducex_rates_checker
     restart: unless-stopped
+    networks:
+      - own
 
   ducex_stats_checker:
     env_file: ./.env.prod
@@ -137,6 +138,8 @@ services:
       dockerfile: dockerfiles/ducex_stats_checker.Dockerfile
     container_name: ducex_stats_checker
     restart: unless-stopped
+    networks:
+      - own
 
   db:
     image: postgres
@@ -144,13 +147,15 @@ services:
     hostname: db
     ports:
       - 5432:5432
-    env_file:
-      - ./.env.prod
+    env_file: ./.env.prod
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - own
 
+networks:
+  own:
+    driver: bridge
 volumes:
   postgresql-data:
-  static_volume:
-  media_volume:

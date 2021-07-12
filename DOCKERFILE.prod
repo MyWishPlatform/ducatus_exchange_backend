@@ -17,23 +17,22 @@ COPY requirements.txt /www/
 RUN apk add --no-cache bash
 RUN apk update \
     && apk add libressl-dev libffi-dev postgresql-dev gcc python3-dev musl-dev libpq g++ jpeg-dev zlib-dev
-RUN apk add --update python3 py3-pip build-base
+RUN apk add --update python3 py3-pip build-base git
 RUN pip3 install --no-cache-dir --upgrade pip
 RUN pip3 install --no-cache-dir -U wheel
 RUN pip3 install --no-cache-dir --upgrade setuptools
 RUN apk add --update --no-cache py3-numpy
 
+RUN pip3 install --no-cache-dir -U git+https://github.com/inkviz96/two1-click.git
 RUN pip3 install --no-cache-dir -U -r requirements.txt
-RUN pip3 install --no-cache-dir --no-deps -U click
 
 COPY ./entrypoint.prod.sh $APP_HOME
 COPY ./ /www/
 RUN chmod +x /www/wait-for
 
-EXPOSE 8000
+EXPOSE 8010
 
 RUN chown -R app:app $APP_HOME
 
 USER app
-
 ENTRYPOINT ["/www/entrypoint.prod.sh"]
