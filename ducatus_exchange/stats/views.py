@@ -12,18 +12,18 @@ from rest_framework import status
 from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress
 from ducatus_exchange.stats.serializers import DucxWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
-from ducatus_exchange.transfers.models import DucatusTransfer, DucatusAddressBlacklist
+from ducatus_exchange.payments.models import Payment
 from django.db.models import Sum
+from ducatus_exchange.stats.models import DucatusAddressBlacklist
 
 
 class DucToDucxSwap(APIView):
+    """Summing dayly swap ducatus to ducatusx"""
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        duc = DucatusTransfer.objects.get(currency='DUC')\
-            .exclude(
-            exchange_request__duc_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))\
+        duc = Payment.objects.get(currency='DUC')\
             .filter(created_date__gt=time)\
-            .agreggate(Sum('amount'))
+            .agreggate(Sum('original_amount'))
         return Response({
                 'ammount': duc,
                 'currency': 'duc'
@@ -31,14 +31,13 @@ class DucToDucxSwap(APIView):
 
 
 class DucxToDucSwap(APIView):
+    """Summing dayly swap ducatusx to ducatus"""
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        ducx = DucatusTransfer.objects.get(currency='DUCX')\
-            .exclude(
-            exchange_request__duc_address__isnull=False,
-            exchange_request__ducx_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address'))\
+        ducx = Payment.objects.get(currency='DUCX')\
+            .exclude(exchange_request__duc_address__isnull=False)\
             .filter(created_date__gt=time)\
-            .agreggate(Sum('amount'))
+            .agreggate(Sum('original_amount'))
         return Response({
                 'ammount': ducx,
                 'currency': 'ducx'
@@ -69,7 +68,9 @@ class StatsHandler(APIView):
             weekly_value += tx.transaction_value
         while time < now:
             statistics = StatisticsTransfer.objects.filter(
-                transaction_time__gt=time).filter(transaction_time__lte=time+timedelta(hours=period[days])).filter(currency=currency)
+                transaction_time__gt=time)\
+                .filter(transaction_time__lte=time+timedelta(hours=period[days]))\
+                .filter(currency=currency)
             time += timedelta(hours=period[days])
             if time > now:
                 time = now
@@ -92,7 +93,8 @@ class StatsHandler(APIView):
 
 
 class DucxWalletsViewSet(ReadOnlyModelViewSet):
-    queryset = StatisticsAddress.objects.filter(network='DUCX')
+    queryset = StatisticsAddress.objects.filter(network='DUCX')\
+        .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address'))
     serializer_class = DucxWalletsSerializer
 
 
@@ -132,5 +134,3 @@ class DucWalletsView(APIView):
         with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
             data = [{k: v for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
         return Response(data, status=status.HTTP_200_OK)
-
-
