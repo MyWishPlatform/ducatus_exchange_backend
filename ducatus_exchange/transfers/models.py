@@ -5,6 +5,11 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 
 
+class DucatusAddressBlacklist:
+    duc_wallet_address = models.CharField(max_length=64, help_text='corporate wallets', default=0)
+    ducx_wallet_address = models.CharField(max_length=64, help_text='corporate wallets', default=0)
+
+
 class DucatusTransfer(models.Model):
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')

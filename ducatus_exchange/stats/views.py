@@ -12,6 +12,38 @@ from rest_framework import status
 from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress
 from ducatus_exchange.stats.serializers import DucxWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
+from ducatus_exchange.transfers.models import DucatusTransfer, DucatusAddressBlacklist
+from django.db.models import Sum
+
+
+class DucToDucxSwap(APIView):
+    def get(self, request):
+        time = datetime.now() - timedelta(hours=24)
+        duc = DucatusTransfer.objects.get(currency='DUC')\
+            .exclude(
+            exchange_request__duc_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))\
+            .filter(created_date__gt=time)\
+            .agreggate(Sum('amount'))
+        return Response({
+                'ammount': duc,
+                'currency': 'duc'
+                }, status=status.HTTP_200_OK)
+
+
+class DucxToDucSwap(APIView):
+    def get(self, request):
+        time = datetime.now() - timedelta(hours=24)
+        ducx = DucatusTransfer.objects.get(currency='DUCX')\
+            .exclude(
+            exchange_request__duc_address__isnull=False,
+            exchange_request__ducx_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address'))\
+            .filter(created_date__gt=time)\
+            .agreggate(Sum('amount'))
+        return Response({
+                'ammount': ducx,
+                'currency': 'ducx'
+                }, status=status.HTTP_200_OK)
+
 
 class StatsHandler(APIView):
     def get(self, request, currency, days):
@@ -20,9 +52,13 @@ class StatsHandler(APIView):
         time = datetime.now() - timedelta(days=days)
         period = {1: 2, 7: 2, 30: 24, 365: 168}
         daily_txs = StatisticsTransfer.objects.filter(
-                transaction_time__gt=now - timedelta(hours=24)).filter(transaction_time__lte=now).filter(currency=currency)
+                transaction_time__gt=now - timedelta(hours=24))\
+            .filter(transaction_time__lte=now)\
+            .filter(currency=currency)
         weekly_txs = StatisticsTransfer.objects.filter(
-            transaction_time__gt=now - timedelta(hours=24*7)).filter(transaction_time__lte=now).filter(currency=currency)
+            transaction_time__gt=now - timedelta(hours=24*7))\
+            .filter(transaction_time__lte=now)\
+            .filter(currency=currency)
         daily_tx_count = daily_txs.count()
         weekly_txs_count = weekly_txs.count()
         daily_value = 0
@@ -89,6 +125,7 @@ class DucxWalletsToCSV(APIView):
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
 
         return response
+
 
 class DucWalletsView(APIView):
     def get(self, request):
