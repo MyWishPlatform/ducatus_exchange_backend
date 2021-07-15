@@ -41,14 +41,13 @@ class DucatuscoreInterface:
     def transfer(self, address, amount):
         try:
             value = amount / DECIMALS['DUC']
-            print('try sending {value} DUC to {addr}'.format(value=value, addr=address))
+            print(f'try sending {value} DUC to {address}')
             self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
             res = self.rpc.sendtoaddress(address, value)
             print(res)
             return res
         except JSONRPCException as e:
-            err = 'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
-                .format(amount=amount, addr=address)
+            err = f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address} failed'
             print(err, flush=True)
             print(e, flush=True)
             raise DucatuscoreInterfaceException(err)
@@ -122,8 +121,6 @@ class DucatuscoreInterface:
             return tx_hash
 
         except JSONRPCException as e:
-            print('DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
-                  .format(amount=amount, addr=address_to), flush=True
-                  )
+            print(f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address_to} failed', flush=True)
             print(e, flush=True)
             raise DucatuscoreInterfaceException(e)

@@ -113,9 +113,8 @@ def change_charge_status(request: Request):
         charge = Charge.objects.filter(charge_id=charge_id).first()
         if charge and status == 'Withdrawn':
             if Payment.objects.filter(charge_id=charge.id):
-                print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
-                    charge.id, charge.charge_id
-                ), flush=True)
+                print(f'WARN! Payment for Charge {charge.id}'
+                      f' with quantum id {charge.charge_id} already exist. Decline payment', flush=True)
                 return Response(200)
 
             print(f'try create voucher for charge {charge_id}', flush=True)

@@ -42,14 +42,8 @@ def register_payment(request_id, tx_hash, currency, amount):
     # exchange_request.from_currency = currency
     # exchange_request.save()
     print(
-        'PAYMENT: {amount} {curr} ({value} DUC) on rate {rate} within request {req} with TXID: {txid}'.format(
-            amount=amount,
-            curr=currency,
-            value=calculated_amount,
-            rate=rate,
-            req=exchange_request.id,
-            txid=tx_hash,
-        ),
+        f'PAYMENT: {amount} {currency} ({calculated_amount} DUC)'
+        f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}',
         flush=True
     )
 
@@ -70,7 +64,7 @@ def parse_payment_message(message):
 
         transfer_with_handle_lottery_and_referral(payment)
     else:
-        print('tx {} already registered'.format(tx), flush=True)
+        print(f'tx {tx} already registered', flush=True)
 
 
 def transfer_with_handle_lottery_and_referral(payment):
@@ -136,14 +130,14 @@ def send_voucher_email(voucher, to_email, usd_amount):
     )
 
     send_mail(
-        'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+        f'Your DUC Purchase Confirmation for ${round(usd_amount, 2)}',
         '',
         CONFIRMATION_FROM_EMAIL,
         [to_email],
         connection=conn,
         html_message=warning_html_style + html_body,
     )
-    print('voucher message sent successfully to {}'.format(to_email), flush=True)
+    print(f'voucher message sent successfully to {to_email}', flush=True)
 
 
 def write_payments_to_csv(outfile_path, payment_list, curr_decimals):

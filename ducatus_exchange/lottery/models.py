@@ -49,7 +49,7 @@ class Lottery(models.Model):
                     connection=connection,
                     html_message=html_body,
                 )
-                print('CONGRATULATIONS message sent successfully to {}'.format(winner.email))
+                print(f'CONGRATULATIONS message sent successfully to {winner.email}')
             except Exception as e:
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 

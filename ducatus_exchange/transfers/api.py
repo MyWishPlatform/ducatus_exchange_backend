@@ -70,7 +70,7 @@ def check_limits(payment):
 def make_ref_transfer(payment):
     amount = Decimal(int(int(Decimal(payment.sent_amount)) * REF_BONUS_PERCENT))
     receiver = payment.exchange_request.user.ref_address
-    print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    print(f'ducatus transfer started: sending {amount} DUC to {receiver}', flush=True)
     currency = 'DUC'
 
     rpc = DucatuscoreInterface()
@@ -84,7 +84,7 @@ def make_ref_transfer(payment):
 def transfer_ducatus(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
-    print('ducatus transfer started: sending {amount} DUC to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    print(f'ducatus transfer started: sending {amount} DUC to {receiver}', flush=True)
     currency = 'DUC'
 
     rpc = DucatuscoreInterface()
@@ -98,7 +98,7 @@ def transfer_ducatus(payment):
 def transfer_ducatusx(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
-    print('ducatusX transfer started: sending {amount} DUCX to {addr}'.format(amount=amount, addr=receiver), flush=True)
+    print(f'ducatusX transfer started: sending {amount} DUCX to {receiver}', flush=True)
     currency = 'DUCX'
 
     parity = ParityInterface()
@@ -131,7 +131,7 @@ def confirm_transfer(message):
     transfer_id = message['transferId']
     # transfer_address = message['address']
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
-    print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer.exchange_request.user.address),
+    print(f'transfer id {transfer_id} address {transfer.exchange_request.user.address}',
           flush=True)
     # if transfer_address == transfer.request.duc_address:
     transfer.state_done()

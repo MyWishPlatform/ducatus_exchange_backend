@@ -47,10 +47,7 @@ class Receiver(threading.Thread):
             on_message_callback=self.callback
         )
 
-        print(
-            'RECEIVER MAIN: started on {net} with queue `{queue_name}`'
-            .format(net=self.network, queue_name=queue_name), flush=True
-        )
+        print(f'RECEIVER MAIN: started on {self.network} with queue `{queue_name}`', flush=True)
 
         channel.start_consuming()
 

@@ -39,6 +39,6 @@ if __name__ == '__main__':
                     lottery.save()
 
                     lottery.send_mails_to_winners()
-                    print('lottery {} with id {} closed'.format(lottery.name, lottery.id), flush=True)
+                    print(f'lottery {lottery.name} with id {lottery.id} closed', flush=True)
 
         time.sleep(LOTTERY_CHECKER_INTERVAL)

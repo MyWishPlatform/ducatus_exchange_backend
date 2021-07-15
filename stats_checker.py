@@ -42,7 +42,7 @@ def save_transfer(api, tx, network):
             else:
                 net_account_to = net_account_from
         except Exception as e:
-            print('could not save addresses pack: {from_addr} and {to_addr}'.format(
+            print(f'could not save addresses pack: {from_addr} and {to_addr}'.format(
                 from_addr=tx.get('from').lower(),
                 to_addr=tx.get('from'.lower())
             ), flush=True)
@@ -64,7 +64,8 @@ def save_transfer(api, tx, network):
         transfer_saved = True
     else:
         print('transfer already saved at obj id {tr_id}, hash {tr_hash}'.format(
-            tr_id=transfer.first().id, tr_hash=tx.get('txid')),
+            tr_id=transfer.first().id,
+            tr_hash=tx.get('txid')),
             flush=True
         )
 

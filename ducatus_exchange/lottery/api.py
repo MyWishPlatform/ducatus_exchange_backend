@@ -71,9 +71,10 @@ class LotteryRegister:
         lottery.save()
 
         print(
-            'address {} registered to lottery {} (id={}) with {} usd and {} tickets'.format(lottery_player.user.address,
-                                                                                            lottery.name, lottery.id,
-                                                                                            usd_amount, tickets_amount),
+            f'address {lottery_player.user.address}'
+            f' registered to lottery {lottery.name}'
+            f' (id={lottery.id}) with {usd_amount}'
+            f' usd and {tickets_amount} tickets',
             flush=True)
 
         return lottery_player
@@ -116,7 +117,7 @@ class LotteryRegister:
         connection = cls.get_mail_connection()
         try:
             send_mail(
-                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+                f'Your DUC Purchase Confirmation for ${round(usd_amount, 2)}',
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
@@ -124,7 +125,7 @@ class LotteryRegister:
                 html_message=lottery_html_style + html_body,
             )
 
-            print('conformation message sent successfully to {}'.format(to_email), flush=True)
+            print(f'conformation message sent successfully to {to_email}', flush=True)
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
@@ -139,14 +140,14 @@ class LotteryRegister:
 
         try:
             send_mail(
-                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+                f'Your DUC Purchase Confirmation for ${round(usd_amount, 2)}',
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
                 connection=connection,
                 html_message=warning_html_style + html_body,
             )
-            print('warning message sent successfully to {}'.format(to_email), flush=True)
+            print(f'warning message sent successfully to {to_email}', flush=True)
         except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 
