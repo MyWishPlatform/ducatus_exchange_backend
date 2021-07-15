@@ -1,6 +1,5 @@
 import time
-import random
-
+import logging
 from web3 import Web3, HTTPProvider
 
 from random_contract.contract_settings import ABI, GAS_LIMIT, AVERAGE_BLOCK_TIME, BLOCKS_DELTA
@@ -9,6 +8,8 @@ from ducatus_exchange.settings import NETWORK_SETTINGS
 
 w3 = Web3(HTTPProvider(f'http://{NETWORK_SETTINGS["DUCX"]["host"]}:{NETWORK_SETTINGS["DUCX"]["port"]}'))
 contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=ABI)
+
+logger = logging.getLogger('random_contract')
 
 
 def get_tx_base_params():
@@ -56,23 +57,23 @@ def get_numbers():
 
 
 def finalize_lottery(tickets_amount):
-    print(f'generated future block delta: {BLOCKS_DELTA}', flush=True)
+    logger.info(msg=f'generated future block delta: {BLOCKS_DELTA}')
 
     init_tx_hash = init_lottery(tickets_amount)
-    print('lottery initialized in contract', init_tx_hash, flush=True)
+    logger.info(msg=f'lottery initialized in contract {init_tx_hash}')
 
     future_blocks_timeout = BLOCKS_DELTA * AVERAGE_BLOCK_TIME
-    print(f'waiting future blocks... sleep {future_blocks_timeout} seconds', flush=True)
+    logger.info(msg=f'waiting future blocks... sleep {future_blocks_timeout} seconds')
     time.sleep(future_blocks_timeout)
     drawing_tx_hash = draw_numbers()
-    print('lottery has drawn', drawing_tx_hash, flush=True)
+    logger.info(msg=f'lottery has drawn {drawing_tx_hash}')
 
     next_block_timeout = AVERAGE_BLOCK_TIME
-    print(f'waiting next block... sleep {next_block_timeout} seconds', flush=True)
+    logger.info(msg=f'waiting next block... sleep {next_block_timeout} seconds')
     time.sleep(next_block_timeout)
 
     #result = (0, 0, 0,)
-    result=(0,)
+    result = (0,)
     #while result == (0, 0, 0,):
     while result == (0,):
         result = get_numbers()
