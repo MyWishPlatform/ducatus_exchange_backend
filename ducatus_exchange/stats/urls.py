@@ -1,6 +1,3 @@
-import statistics
-
-from django.conf.urls import url
 from django.urls import path
 
 from . import views
@@ -12,4 +9,6 @@ urlpatterns = [
     # path('statistics/ducx_wallets', views.DucxWalletsHandler.as_view({'get': 'list'})),
     path('statistics/duc_wallets/', views.DucWalletsView.as_view()),
     path('statistics/<str:currency>_wallets/csv', views.DucxWalletsToCSV.as_view()),
+    path('statisctics/duc_to_ducx/', views.DucToDucxSwap.as_view()),
+    path('statisctics/duc_to_ducx/', views.DucxToDucSwap.as_view()),
 ]
