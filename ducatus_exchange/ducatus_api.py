@@ -1,5 +1,6 @@
 import requests
 import datetime
+import logging
 from decimal import Decimal
 
 from ducatus_exchange.payments.models import Payment
@@ -7,6 +8,8 @@ from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
+
+logger = logging.getLogger('ducatus_api')
 
 
 class DucatusAPI:
@@ -27,7 +30,7 @@ class DucatusAPI:
         else:
             valid_json = len(res.json()) > 0
             if not valid_json:
-                print('Address have no transactions and balance is 0', flush=True)
+                logger.info(msg='Address have no transactions and balance is 0')
                 return [], True
 
             return res.json(), True
@@ -218,18 +221,18 @@ def return_ducatus(payment_hash, amount):
     input_params, input_value, response_ok = duc_api\
         .get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
     if not response_ok:
-        print('fail to fetch input param', flush=True)
+        logger.info(msg='fail to fetch input param')
         return
 
-    print('input_params', input_params, flush=True)
+    logger.info(msg=f'input_params {input_params}')
 
     return_address, response_ok, return_res = duc_api.get_return_address(p.tx_hash)
     if not response_ok:
-        print('fail to fetch return address', flush=True)
+        logger.info(msg='fail to fetch return address')
         return
     
     if return_address == p.exchange_request.duc_address:
-        print('returning address is equal to receive address, cancelling return to avoid loop')
+        logger.info(msg='returning address is equal to receive address, cancelling return to avoid loop')
         return
     
     output_params = {return_address: send_amount}
@@ -237,14 +240,14 @@ def return_ducatus(payment_hash, amount):
 
         output_params[p.exchange_request.duc_address] = (input_value - fee - raw_send_amount) / DECIMALS['DUC']
 
-    print('output_params', output_params, flush=True)
+    logger.info(msg=f'output_params {output_params}')
 
     tx = duc_rpc.rpc.createrawtransaction(input_params, output_params)
-    print('raw tx', tx, flush=True)
+    logger.info(msg=f'raw tx {tx}')
 
     signed = duc_rpc.rpc.signrawtransaction(tx, None, [child_private])
-    print('signed tx', signed, flush=True)
+    logger.info(msg=f'signed tx {signed}')
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
-    print('tx', tx_hash, flush=True)
-    print('receive address was:', p.exchange_request.duc_address, flush=True)
+    logger.info(msg=f'tx {tx_hash}')
+    logger.info(msg=f'receive address was: {p.exchange_request.duc_address}')

@@ -1,5 +1,6 @@
 import time
 import datetime
+import logging
 
 from django.http import HttpRequest
 from rest_framework.exceptions import ValidationError
@@ -8,6 +9,8 @@ from ducatus_exchange.payments.api import parse_payment_message
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.exchange_requests.views import get_or_create_ducatus_user_and_exchange_request
 from ducatus_exchange.consts import DECIMALS
+
+logger = logging.getLogger(__name__)
 
 
 def make_register(username, quantity, package, email):
@@ -20,8 +23,8 @@ def make_register(username, quantity, package, email):
     ducatus_user, exchange_request = get_or_create_ducatus_user_and_exchange_request(HttpRequest(), address,
                                                                                      platform, email)
 
-    print(ducatus_user.__dict__, flush=True)
-    print(exchange_request.__dict__, flush=True)
+    logger.info(msg=(ducatus_user.__dict__))
+    logger.info(msg=(exchange_request.__dict__))
 
     for _ in range(quantity):
         fake_tx_hash = f'{username}_{int(datetime.datetime.now().timestamp())}'
@@ -32,7 +35,7 @@ def make_register(username, quantity, package, email):
             'transactionHash': fake_tx_hash,
         }
 
-        print(message, flush=True)
+        logger.info(msg=(message))
 
         parse_payment_message(message)
 
@@ -40,7 +43,7 @@ def make_register(username, quantity, package, email):
         payment.state_collect_duc()
         payment.save()
 
-        print(payment.__dict__, flush=True)
+        logger.info(msg=(payment.__dict__))
         time.sleep(2)
 
 

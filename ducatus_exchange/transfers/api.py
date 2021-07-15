@@ -1,6 +1,7 @@
 import time
 import sys
 import traceback
+import logging
 from decimal import Decimal
 
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
@@ -14,6 +15,8 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus
 from ducatus_exchange.exchange_requests.models import ExchangeStatus
 
+logger = logging.getLogger(__name__)
+
 
 def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
@@ -23,7 +26,7 @@ def transfer_currency(payment):
     else:
         status = ExchangeStatus.objects.all().first().status
         if not status:
-            print('exchange is disabled', flush=True)
+            logger.info(msg='exchange is disabled')
             return_ducatus(payment.tx_hash, payment.original_amount)
         else:
             allowed, return_amount = check_limits(payment)
@@ -32,7 +35,9 @@ def transfer_currency(payment):
             if allowed:
                 return transfer_ducatusx(payment)
             else:
-                print(f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer", flush=True)
+                logger.info(
+                    msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
+                )
         
 
 def check_limits(payment):
@@ -41,7 +46,7 @@ def check_limits(payment):
     original_amount=payment.original_amount
     if payment.original_amount + payment.exchange_request.dayly_swap > DAYLY_LIMIT:
         dayly_reserve = DAYLY_LIMIT - payment.exchange_request.dayly_swap
-        print(dayly_reserve)
+        logger.info(msg=dayly_reserve)
         payment.original_amount = dayly_reserve
         if dayly_reserve <= 0:
             return False, original_amount
@@ -53,15 +58,15 @@ def check_limits(payment):
             payment.original_amount = weekly_reserve
         if weekly_reserve <= 0:
             return False, original_amount
-    print(f' amount {payment.original_amount}', flush=True)
+    logger.info(msg=f' amount {payment.original_amount}')
     exchange_request=ExchangeRequest.objects.get(id=payment.exchange_request.id)
     exchange_request.dayly_swap += payment.original_amount
     exchange_request.weekly_swap += payment.original_amount
     exchange_request.save()
-    print(f'daily {exchange_request.dayly_swap}', flush=True)
+    logger.info(msg=f'daily {exchange_request.dayly_swap}')
     if payment.original_amount !=original_amount:
         payment.sent_amount, payment.rate = calculate_amount(payment.original_amount, payment.currency)
-        print(f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits", flush=True)
+        logger.info(msg=f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits")
         payment.save()
         return True, original_amount-payment.original_amount
     return True, 0
@@ -70,42 +75,42 @@ def check_limits(payment):
 def make_ref_transfer(payment):
     amount = Decimal(int(int(Decimal(payment.sent_amount)) * REF_BONUS_PERCENT))
     receiver = payment.exchange_request.user.ref_address
-    print(f'ducatus transfer started: sending {amount} DUC to {receiver}', flush=True)
+    logger.info(msg=f'ducatus transfer started: sending {amount} DUC to {receiver}')
     currency = 'DUC'
 
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
     transfer = save_transfer(payment, tx, amount, currency)
 
-    print('ducatus referral transfer ok', flush=True)
+    logger.info(msg='ducatus referral transfer ok')
     return transfer
 
 
 def transfer_ducatus(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
-    print(f'ducatus transfer started: sending {amount} DUC to {receiver}', flush=True)
+    logger.info(msg=f'ducatus transfer started: sending {amount} DUC to {receiver}')
     currency = 'DUC'
 
     rpc = DucatuscoreInterface()
     tx = rpc.transfer(receiver, amount)
     transfer = save_transfer(payment, tx, amount, currency)
 
-    print('ducatus transfer ok', flush=True)
+    logger.info(msg='ducatus transfer ok')
     return transfer
 
 
 def transfer_ducatusx(payment):
     amount = payment.sent_amount
     receiver = payment.exchange_request.user.address
-    print(f'ducatusX transfer started: sending {amount} DUCX to {receiver}', flush=True)
+    logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
     currency = 'DUCX'
 
     parity = ParityInterface()
     tx = parity.transfer(receiver, amount)
     transfer = save_transfer(payment, tx, amount, currency)
 
-    print('ducatusx transfer ok', flush=True)
+    logger.info(msg='ducatusx transfer ok')
 
     time.sleep(100)    # small timeout in case of multiple payment messages
     return transfer
@@ -123,7 +128,7 @@ def save_transfer(payment, tx, amount, currency):
     )
     transfer.save()
 
-    print('transfer saved', flush=True)
+    logger.info(msg='transfer saved')
     return transfer
 
 
@@ -131,14 +136,13 @@ def confirm_transfer(message):
     transfer_id = message['transferId']
     # transfer_address = message['address']
     transfer = DucatusTransfer.objects.get(id=transfer_id, state='WAITING_FOR_CONFIRMATION')
-    print(f'transfer id {transfer_id} address {transfer.exchange_request.user.address}',
-          flush=True)
+    logger.info(msg=f'transfer id {transfer_id} address {transfer.exchange_request.user.address}')
     # if transfer_address == transfer.request.duc_address:
     transfer.state_done()
     transfer.save()
     transfer.payment.state_transfer_done()
     transfer.payment.save()
-    print('transfer completed ok')
+    logger.info(msg='transfer completed ok')
     return
 
 
@@ -157,11 +161,7 @@ def collect_duc(payment):
         payment.collection_tx_hash = tx
         payment.save()
     except Exception as e:
-        print('Error in internal transfer from {addr_from} to {addr_to} with amount {amount} DUC'.format(
-            addr_from=address_from,
-            addr_to=address_to,
-            amount=amount
-        ), flush=True)
-        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+        logger.error(msg=f'Error in internal transfer from {address_from} to {address_to} with amount {amount} DUC')
+        logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
         payment.state_error_collect_duc()
         payment.save()

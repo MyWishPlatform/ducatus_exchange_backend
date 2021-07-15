@@ -2,8 +2,9 @@ import os
 import csv
 import string
 import random
-
+import logging
 import requests
+
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
@@ -22,6 +23,9 @@ from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 
 
+logger = logging.getLogger(__name__)
+
+
 class TransferException(Exception):
     pass
 
@@ -30,7 +34,7 @@ def register_payment(request_id, tx_hash, currency, amount):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
     calculated_amount, rate = calculate_amount(amount, currency)
-    print('amount:', calculated_amount, 'rate:', rate,  flush=True)
+    logger.info(msg=f'amount:{calculated_amount} rate: {rate}')
     payment = Payment(
         exchange_request=exchange_request,
         tx_hash=tx_hash,
@@ -41,14 +45,13 @@ def register_payment(request_id, tx_hash, currency, amount):
     )
     # exchange_request.from_currency = currency
     # exchange_request.save()
-    print(
+    logger.info(msg=(
         f'PAYMENT: {amount} {currency} ({calculated_amount} DUC)'
-        f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}',
-        flush=True
+        f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}')
     )
 
     payment.save()
-    print('payment ok', flush=True)
+    logger.info(msg='payment ok')
 
     return payment
 
@@ -59,16 +62,16 @@ def parse_payment_message(message):
         request_id = message.get('exchangeId')
         amount = message.get('amount')
         currency = message.get('currency')
-        print('PAYMENT:', tx, request_id, amount, currency, flush=True)
+        logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
         payment = register_payment(request_id, tx, currency, amount)
 
         transfer_with_handle_lottery_and_referral(payment)
     else:
-        print(f'tx {tx} already registered', flush=True)
+        logger.info(msg=f'tx {tx} already registered')
 
 
 def transfer_with_handle_lottery_and_referral(payment):
-    print('starting transfer', flush=True)
+    logger.info(msg='starting transfer')
     try:
         if not payment.exchange_request.user.address.startswith('voucher'):
             transfer_currency(payment)
@@ -88,7 +91,7 @@ def transfer_with_handle_lottery_and_referral(payment):
         payment.state_transfer_error()
         payment.save()
         raise TransferException(e)
-    print('transfer completed', flush=True)
+    logger.info(msg='transfer completed')
 
 
 def get_random_string():
@@ -137,7 +140,7 @@ def send_voucher_email(voucher, to_email, usd_amount):
         connection=conn,
         html_message=warning_html_style + html_body,
     )
-    print(f'voucher message sent successfully to {to_email}', flush=True)
+    logger.info(msg=f'voucher message sent successfully to {to_email}')
 
 
 def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
@@ -157,28 +160,28 @@ def get_payments_statistics():
     time_str = time_now.strftime('%Y_%m_%d')
     p_dir = os.path.join(os.getcwd(), 'payments_stat', time_str)
     os.mkdir(p_dir)
-    print('Created directory at:', p_dir, flush=True)
+    logger.info(msg=f'Created directory at: {p_dir}')
 
     if len(pl_eth) > 0:
-        print('Write ETH payment stats', flush=True)
+        logger.info(msg='Write ETH payment stats')
         eth_file = os.path.join(p_dir, 'eth.csv')
         write_payments_to_csv(eth_file, pl_eth, DECIMALS['ETH'])
-        print(f'Done, {len(pl_eth)} items saved to: {eth_file}', flush=True)
+        logger.info(msg=f'Done, {len(pl_eth)} items saved to: {eth_file}')
     else:
-        print('No payments in ETH at this period', flush=True)
+        logger.info(msg='No payments in ETH at this period')
 
     if len(pl_btc) > 0:
-        print('Write BTC payment stats', flush=True)
+        logger.info(msg='Write BTC payment stats')
         btc_file = os.path.join(p_dir, 'btc.csv')
         write_payments_to_csv(btc_file, pl_btc, DECIMALS['BTC'])
-        print(f'Done, {len(pl_btc)} items saved to: {btc_file}', flush=True)
+        logger.info(msg=f'Done, {len(pl_btc)} items saved to: {btc_file}')
     else:
-        print('No payments in BTC at this period', flush=True)
+        logger.info(msg='No payments in BTC at this period')
 
     if len(pl_usdc) > 0:
-        print('Write USDC payment stats', flush=True)
+        logger.info(msg='Write USDC payment stats')
         usdc_file = os.path.join(p_dir, 'usdc.csv')
         write_payments_to_csv(usdc_file, pl_usdc, DECIMALS['USDC'])
-        print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
+        logger.info(msg=f'Done, {len(pl_usdc)} items saved to: {usdc_file}')
     else:
-        print('No payments in USDC at this period', flush=True)
+        logger.info(msg='No payments in USDC at this period')

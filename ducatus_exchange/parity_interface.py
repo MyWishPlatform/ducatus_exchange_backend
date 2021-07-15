@@ -1,10 +1,14 @@
 import json
 import requests
+import logging
+
 from eth_utils import to_checksum_address
 from eth_account import Account
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
+
+logger = logging.getLogger('parity_interface')
 
 
 class ParityInterfaceException(Exception):
@@ -40,7 +44,7 @@ class ParityInterface:
             port=self.settings['port']
         )
         self.settings['chainId'] = self.eth_chainId()
-        print('parity interface', self.settings, flush=True)
+        logger.info(msg=f'parity interface {self.settings}')
         return
 
     def __getattr__(self, method):
@@ -66,10 +70,10 @@ class ParityInterface:
         return f
 
     def transfer(self, address, amount):
-        print('DUCATUSX TRANSFER STARTED: {address}, {amount} DUCX'.format(
+        logger.info(msg='DUCATUSX TRANSFER STARTED: {address}, {amount} DUCX'.format(
             address=address,
             amount=amount / DECIMALS['DUCX']
-        ), flush=True)
+        ))
 
         nonce = self.eth_getTransactionCount(self.settings['address'], "pending")
         gas_price = self.eth_gasPrice()
@@ -83,17 +87,17 @@ class ParityInterface:
             'nonce': int(nonce, 16),
             'chainId': int(chain_id, 16)
         }
-        print('TX PARAMS', tx_params, flush=True)
+        logger.info(msg=f'TX PARAMS {tx_params}')
 
         signed = Account.sign_transaction(tx_params, self.settings['private'])
 
         try:
             sent = self.eth_sendRawTransaction(signed.rawTransaction.hex())
-            print('TXID:', sent, flush=True)
+            logger.info(msg=f'TXID: {sent}')
             return sent
         except Exception as e:
             err = 'DUCATUSX TRANSFER ERROR: transfer for {amount} DUCX for {addr} failed' \
                 .format(amount=amount / DECIMALS['DUCX'], addr=address)
-            print(err, flush=True)
-            print(e, flush=True)
+            logger.error(msg=err)
+            logger.error(msg=e)
             raise ParityInterfaceException(err)

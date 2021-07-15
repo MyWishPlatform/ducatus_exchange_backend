@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,6 +16,9 @@ from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.transfers.serializers import DucatusTransferSerializer
 from ducatus_exchange.lottery.api import LotteryRegister
 from ducatus_exchange.payments.models import Payment
+
+
+logger = logging.getLogger(__name__)
 
 
 exchange_response_duc = openapi.Response(
@@ -68,7 +72,7 @@ class ExchangeRequestView(APIView):
     )
     def post(self, request):
         request_data = request.data
-        print('request data:', request_data, flush=True)
+        logger.info(msg=('request data:', request_data))
         address = request_data.get('to_address', f'voucher_{datetime.datetime.now().timestamp()}')
         platform = request_data.get('to_currency')
         email = request_data.get('email')
@@ -86,7 +90,7 @@ class ExchangeRequestView(APIView):
         else:
             response_data = {'duc_address': exchange_request.duc_address}
 
-        print('res:', response_data)
+        logger.info(msg=('res:', response_data))
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -131,14 +135,14 @@ def get_or_create_ducatus_user_and_exchange_request(request, address, platform, 
         if email:
             ducatus_user.email = email
             ducatus_user.save()
-    print('addresses:', exchange_request.__dict__, flush=True)
+    logger.info(msg=('addresses:', exchange_request.__dict__))
 
     ref_address = request.COOKIES.get('referral')
-    print('REF ADDRESS', ref_address, flush=True)
+    logger.info(msg=('REF ADDRESS', ref_address))
     if ref_address and ref_address != ducatus_user.address:
         ducatus_user.ref_address = ref_address
         ducatus_user.save()
-        print('REF ADDRESS', ref_address, flush=True)
+        logger.info(msg=('REF ADDRESS', ref_address))
 
     return ducatus_user, exchange_request
 

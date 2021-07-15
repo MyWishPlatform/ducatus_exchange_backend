@@ -1,3 +1,5 @@
+import logging
+
 from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,6 +8,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.settings import FEEDBACK_EMAIL, DEFAULT_FROM_EMAIL
+
+logger = logging.getLogger('FeedbackForm')
 
 
 class FeedbackForm(APIView):
@@ -26,7 +30,7 @@ class FeedbackForm(APIView):
 
     )
     def post(self, request):
-        print(request.data)
+        logger.info(msg=request.data)
         name = request.data.get('name')
         email = request.data.get('email')
         phone_number = request.data.get('phone')

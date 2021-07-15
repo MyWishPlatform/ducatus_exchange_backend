@@ -2,6 +2,7 @@
 from datetime import timedelta, datetime
 import csv
 import os
+import logging
 
 from django.http import HttpResponse
 from rest_framework.response import Response
@@ -15,6 +16,8 @@ from ducatus_exchange.settings import BASE_DIR
 from ducatus_exchange.payments.models import Payment
 from django.db.models import Sum
 from ducatus_exchange.stats.models import DucatusAddressBlacklist
+
+logger = logging.getLogger(__name__)
 
 
 class DucToDucxSwap(APIView):
@@ -116,7 +119,7 @@ class DucxWalletsToCSV(APIView):
 
         elif currency.lower() == 'duc':
             try:
-                print(os.path.join(BASE_DIR, 'DUC.csv'))
+                logger.info(msg=(os.path.join(BASE_DIR, 'DUC.csv')))
                 with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
                     file_data = f.read()
             except:

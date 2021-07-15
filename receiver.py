@@ -4,7 +4,7 @@ import traceback
 import threading
 import json
 import sys
-
+import logging
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
@@ -14,6 +14,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.payments.api import parse_payment_message, TransferException
 from ducatus_exchange.transfers.api import confirm_transfer
+
+logger = logging.getLogger('receiver')
 
 
 class Receiver(threading.Thread):
@@ -47,39 +49,38 @@ class Receiver(threading.Thread):
             on_message_callback=self.callback
         )
 
-        print(f'RECEIVER MAIN: started on {self.network} with queue `{queue_name}`', flush=True)
+        logger.info(msg=f'RECEIVER MAIN: started on {self.network} with queue `{queue_name}`')
 
         channel.start_consuming()
 
     def payment(self, message):
-        print('PAYMENT MESSAGE RECEIVED', flush=True)
+        logger.info(msg='PAYMENT MESSAGE RECEIVED')
         parse_payment_message(message)
 
     def transferred(self, message):
-        print('TRANSFER CONFIRMATION RECEIVED', flush=True)
+        logger.info(msg='TRANSFER CONFIRMATION RECEIVED')
         confirm_transfer(message)
 
     def callback(self, ch, method, properties, body):
-        print('received', body, properties, method, flush=True)
+        logger.info(msg=f'received {body} {properties} {method}')
         try:
             message = json.loads(body.decode())
             if message.get('status', '') == 'COMMITTED':
                 getattr(self, properties.type, self.unknown_handler)(message)
         except ObjectDoesNotExist as e:
-            print('Could not find onject in database', flush=True)
-            print(e, flush=True)
+            logger.error(msg='Could not find onject in database')
+            logger.error(msg=e)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except TransferException:
-            print('Exception in transfer, saving payment and cancelling transfer', flush=True)
+            logger.info(msg='Exception in transfer, saving payment and cancelling transfer')
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
-            print('\n'.join(traceback.format_exception(*sys.exc_info())),
-                  flush=True)
+            logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
         else:
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def unknown_handler(self, message):
-        print('unknown message', message, flush=True)
+        logger.info(msg=f'unknown message {message}')
 
 
 networks = NETWORK_SETTINGS.keys()

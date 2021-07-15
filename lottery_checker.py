@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
@@ -11,8 +12,10 @@ from ducatus_exchange.lottery.models import Lottery, LotteryPlayer
 from ducatus_exchange.settings import LOTTERY_CLOSING_INTERVAL, LOTTERY_CHECKER_INTERVAL
 from random_contract.executor import finalize_lottery
 
+logger = logging.getLogger('lottery_checker')
 
 if __name__ == '__main__':
+
     while True:
         for lottery in Lottery.objects.filter(ended=False):
             if lottery.sent_duc_amount >= lottery.duc_amount and lottery.filled_at:
@@ -39,6 +42,6 @@ if __name__ == '__main__':
                     lottery.save()
 
                     lottery.send_mails_to_winners()
-                    print(f'lottery {lottery.name} with id {lottery.id} closed', flush=True)
+                    logger.info(msg=f'lottery {lottery.name} with id {lottery.id} closed')
 
         time.sleep(LOTTERY_CHECKER_INTERVAL)

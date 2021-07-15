@@ -1,6 +1,7 @@
 import celery
 from celery.schedules import crontab
 import os
+import logging
 from dateutil import tz
 eastern = tz.gettz('Europe/Moscow')
 
@@ -12,35 +13,37 @@ from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
 
+logger = logging.getLogger('task')
+
 app = celery.Celery('task', broker='amqp://')
 
 
 @app.task
 def reset_dayly():
-    print('Starting dayly reset', flush=True)
+    logger.info(msg='Starting dayly reset')
     dayly_reset()
-    print('dayly reset complete', flush=True)
+    logger.info(msg='dayly reset complete')
 
 
 @app.task
 def reset_weekly():
-    print('Starting weekly reset', flush=True)
+    logger.info(msg='Starting weekly reset')
     weekly_reset()
-    print('weekly reset complete', flush=True)
+    logger.info(msg='weekly reset complete')
 
 
 @app.task
 def update_duc_balances():
-    print('Starting DUC balance updating', flush=True)
+    logger.info(msg='Starting DUC balance updating')
     get_duc_balances()
-    print('DUC balance updating complete', flush=True)
+    logger.info(msg='DUC balance updating complete')
 
 
 @app.task
 def update_ducx_node_balandes():
-    print('Starting DUCX node balance updating', flush=True)
+    logger.info(msg='Starting DUCX node balance updating')
     update_nodes()
-    print('DUC node balance updating complete', flush=True)
+    logger.info(msg='DUC node balance updating complete')
 
 
 app.conf.beat_schedule = {
