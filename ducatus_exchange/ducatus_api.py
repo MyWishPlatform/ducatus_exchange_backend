@@ -2,12 +2,12 @@ import requests
 import datetime
 from decimal import Decimal
 
-from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
+
 
 class DucatusAPI:
 
@@ -177,6 +177,7 @@ class DucatusAPI:
             addresses.append(output['address'])
         return addresses
 
+
 class DucatusXAPI(DucatusAPI):
     def set_base_url(self):
         self.base_url = f'https://ducapi.rocknblock.io/api/DUCX/{self.network}'
@@ -214,7 +215,8 @@ def return_ducatus(payment_hash, amount):
     raw_send_amount = amount - fee
     send_amount = Decimal(raw_send_amount) / DECIMALS['DUC']
 
-    input_params, input_value, response_ok = duc_api.get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
+    input_params, input_value, response_ok = duc_api\
+        .get_address_unspent_from_tx(p.exchange_request.duc_address, p.tx_hash)
     if not response_ok:
         print('fail to fetch input param', flush=True)
         return
@@ -226,7 +228,7 @@ def return_ducatus(payment_hash, amount):
         print('fail to fetch return address', flush=True)
         return
     
-    if return_address==p.exchange_request.duc_address:
+    if return_address == p.exchange_request.duc_address:
         print('returning address is equal to receive address, cancelling return to avoid loop')
         return
     
@@ -246,4 +248,3 @@ def return_ducatus(payment_hash, amount):
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
     print('tx', tx_hash, flush=True)
     print('receive address was:', p.exchange_request.duc_address, flush=True)
-

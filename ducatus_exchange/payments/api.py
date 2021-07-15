@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.rates.serializers import AllRatesSerializer, get_usd_prices
+from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
@@ -24,9 +24,6 @@ from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
 
 class TransferException(Exception):
     pass
-
-
-
 
 
 def register_payment(request_id, tx_hash, currency, amount):
@@ -81,7 +78,7 @@ def transfer_with_handle_lottery_and_referral(payment):
     try:
         if not payment.exchange_request.user.address.startswith('voucher'):
             transfer_currency(payment)
-            payment.transfer_state = 'DONE'
+            payment.state_transfer_done()
         elif payment.exchange_request.user.platform == 'DUC':
             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
             try:
@@ -94,17 +91,14 @@ def transfer_with_handle_lottery_and_referral(payment):
             if payment.exchange_request.user.ref_address:
                 make_ref_transfer(payment)
     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-        print('Transfer not completed, reverting payment', flush=True)
-        payment.transfer_state = 'ERROR'
+        payment.state_transfer_error()
         payment.save()
         raise TransferException(e)
     print('transfer completed', flush=True)
 
 
-chars_for_random = string.ascii_uppercase + string.digits
-
-
 def get_random_string():
+    chars_for_random = string.ascii_uppercase + string.digits
     return ''.join(random.choices(chars_for_random, k=12))
 
 
@@ -194,4 +188,3 @@ def get_payments_statistics():
         print(f'Done, {len(pl_usdc)} items saved to: {usdc_file}', flush=True)
     else:
         print('No payments in USDC at this period', flush=True)
-

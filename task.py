@@ -1,6 +1,5 @@
 import celery
 from celery.schedules import crontab
-import datetime
 import os
 from dateutil import tz
 eastern = tz.gettz('Europe/Moscow')
@@ -22,11 +21,13 @@ def reset_dayly():
     dayly_reset()
     print('dayly reset complete', flush=True)
 
+
 @app.task
 def reset_weekly():
     print('Starting weekly reset', flush=True)
     weekly_reset()
     print('weekly reset complete', flush=True)
+
 
 @app.task
 def update_duc_balances():
@@ -34,11 +35,13 @@ def update_duc_balances():
     get_duc_balances()
     print('DUC balance updating complete', flush=True)
 
+
 @app.task
 def update_ducx_node_balandes():
     print('Starting DUCX node balance updating', flush=True)
     update_nodes()
     print('DUC node balance updating complete', flush=True)
+
 
 app.conf.beat_schedule = {
     'dayly_task': {
@@ -58,4 +61,3 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute=0),
     }
 }
-

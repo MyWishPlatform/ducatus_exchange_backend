@@ -212,6 +212,7 @@ def register_voucher_in_lottery(request: Request):
 
     return Response(200)
 
+
 @api_view(http_method_names=['GET'])
 def total_id_count(request):
     return Response(ExchangeRequest.objects.all().last().id, status=status.HTTP_200_OK)

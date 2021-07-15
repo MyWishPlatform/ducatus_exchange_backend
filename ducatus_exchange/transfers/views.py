@@ -1,11 +1,7 @@
-import datetime
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -24,6 +20,7 @@ check_limit_response = openapi.Response(
         },
     )
 )
+
 
 class CheckLimitView(APIView):
 
@@ -47,7 +44,6 @@ class CheckLimitView(APIView):
         exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
         dayly_available = DAYLY_LIMIT - exchange_request.dayly_swap
         weekly_available = WEEKLY_LIMIT - exchange_request.weekly_swap
-
 
         response_data = {'daily_available': dayly_available, 'weekly_available': weekly_available}
 

@@ -37,7 +37,7 @@ def make_register(username, quantity, package, email):
         parse_payment_message(message)
 
         payment = Payment.objects.get(tx_hash=fake_tx_hash)
-        payment.collection_state = 'COLLECTED'
+        payment.state_collect_duc()
         payment.save()
 
         print(payment.__dict__, flush=True)

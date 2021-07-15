@@ -31,14 +31,12 @@ class FeedbackForm(APIView):
         email = request.data.get('email')
         phone_number = request.data.get('phone')
         message = request.data.get('message')
-        text = """
+        text = f"""
             Name: {name}
             E-mail: {email}
             Message: {message}
-            Phone: {phone}
-            """.format(
-            name=name, email=email, phone=phone_number, message=message
-        )
+            Phone: {phone_number}
+            """
         send_mail(
             'Request from rocknblock.io contact form',
             text,

@@ -4,7 +4,6 @@ import traceback
 import threading
 import json
 import sys
-from types import FunctionType
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
@@ -92,6 +91,3 @@ networks = NETWORK_SETTINGS.keys()
 for network in networks:
     rec = Receiver(network)
     rec.start()
-
-
-

@@ -97,15 +97,3 @@ class ParityInterface:
             print(err, flush=True)
             print(e, flush=True)
             raise ParityInterfaceException(err)
-
-
-
-
-
-
-
-
-
-
-
-

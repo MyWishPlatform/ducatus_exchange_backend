@@ -7,6 +7,7 @@ import asyncio
 import aiohttp
 import traceback
 from ducatus_exchange.settings import MONGO_CONNECTION
+from ducatus_exchange.stats.models import StatisticsAddress
 
 conn_str = MONGO_CONNECTION
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
@@ -56,14 +57,10 @@ def get_duc_balances():
 
             res.append([wallet['_id'], amount])
             print(res[-1], ids)
+            for i in res:
+                if i[1] > 0:
+                    StatisticsAddress.objects.update_or_create(user_address=i[0], balance=i[1], network='DUC')
         except:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
             print()
-            print('Exception with id {}'.format(ids))
-
-    with open(os.path.join(BASE_DIR, 'DUC.csv'), 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        smapwriter.writerow('user_address', 'balance')
-        for i in res:
-            if i[1] > 0:
-                spamwriter.writerow([i[0], i[1]])
+            print(f'Exception with id {ids}')

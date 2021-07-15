@@ -26,13 +26,17 @@ def save_transfer(api, tx, network):
     if network == 'DUCX':
         try:
             address_from = tx.get('from'.lower())
-            net_account_from, new_from = StatisticsAddress.objects.get_or_create(user_address=tx.get('from'), network=network)
+            net_account_from, new_from = StatisticsAddress.objects.get_or_create(
+                                                                    user_address=tx.get('from'),
+                                                                    network=network)
             net_account_from.balance = api.get_address_balance(net_account_from.user_address)
             net_account_from.save()
 
             address_to = tx.get('to').lower()
             if address_to != address_from:
-                net_account_to, new_to = StatisticsAddress.objects.get_or_create(user_address=tx.get('to'), network=network)
+                net_account_to, new_to = StatisticsAddress.objects.get_or_create(
+                                                                    user_address=tx.get('to'),
+                                                                    network=network)
                 net_account_to.balance = api.get_address_balance(net_account_to.user_address)
                 net_account_to.save()
             else:
@@ -69,6 +73,7 @@ def save_transfer(api, tx, network):
         'address_to': net_account_to.user_address if net_account_to else None,
         'transfer_saved': transfer_saved
         }
+
 
 def update_stats(api, network):
     last_saved_block = get_last_block(network)

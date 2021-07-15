@@ -8,12 +8,12 @@ from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN
 from ducatus_exchange.bip32_ducatus import DucatusWallet
-from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT, DECIMALS
+from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus
 from ducatus_exchange.exchange_requests.models import ExchangeStatus
+
 
 def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
@@ -134,9 +134,9 @@ def confirm_transfer(message):
     print('transfer id {id} address {addr} '.format(id=transfer_id, addr=transfer.exchange_request.user.address),
           flush=True)
     # if transfer_address == transfer.request.duc_address:
-    transfer.state = 'DONE'
+    transfer.state_done()
     transfer.save()
-    transfer.payment.transfer_state = 'DONE'
+    transfer.payment.state_transfer_done()
     transfer.payment.save()
     print('transfer completed ok')
     return
@@ -153,7 +153,7 @@ def collect_duc(payment):
     address_to = rpc.rpc.getaccountaddress('')
     try:
         tx = rpc.internal_transfer(tx_hashes, address_from, address_to, amount, child_private)
-        payment.collection_state = 'COLLECTED'
+        payment.state_collect_duc()
         payment.collection_tx_hash = tx
         payment.save()
     except Exception as e:
@@ -163,5 +163,5 @@ def collect_duc(payment):
             amount=amount
         ), flush=True)
         print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
-        payment.collection_state = 'ERROR'
+        payment.state_error_collect_duc()
         payment.save()

@@ -25,7 +25,7 @@ class DucToDucxSwap(APIView):
             .filter(created_date__gt=time)\
             .agreggate(Sum('original_amount'))
         return Response({
-                'ammount': duc,
+                'amount': duc,
                 'currency': 'duc'
                 }, status=status.HTTP_200_OK)
 
@@ -39,7 +39,7 @@ class DucxToDucSwap(APIView):
             .filter(created_date__gt=time)\
             .agreggate(Sum('original_amount'))
         return Response({
-                'ammount': ducx,
+                'amount': ducx,
                 'currency': 'ducx'
                 }, status=status.HTTP_200_OK)
 
@@ -107,7 +107,8 @@ class DucxWalletsToCSV(APIView):
                 account_list.append([account.user_address, account.balance])
 
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="ducx_wallet_export_{str(datetime.now().date())}.csv"'
+            response['Content-Disposition'] = f'attachment;' \
+                                              f' filename="ducx_wallet_export_{str(datetime.now().date())}.csv"'
             writer = csv.DictWriter(response, fieldnames=['ducx_address', 'balance'])
             writer.writeheader()
             for acc in account_list:
@@ -121,7 +122,8 @@ class DucxWalletsToCSV(APIView):
             except:
                 return Response('currently calculating balances, please check again in a few hours')
             response = HttpResponse(file_data, content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="duc_wallet_export_{str(datetime.now().date())}.csv"'
+            response['Content-Disposition'] = f'attachment;' \
+                                              f' filename="duc_wallet_export_{str(datetime.now().date())}.csv"'
 
         else:
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
@@ -131,6 +133,6 @@ class DucxWalletsToCSV(APIView):
 
 class DucWalletsView(APIView):
     def get(self, request):
-        with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
-            data = [{k: v for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
+        data = StatisticsAddress.objects.filter(network='DUC') \
+            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))
         return Response(data, status=status.HTTP_200_OK)

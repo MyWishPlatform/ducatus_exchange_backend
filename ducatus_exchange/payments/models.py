@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
 
 from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
+from django_fsm import FSMField, transition
 
 
 class Payment(models.Model):
@@ -11,6 +11,10 @@ class Payment(models.Model):
 
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
+
+    TRANSFER_STATES = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
+    COLLECTION_STATES = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
+
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     charge = models.ForeignKey('quantum.Charge', on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')
@@ -19,6 +23,23 @@ class Payment(models.Model):
     rate = models.DecimalField(max_digits=512, decimal_places=0)
     sent_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     created_date = models.DateTimeField(auto_now_add=True)
-    transfer_state = models.CharField(max_length=50, null=True, default='WAITING_FOR_TRANSFER')
-    collection_state = models.CharField(max_length=50, default='NOT_COLLECTED')
+    transfer_state = FSMField(default='WAITING_FOR_TRANSFER', choices=TRANSFER_STATES)
+    collection_state = FSMField(default='NOT_COLLECTED', choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
+
+    # States change
+    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
+    def state_transfer_done(self):
+        pass
+
+    @transition(field=transfer_state, source='*', target='ERROR')
+    def state_transfer_error(self):
+        print('Transfer not completed, reverting payment', flush=True)
+
+    @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')
+    def state_collect_duc(self):
+        pass
+
+    @transition(field=collection_state, source='*', target='ERROR')
+    def state_error_collect_duc(self):
+        pass

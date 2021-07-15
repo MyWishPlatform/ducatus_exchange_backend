@@ -88,9 +88,9 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ducatus_exchange',
-        'USER': 'ducatus_exchange',
-        'PASSWORD': 'ducatus_exchange',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -144,9 +144,9 @@ STATS_NORMALIZED_TIME = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'ducatus_exchange', 'static/')
 STATIC_URL = '/static/'
-#STATICFILES_DIRS = [
+# STATICFILES_DIRS = [
 #    os.path.join(BASE_DIR, 'ducatus_exchange', 'static'),
-#]
+# ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
@@ -164,4 +164,3 @@ try:
     from ducatus_exchange.settings_local import *
 except ImportError:
     print('Cannot import local settings', flush=True)
-

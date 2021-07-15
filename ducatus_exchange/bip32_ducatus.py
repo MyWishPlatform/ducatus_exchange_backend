@@ -1,6 +1,5 @@
-from pywallet.utils import Wallet, HDPrivateKey, HDKey
 from pywallet.utils.bip32 import *
-from pywallet.wallet import generate_mnemonic, create_address
+from pywallet.wallet import generate_mnemonic
 
 
 class DucatusMainNet(object):
