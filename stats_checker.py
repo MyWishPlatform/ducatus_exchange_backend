@@ -91,6 +91,10 @@ def update_stats(api, network):
                             user_address=duc_address, network=network)
                         duc_addr.balance = api.get_address_balance(duc_addr.user_address)
                         duc_addr.save()
+                        print('DUC STATS: account {acc} saved/updated, balance now: {now}'.format(
+                            acc=duc_addr.user_address,
+                            now=duc_addr.balance,
+                        ), flush=True)
 
         print(f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
@@ -108,7 +112,7 @@ def update_balances(api, addresses):
             account.balance = api.get_address_balance(account.user_address)
             account.save()
             c += 1
-            print('account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
+            print('DUCX STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
                 acc=account.user_address,
                 count=c,
                 total=len(addresses),
