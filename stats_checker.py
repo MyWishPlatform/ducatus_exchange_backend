@@ -85,8 +85,12 @@ def update_stats(api, network):
                     addresses_in_txes.append(transfer_info.get('address_from'))
                     addresses_in_txes.append(transfer_info.get('address_to'))
                 elif network == 'DUC':
-                    for address in transfer_info:
-                        addresses_in_txes.append(address)
+                    addresses_in_txes = api.get_tx_addresses(tx.get('txid'))
+                    for duc_address in addresses_in_txes:
+                        duc_addr, new_addr = StatisticsAddress.objects.get_or_create(
+                            user_address=duc_address, network=network)
+                        duc_addr.balance = api.get_address_balance(duc_addr.user_address)
+                        duc_addr.save()
 
         print(f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
