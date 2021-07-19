@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework import status
 
-from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress
+from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress, BitcoreAddress
 from ducatus_exchange.stats.serializers import DucxWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
 from ducatus_exchange.payments.models import Payment
@@ -136,6 +136,6 @@ class DucxWalletsToCSV(APIView):
 
 class DucWalletsView(APIView):
     def get(self, request):
-        data = StatisticsAddress.objects.filter(network='DUC') \
+        data = BitcoreAddress.objects.filter(network='DUC') \
             .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))
         return Response(data, status=status.HTTP_200_OK)

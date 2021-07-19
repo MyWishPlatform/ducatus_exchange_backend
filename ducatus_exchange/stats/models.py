@@ -8,6 +8,11 @@ class DucatusAddressBlacklist:
     ducx_wallet_address = models.CharField(max_length=64, help_text='corporate ducx wallets', default='', unique=True)
 
 
+class BitcoreAddress(models.Model):
+    user_address = models.CharField(max_length=100, unique=True)
+    balance = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, null=True, default=0)
+
+
 class StatisticsAddress(models.Model):
     user_address = models.CharField(max_length=100, unique=True)
     balance = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, null=True, default=0)

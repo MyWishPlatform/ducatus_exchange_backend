@@ -8,7 +8,7 @@ import traceback
 import logging
 
 from ducatus_exchange.settings import MONGO_CONNECTION
-from ducatus_exchange.stats.models import StatisticsAddress
+from ducatus_exchange.stats.models import BitcoreAddress
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def get_duc_balances():
             logger.info(msg=(res[-1], ids))
             for i in res:
                 if i[1] > 0:
-                    StatisticsAddress.objects.update_or_create(user_address=i[0], balance=i[1], network='DUC')
+                    BitcoreAddress.objects.update_or_create(user_address=i[0], balance=i[1])
         except:
             logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
             logger.error(msg=f'Exception with id {ids}')
