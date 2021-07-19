@@ -12,12 +12,6 @@ from ducatus_exchange.stats.models import BitcoreAddress
 
 logger = logging.getLogger(__name__)
 
-conn_str = MONGO_CONNECTION
-client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
-pattern = [{"$match": {"network": "livenet"}}, {"$group": {"_id": "$walletId", "addresses": {"$addToSet": "$address"}}}]
-database = client.bws
-wallets = database.addresses.aggregate(pattern)
-logger.info(msg=wallets)
 URL = 'https://ducapi.rocknblock.io/api/DUC/mainnet/address/{}/balance'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -36,6 +30,13 @@ async def asynchronous(addresses):
 
 
 def get_duc_balances():
+    conn_str = MONGO_CONNECTION
+    client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
+    pattern = [{"$match": {"network": "livenet"}},
+               {"$group": {"_id": "$walletId", "addresses": {"$addToSet": "$address"}}}]
+    database = client.bws
+    wallets = database.addresses.aggregate(pattern)
+    logger.info(msg=wallets)
     res = []
     for ids, wallet in enumerate(wallets):
         try:

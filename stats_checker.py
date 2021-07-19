@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 import django
 
-os.environ.setdefauerlt('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 
 django.setup()
 

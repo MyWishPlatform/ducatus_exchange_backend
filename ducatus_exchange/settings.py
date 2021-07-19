@@ -88,9 +88,9 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
+        'NAME': 'ducatus_exchange',
+        'USER': 'ducatus_exchange',
+        'PASSWORD': 'ducatus_exchange',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
