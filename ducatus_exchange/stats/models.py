@@ -3,7 +3,7 @@ from django.db import models
 from ducatus_exchange.consts import MAX_DIGITS
 
 
-class DucatusAddressBlacklist:
+class DucatusAddressBlacklist(models.Model):
     duc_wallet_address = models.CharField(max_length=64, help_text='corporate duc wallets', default='', unique=True)
     ducx_wallet_address = models.CharField(max_length=64, help_text='corporate ducx wallets', default='', unique=True)
 
