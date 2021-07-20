@@ -24,6 +24,7 @@ cytoolz==0.10.1
 Django==3.0.7
 django-cors-headers==3.7.0
 django-extensions==2.2.6
+django-fsm==2.7.1
 django-rest-framework==0.1.0
 djangorestframework==3.11.0
 docker-py==1.8.0
