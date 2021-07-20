@@ -24,8 +24,7 @@ class DucToDucxSwap(APIView):
     """Summing dayly swap ducatus to ducatusx"""
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        duc = Payment.objects.get(currency='DUC')\
-            .filter(created_date__gt=time)\
+        duc = Payment.objects.filter(currency='DUC', created_date__gt=time)\
             .agreggate(Sum('original_amount'))
         return Response({
                 'amount': duc,
@@ -37,14 +36,30 @@ class DucxToDucSwap(APIView):
     """Summing dayly swap ducatusx to ducatus"""
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        ducx = Payment.objects.get(currency='DUCX')\
+        ducx = Payment.objects.filter(currency='DUCX', created_date__gt=time)\
             .exclude(exchange_request__duc_address__isnull=False)\
-            .filter(created_date__gt=time)\
             .agreggate(Sum('original_amount'))
         return Response({
                 'amount': ducx,
                 'currency': 'ducx'
                 }, status=status.HTTP_200_OK)
+
+
+class StatisticsTotals(APIView):
+    """ Summing total amount in saved wallets """
+    def get(self, request):
+        duc_address_sum = StatisticsAddress.objects.filter(network='DUC')\
+            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))\
+            .aggregate(Sum('balance'))
+
+        ducx_address_sum = StatisticsAddress.objects.filter(network='DUCX') \
+            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address')) \
+            .aggregate(Sum('balance'))
+
+        return Response({
+            'duc': duc_address_sum,
+            'ducx': ducx_address_sum
+            }, status=status.HTTP_200_OK)
 
 
 class StatsHandler(APIView):

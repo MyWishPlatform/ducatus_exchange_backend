@@ -44,7 +44,6 @@ schema_view = get_schema_view(
 router = DefaultRouter(trailing_slash=True)
 router.register(r'lotteries', LotteryViewSet)
 router.register(r'lotteries_players', LotteryPlayerViewSet)
-router.register(r'statistics/ducx_wallets', DucxWalletsViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
