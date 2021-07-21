@@ -22,50 +22,55 @@ logger = logging.getLogger(__name__)
 
 class DucToDucxSwap(APIView):
     """Summing dayly swap ducatus to ducatusx"""
+
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        duc = Payment.objects.filter(currency='DUC', created_date__gt=time)\
+        duc = Payment.objects.filter(currency='DUC', created_date__gt=time) \
             .aggregate(Sum('original_amount'))
         amount = duc['original_amount__sum']
         # because aggregator returns `None` if there is no objects after filtering
         amount = "0" if not amount else str(amount)
         return Response({
-                'amount': amount,
-                'currency': 'duc'
-                }, status=status.HTTP_200_OK)
+            'amount': amount,
+            'currency': 'duc'
+        }, status=status.HTTP_200_OK)
 
 
 class DucxToDucSwap(APIView):
     """Summing dayly swap ducatusx to ducatus"""
+
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
-        ducx = Payment.objects.filter(currency='DUCX', created_date__gt=time)\
-            .exclude(exchange_request__duc_address__isnull=False)\
+        ducx = Payment.objects.filter(currency='DUCX', created_date__gt=time) \
+            .exclude(exchange_request__duc_address__isnull=False) \
             .aggregate(Sum('original_amount'))
         amount = ducx['original_amount__sum']
         # because aggregator returns `None` if there is no objects after filtering
         amount = "0" if not amount else str(amount)
         return Response({
-                'amount': amount,
-                'currency': 'ducx'
-                }, status=status.HTTP_200_OK)
+            'amount': amount,
+            'currency': 'ducx'
+        }, status=status.HTTP_200_OK)
 
 
 class StatisticsTotals(APIView):
     """ Summing total amount in saved wallets """
+
     def get(self, request):
-        duc_address_sum = StatisticsAddress.objects.filter(network='DUC')\
-            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))\
+        duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
+        duc_address_sum = StatisticsAddress.objects.filter(network='DUC') \
+            .exclude(user_address__in=duc_blacklist) \
             .aggregate(Sum('balance'))
 
+        ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
         ducx_address_sum = StatisticsAddress.objects.filter(network='DUCX') \
-            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address')) \
+            .exclude(user_address__in=ducx_blacklist) \
             .aggregate(Sum('balance'))
 
         return Response({
             'duc': str(duc_address_sum['balance__sum']),
             'ducx': str(ducx_address_sum['balance__sum'])
-            }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
 
 class StatsHandler(APIView):
@@ -75,12 +80,12 @@ class StatsHandler(APIView):
         time = datetime.now() - timedelta(days=days)
         period = {1: 2, 7: 2, 30: 24, 365: 168}
         daily_txs = StatisticsTransfer.objects.filter(
-                transaction_time__gt=now - timedelta(hours=24))\
-            .filter(transaction_time__lte=now)\
+            transaction_time__gt=now - timedelta(hours=24)) \
+            .filter(transaction_time__lte=now) \
             .filter(currency=currency)
         weekly_txs = StatisticsTransfer.objects.filter(
-            transaction_time__gt=now - timedelta(hours=24*7))\
-            .filter(transaction_time__lte=now)\
+            transaction_time__gt=now - timedelta(hours=24 * 7)) \
+            .filter(transaction_time__lte=now) \
             .filter(currency=currency)
         daily_tx_count = daily_txs.count()
         weekly_txs_count = weekly_txs.count()
@@ -92,8 +97,8 @@ class StatsHandler(APIView):
             weekly_value += tx.transaction_value
         while time < now:
             statistics = StatisticsTransfer.objects.filter(
-                transaction_time__gt=time)\
-                .filter(transaction_time__lte=time+timedelta(hours=period[days]))\
+                transaction_time__gt=time) \
+                .filter(transaction_time__lte=time + timedelta(hours=period[days])) \
                 .filter(currency=currency)
             time += timedelta(hours=period[days])
             if time > now:
@@ -108,17 +113,18 @@ class StatsHandler(APIView):
                 'time': time
             })
         return Response({
-                    'daily_value': daily_value,
-                    'daily_count': daily_tx_count,
-                    'weekly_value': weekly_value,
-                    'weekly_count': weekly_txs_count,
-                    'graph_data': data
-                    }, status=status.HTTP_200_OK)
+            'daily_value': daily_value,
+            'daily_count': daily_tx_count,
+            'weekly_value': weekly_value,
+            'weekly_count': weekly_txs_count,
+            'graph_data': data
+        }, status=status.HTTP_200_OK)
 
 
 class DucxWalletsViewSet(ReadOnlyModelViewSet):
-    queryset = StatisticsAddress.objects.filter(network='DUCX')\
-        .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('ducx_wallet_address'))
+    ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
+    queryset = StatisticsAddress.objects.filter(network='DUCX') \
+        .exclude(user_address__in=ducx_blacklist)
     serializer_class = DucxWalletsSerializer
 
 
@@ -157,6 +163,7 @@ class DucxWalletsToCSV(APIView):
 
 class DucWalletsView(APIView):
     def get(self, request):
+        duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
         data = BitcoreAddress.objects.filter(network='DUC') \
-            .exclude(user_address__in=DucatusAddressBlacklist.objects.all().values('duc_wallet_address'))
+            .exclude(user_address__in=duc_blacklist)
         return Response(data, status=status.HTTP_200_OK)

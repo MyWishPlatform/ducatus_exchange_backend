@@ -4,8 +4,8 @@ from ducatus_exchange.consts import MAX_DIGITS
 
 
 class DucatusAddressBlacklist(models.Model):
-    duc_wallet_address = models.CharField(max_length=64, help_text='corporate duc wallets', default='', unique=True)
-    ducx_wallet_address = models.CharField(max_length=64, help_text='corporate ducx wallets', default='', unique=True)
+    wallet_address = models.CharField(max_length=64, help_text='corporate wallets', default='', unique=True)
+    network = models.CharField(max_length=100)
 
 
 class BitcoreAddress(models.Model):
