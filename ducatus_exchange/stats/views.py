@@ -164,6 +164,6 @@ class DucxWalletsToCSV(APIView):
 class DucWalletsView(APIView):
     def get(self, request):
         duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
-        data = BitcoreAddress.objects.filter(network='DUC') \
+        data = BitcoreAddress.objects.all() \
             .exclude(user_address__in=duc_blacklist)
         return Response(data, status=status.HTTP_200_OK)
