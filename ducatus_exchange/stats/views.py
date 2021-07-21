@@ -28,7 +28,7 @@ class DucToDucxSwap(APIView):
             .aggregate(Sum('original_amount'))
         amount = duc['original_amount__sum']
         # because aggregator returns `None` if there is no objects after filtering
-        amount = 0 if not amount else str(amount)
+        amount = "0" if not amount else str(amount)
         return Response({
                 'amount': amount,
                 'currency': 'duc'
@@ -44,7 +44,7 @@ class DucxToDucSwap(APIView):
             .aggregate(Sum('original_amount'))
         amount = ducx['original_amount__sum']
         # because aggregator returns `None` if there is no objects after filtering
-        amount = 0 if not amount else str(amount)
+        amount = "0" if not amount else str(amount)
         return Response({
                 'amount': amount,
                 'currency': 'ducx'
