@@ -15,7 +15,7 @@ urlpatterns = [
     path('statistics/duc_wallets/', views.DucWalletsView.as_view()),
     path('statistics/', include(stats_router.urls)),
     path('statistics/<str:currency>_wallets/csv', views.DucxWalletsToCSV.as_view()),
-    path('statisctics/duc_to_ducx/', views.DucToDucxSwap.as_view()),
-    path('statisctics/ducx_to_duc/', views.DucxToDucSwap.as_view()),
+    path('statistics/daily_swap/duc_to_ducx/', views.DucToDucxSwap.as_view()),
+    path('statistics/daily_swap/ducx_to_duc/', views.DucxToDucSwap.as_view()),
     path('statistics/wallets_total', views.StatisticsTotals.as_view())
 ]
