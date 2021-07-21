@@ -26,6 +26,8 @@ class DucToDucxSwap(APIView):
         time = datetime.now() - timedelta(hours=24)
         duc = Payment.objects.filter(currency='DUC', created_date__gt=time)\
             .aggregate(Sum('original_amount'))
+        # because aggregator returns `None` if there is no objects after filtering
+        duc = 0 if not duc else str(duc['original_amount__sum'])
         return Response({
                 'amount': str(duc['original_amount__sum']),
                 'currency': 'duc'
@@ -39,8 +41,10 @@ class DucxToDucSwap(APIView):
         ducx = Payment.objects.filter(currency='DUCX', created_date__gt=time)\
             .exclude(exchange_request__duc_address__isnull=False)\
             .aggregate(Sum('original_amount'))
+        # because aggregator returns `None` if there is no objects after filtering
+        ducx = 0 if not ducx else str(ducx['original_amount__sum'])
         return Response({
-                'amount': str(ducx['original_amount__sum']),
+                'amount': ducx['original_amount__sum'],
                 'currency': 'ducx'
                 }, status=status.HTTP_200_OK)
 
@@ -58,7 +62,7 @@ class StatisticsTotals(APIView):
 
         return Response({
             'duc': str(duc_address_sum['balance__sum']),
-            'ducx': str(ducx_address_sum['"balance__sum'])
+            'ducx': str(ducx_address_sum['balance__sum'])
             }, status=status.HTTP_200_OK)
 
 
