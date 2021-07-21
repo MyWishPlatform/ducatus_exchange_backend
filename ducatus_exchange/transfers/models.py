@@ -8,7 +8,7 @@ from django_fsm import FSMField, transition
 
 class DucatusTransfer(models.Model):
     STATES = ('DONE', 'WAITING_FOR_CONFIRMATION')
-    STATES = list(zip(STATES, STATES)
+    STATES = list(zip(STATES, STATES))
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
