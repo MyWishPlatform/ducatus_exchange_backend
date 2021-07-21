@@ -14,7 +14,7 @@ class DucatusTransfer(models.Model):
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
     currency = models.CharField(max_length=25, null=True, default=None)
-    state = FSMField(default='', choices=STATES)
+    state = FSMField(default=STATES[0], choices=STATES)
     created_date = models.DateTimeField(auto_now_add=True)
 
     # States change
