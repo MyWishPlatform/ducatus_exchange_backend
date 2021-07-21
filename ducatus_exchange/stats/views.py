@@ -25,9 +25,9 @@ class DucToDucxSwap(APIView):
     def get(self, request):
         time = datetime.now() - timedelta(hours=24)
         duc = Payment.objects.filter(currency='DUC', created_date__gt=time)\
-            .agreggate(Sum('original_amount'))
+            .aggregate(Sum('original_amount'))
         return Response({
-                'amount': duc,
+                'amount': str(duc['original_amount__sum']),
                 'currency': 'duc'
                 }, status=status.HTTP_200_OK)
 
@@ -38,9 +38,9 @@ class DucxToDucSwap(APIView):
         time = datetime.now() - timedelta(hours=24)
         ducx = Payment.objects.filter(currency='DUCX', created_date__gt=time)\
             .exclude(exchange_request__duc_address__isnull=False)\
-            .agreggate(Sum('original_amount'))
+            .aggregate(Sum('original_amount'))
         return Response({
-                'amount': ducx,
+                'amount': str(ducx['original_amount__sum']),
                 'currency': 'ducx'
                 }, status=status.HTTP_200_OK)
 
@@ -57,8 +57,8 @@ class StatisticsTotals(APIView):
             .aggregate(Sum('balance'))
 
         return Response({
-            'duc': duc_address_sum,
-            'ducx': ducx_address_sum
+            'duc': str(duc_address_sum['balance__sum']),
+            'ducx': str(ducx_address_sum['"balance__sum'])
             }, status=status.HTTP_200_OK)
 
 
