@@ -134,7 +134,7 @@ class DucWalletsViewSet(ReadOnlyModelViewSet):
 
 class BitcoreWalletsViewSet(ReadOnlyModelViewSet):
     duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
-    queryset = BitcoreAddress.objects.filter(network='DUCX').exclude(user_address__in=duc_blacklist)
+    queryset = BitcoreAddress.objects.all().exclude(user_address__in=duc_blacklist)
     serializer_class = BitcoreWalletsSerializer
 
 
