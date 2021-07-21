@@ -128,8 +128,8 @@ class DucxWalletsViewSet(ReadOnlyModelViewSet):
 
 
 class DucWalletsViewSet(ReadOnlyModelViewSet):
-    ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
-    queryset = StatisticsAddress.objects.filter(network='DUCX').exclude(user_address__in=ducx_blacklist)
+    duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
+    queryset = StatisticsAddress.objects.filter(network='DUC').exclude(user_address__in=duc_blacklist)
     serializer_class = DucWalletsSerializer
 
 
