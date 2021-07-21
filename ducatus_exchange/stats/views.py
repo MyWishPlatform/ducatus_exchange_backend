@@ -30,7 +30,7 @@ class DucToDucxSwap(APIView):
         # because aggregator returns `None` if there is no objects after filtering
         amount = 0 if not amount else str(amount)
         return Response({
-                'amount': duc,
+                'amount': amount,
                 'currency': 'duc'
                 }, status=status.HTTP_200_OK)
 
