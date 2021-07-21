@@ -11,7 +11,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework import status
 
 from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress, BitcoreAddress
-from ducatus_exchange.stats.serializers import DucxWalletsSerializer
+from ducatus_exchange.stats.serializers import DucWalletsSerializer, BitcoreWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
 from ducatus_exchange.payments.models import Payment
 from django.db.models import Sum
@@ -123,12 +123,22 @@ class StatsHandler(APIView):
 
 class DucxWalletsViewSet(ReadOnlyModelViewSet):
     ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
-    queryset = StatisticsAddress.objects.filter(network='DUCX') \
-        .exclude(user_address__in=ducx_blacklist)
-    serializer_class = DucxWalletsSerializer
+    queryset = StatisticsAddress.objects.filter(network='DUCX').exclude(user_address__in=ducx_blacklist)
+    serializer_class = DucWalletsSerializer
 
 
-class DucxWalletsToCSV(APIView):
+class DucWalletsViewSet(ReadOnlyModelViewSet):
+    ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
+    queryset = StatisticsAddress.objects.filter(network='DUCX').exclude(user_address__in=ducx_blacklist)
+
+
+class BitcoreWalletsViewSet(ReadOnlyModelViewSet):
+    duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
+    queryset = BitcoreAddress.objects.filter(network='DUCX').exclude(user_address__in=duc_blacklist)
+    serializer_class = BitcoreWalletsSerializer
+
+
+class DucWalletsToCSV(APIView):
 
     def get(self, request, currency):
         if currency.lower() == 'ducx':
@@ -159,11 +169,3 @@ class DucxWalletsToCSV(APIView):
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
 
         return response
-
-
-class DucWalletsView(APIView):
-    def get(self, request):
-        duc_blacklist = DucatusAddressBlacklist.objects.filter(network='DUC').values('wallet_address')
-        data = BitcoreAddress.objects.all() \
-            .exclude(user_address__in=duc_blacklist)
-        return Response(data, status=status.HTTP_200_OK)
