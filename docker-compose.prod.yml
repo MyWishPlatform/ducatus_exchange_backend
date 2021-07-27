@@ -110,6 +110,8 @@ services:
       dockerfile: dockerfiles/ducex_receiver.Dockerfile
     container_name: ducex_receiver
     restart: unless-stopped
+    volumes:
+      - .:/www/ducatus_exchange_backend/payments/payments_stat/
 
   ducex_lottery_checker:
     env_file: ./.env.prod
@@ -140,6 +142,8 @@ services:
     restart: unless-stopped
     networks:
       - own
+    volumes:
+      - ./ducatus_exchange/stats/last_block_info:/www/ducatus_exchange_backend/stats/last_block_info
 
   scanner:
     env_file: ./.env.prod
@@ -151,7 +155,7 @@ services:
       - rabbit
     restart: unless-stopped
     volumes:
-      - ./scanner/settings:/app/mywill_scanner/settings
+      - ./scanner/settings:/www/mywill_scanner/settings
     networks:
       - own
 
