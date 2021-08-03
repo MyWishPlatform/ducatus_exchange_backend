@@ -1,4 +1,5 @@
 from django.core.mail import send_mail
+from django.core.validators import EmailValidator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -18,7 +19,7 @@ class FeedbackForm(APIView):
             properties={
                 'name': openapi.Schema(type=openapi.TYPE_STRING),
                 'email': openapi.Schema(type=openapi.TYPE_STRING),
-                'phone': openapi.Schema(type=openapi.TYPE_STRING),
+                'tel': openapi.Schema(type=openapi.TYPE_STRING),
                 'message': openapi.Schema(type=openapi.TYPE_STRING)
             },
         ),
@@ -29,8 +30,18 @@ class FeedbackForm(APIView):
         print(request.data)
         name = request.data.get('name')
         email = request.data.get('email')
-        phone_number = request.data.get('phone')
+        phone_number = request.data.get('tel')
         message = request.data.get('message')
+
+        # validate data
+        if any([name=='', email=='', phone_number=='', message=='']):
+            return Response({'result': 'empty data not allowed'})
+        validator = EmailValidator()
+        validator(email)
+        if not phone_number.isdigit() or len(phone_number) < 10:
+            return Response({'result': 'invalid phone number'})
+
+        # send message
         text = """
             Name: {name}
             E-mail: {email}
