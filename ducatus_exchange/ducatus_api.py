@@ -174,11 +174,18 @@ class DucatusAPI:
         res = requests.get(endpoint_url)
         data = res.json()
         addresses = []
-        for input in data['inputs']:
-            addresses.append(input['address'])
-        for output in data['outputs']:
-            addresses.append(output['address'])
-        return addresses
+        for tx_input in data['inputs']:
+            addresses.append(tx_input['address'])
+        for tx_output in data['outputs']:
+            addresses.append(tx_output['address'])
+
+        addresses = set(addresses)
+        tx_addresses = []
+        for addr in addresses:
+            if addr[0] in ('M', 'L') and len(addr) == 34:
+                tx_addresses.append(addr)
+        return tx_addresses
+
 
 
 class DucatusXAPI(DucatusAPI):
