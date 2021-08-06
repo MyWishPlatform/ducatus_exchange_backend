@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-
+from ducatus_exchange.logging_settings import LOGGING
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -144,9 +144,9 @@ STATS_NORMALIZED_TIME = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'ducatus_exchange', 'static/')
 STATIC_URL = '/static/'
-#STATICFILES_DIRS = [
+# STATICFILES_DIRS = [
 #    os.path.join(BASE_DIR, 'ducatus_exchange', 'static'),
-#]
+# ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
@@ -164,4 +164,3 @@ try:
     from ducatus_exchange.settings_local import *
 except ImportError:
     print('Cannot import local settings', flush=True)
-

@@ -44,7 +44,6 @@ schema_view = get_schema_view(
 router = DefaultRouter(trailing_slash=True)
 router.register(r'lotteries', LotteryViewSet)
 router.register(r'lotteries_players', LotteryPlayerViewSet)
-router.register(r'statistics/ducx_wallets', DucxWalletsViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -66,6 +65,4 @@ urlpatterns = [
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
     url(r'^api/v1/', include('ducatus_exchange.stats.urls'))
-
-
 ]

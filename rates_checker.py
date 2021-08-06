@@ -4,6 +4,7 @@ import time
 import json
 import requests
 import traceback
+import logging
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
@@ -15,6 +16,8 @@ from ducatus_exchange.settings import CRYPTOCOMPARE_API_KEY, RATES_CHECKER_TIMEO
 
 query_tsyms = ['ETH', 'BTC', 'USDC', 'USD', 'EUR', 'GBP', 'CHF']
 query_fsym = 'USD'
+
+logger = logging.getLogger('rates_checker')
 
 
 def get_rates(fsym, tsyms, reverse=False):
@@ -52,16 +55,16 @@ if __name__ == '__main__':
             for key, value in duc_prices.items():
                 usd_prices[key] = value['USD']
         except Exception as e:
-            print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+            logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
             time.sleep(RATES_CHECKER_TIMEOUT)
             continue
 
-        print('new usd prices', usd_prices, flush=True)
+        logger.info(msg=f'new usd prices {usd_prices}')
 
         rate = UsdRate.objects.first() or UsdRate()
         rate.update_rates(**usd_prices)
         rate.save()
 
-        print('saved ok', flush=True)
+        logger.info(msg='saved ok')
 
         time.sleep(RATES_CHECKER_TIMEOUT)

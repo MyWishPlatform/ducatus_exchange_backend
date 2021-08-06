@@ -1,5 +1,6 @@
 import sys
 import traceback
+import logging
 
 from django.utils import timezone
 from django.core.mail import get_connection, send_mail
@@ -15,6 +16,9 @@ from ducatus_exchange.settings import CONFIRMATION_FROM_EMAIL, CONFIRMATION_FROM
     PROMO_END_TIMESTAMP, CONFIRMATION_HOST, EMAIL_PORT, EMAIL_USE_TLS
 
 
+logger = logging.getLogger(__name__)
+
+
 class LotteryRegister:
 
     def __init__(self, transfer: DucatusTransfer):
@@ -27,8 +31,8 @@ class LotteryRegister:
             try:
                 lottery_player = self.register_to_lottery(lottery)
             except Exception as e:
-                print('Cannot register to lottery at first, retrying', flush=True)
-                print(e, flush=True)
+                logger.error('Cannot register to lottery at first, retrying')
+                logger.error(msg=e)
                 lottery_player = self.register_to_lottery(lottery)
             if lottery_player:
                 self.send_confirmation_mail(lottery_player.sent_usd_amount,
@@ -70,11 +74,10 @@ class LotteryRegister:
             lottery.filled_at = int(timezone.now().timestamp())
         lottery.save()
 
-        print(
-            'address {} registered to lottery {} (id={}) with {} usd and {} tickets'.format(lottery_player.user.address,
-                                                                                            lottery.name, lottery.id,
-                                                                                            usd_amount, tickets_amount),
-            flush=True)
+        logger.info(msg=(f'address {lottery_player.user.address}'
+                        f' registered to lottery {lottery.name}'
+                        f' (id={lottery.id}) with {usd_amount}'
+                        f' usd and {tickets_amount} tickets'))
 
         return lottery_player
 
@@ -82,8 +85,8 @@ class LotteryRegister:
         tickets_amount_result = 0
         for usd_value, tickets_amount in TICKETS_FOR_USD.items():
             if usd_amount - usd_value * RATES_PRECISION < 0:
-                print('usd value', usd_amount, flush=True)
-                print('tickets amount', tickets_amount_result, flush=True)
+                logger.info(msg=('usd value', usd_amount))
+                logger.info(msg=('tickets amount', tickets_amount_result))
                 return tickets_amount_result
             else:
                 tickets_amount_result = tickets_amount
@@ -116,7 +119,7 @@ class LotteryRegister:
         connection = cls.get_mail_connection()
         try:
             send_mail(
-                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+                f'Your DUC Purchase Confirmation for ${round(usd_amount, 2)}',
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
@@ -124,9 +127,9 @@ class LotteryRegister:
                 html_message=lottery_html_style + html_body,
             )
 
-            print('conformation message sent successfully to {}'.format(to_email), flush=True)
+            logger.info(msg=(f'conformation message sent successfully to {to_email}'))
         except Exception as e:
-            print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+            logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
 
     @classmethod
     def send_warning_mail(cls, usd_amount, payment: Payment):
@@ -139,16 +142,16 @@ class LotteryRegister:
 
         try:
             send_mail(
-                'Your DUC Purchase Confirmation for ${}'.format(round(usd_amount, 2)),
+                f'Your DUC Purchase Confirmation for ${round(usd_amount, 2)}',
                 '',
                 CONFIRMATION_FROM_EMAIL,
                 [to_email],
                 connection=connection,
                 html_message=warning_html_style + html_body,
             )
-            print('warning message sent successfully to {}'.format(to_email), flush=True)
+            logger.info(msg=(f'warning message sent successfully to {to_email}'))
         except Exception as e:
-            print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+            logger.error(msg=('\n'.join(traceback.format_exception(*sys.exc_info()))))
 
     @staticmethod
     def get_mail_connection():
@@ -177,6 +180,6 @@ class LotteryRegister:
         usd_prices['GBP'] = rate.gbp_price
         usd_prices['CHF'] = rate.chf_price
 
-        print('current rates', usd_prices, flush=True)
+        logger.info(msg=('current rates', usd_prices))
 
         return usd_prices

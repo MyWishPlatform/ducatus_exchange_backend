@@ -27,8 +27,7 @@ def initiate_charge(currency, amount, email):
     }
 
     headers = {
-        'Authorization': '{token_type} {access_token}'.format(token_type=quantum_account.token_type,
-                                                              access_token=quantum_account.access_token)
+        'Authorization': f'{quantum_account.token_type} {quantum_account.access_token}'
     }
 
     try:

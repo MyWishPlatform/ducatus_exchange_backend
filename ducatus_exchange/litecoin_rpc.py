@@ -1,3 +1,5 @@
+import logging
+
 from decimal import Decimal
 from http.client import RemoteDisconnected
 
@@ -5,6 +7,8 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
+
+logger = logging.getLogger('litecoin_rpc')
 
 
 class DucatuscoreInterfaceException(Exception):
@@ -41,28 +45,27 @@ class DucatuscoreInterface:
     def transfer(self, address, amount):
         try:
             value = amount / DECIMALS['DUC']
-            print('try sending {value} DUC to {addr}'.format(value=value, addr=address))
+            logger.info(msg=f'try sending {value} DUC to {address}')
             self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
             res = self.rpc.sendtoaddress(address, value)
-            print(res)
+            logger.info(msg=res)
             return res
         except JSONRPCException as e:
-            err = 'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
-                .format(amount=amount, addr=address)
-            print(err, flush=True)
-            print(e, flush=True)
+            err = f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address} failed'
+            logger.error(msg=err)
+            logger.error(msg=e)
             raise DucatuscoreInterfaceException(err)
 
     def validate_address(self, address):
         for attempt in range(10):
-            print('attempt', attempt, flush=True)
+            logger.info(msg=f'attempt {attempt}')
             try:
                 rpc_response = self.rpc.validateaddress(address)
             except RemoteDisconnected as e:
-                print(e, flush=True)
+                logger.error(msg=e)
                 rpc_response = False
             if not isinstance(rpc_response, bool):
-                print(rpc_response, flush=True)
+                logger.info(msg=rpc_response)
                 break
         else:
             raise Exception(
@@ -90,13 +93,13 @@ class DucatuscoreInterface:
             count += 1
 
     def internal_transfer(self, tx_list, address_from, address_to, amount, private_key):
-        print('start raw tx build', flush=True)
-        print('tx_list', tx_list, 'from', address_from, 'to', address_to, 'amount', amount, flush=True)
+        logger.info(msg='start raw tx build')
+        logger.info(msg=f'tx_list {tx_list} from {address_from} to {address_to} amount {amount}')
         try:
             input_params = []
             for payment_hash in tx_list:
                 unspent_input, input_vout_count = self.get_unspent_input(payment_hash, address_from)
-                print('unspent input', unspent_input, flush=True)
+                logger.info(msg=f'unspent input {unspent_input}')
 
                 input_params.append({
                     'txid': payment_hash,
@@ -106,24 +109,22 @@ class DucatuscoreInterface:
             transaction_fee = self.get_fee() * DECIMALS['DUC']
             send_amount = (Decimal(amount) - transaction_fee) / DECIMALS['DUC']
 
-            print('input_params', input_params, flush=True)
+            logger.info(msg=f'input_params {input_params}')
             output_params = {address_to: send_amount}
-            print('output_params', output_params, flush=True)
+            logger.info(msg=f'output_params {output_params}')
 
             tx = self.rpc.createrawtransaction(input_params, output_params)
-            print('raw tx', tx, flush=True)
+            logger.info(msg=f'raw tx {tx}')
 
             signed = self.rpc.signrawtransaction(tx, None, [private_key])
-            print('signed tx', signed, flush=True)
+            logger.info(msg=f'signed tx {signed}')
 
             tx_hash = self.rpc.sendrawtransaction(signed['hex'])
-            print('tx', tx_hash, flush=True)
+            logger.info(msg=f'tx {tx_hash}')
 
             return tx_hash
 
         except JSONRPCException as e:
-            print('DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed'
-                  .format(amount=amount, addr=address_to), flush=True
-                  )
-            print(e, flush=True)
+            logger.error(msg=f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address_to} failed')
+            logger.error(msg=e)
             raise DucatuscoreInterfaceException(e)

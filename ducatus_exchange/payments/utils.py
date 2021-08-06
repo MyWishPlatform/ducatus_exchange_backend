@@ -1,14 +1,14 @@
+import logging
+
 from ducatus_exchange.rates.serializers import AllRatesSerializer
 from ducatus_exchange.consts import DECIMALS
 
+logger = logging.getLogger(__name__)
+
+
 def calculate_amount(original_amount, from_currency):
     to_currency = 'DUCX' if from_currency == 'DUC' else 'DUC'
-    print('Calculating amount, original: {orig}, from {from_curr} to {to_curr}'.format(
-        orig=original_amount,
-        from_curr=from_currency,
-        to_curr=to_currency
-        ), flush=True
-    )
+    logger.info(msg=f'Calculating amount, original: {original_amount}, from {from_currency} to {to_currency}')
 
     rates = AllRatesSerializer({})
     currency_rate = rates.data[to_currency][from_currency]
@@ -20,7 +20,7 @@ def calculate_amount(original_amount, from_currency):
     else:
         value = original_amount
 
-    print('value: {value}, rate: {rate}'.format(value=value, rate=currency_rate), flush=True)
+    logger.info(msg=f'value: {value}, rate: {currency_rate}')
     amount = int(float(value) / float(currency_rate))
 
     return amount, currency_rate

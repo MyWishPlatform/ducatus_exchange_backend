@@ -1,7 +1,6 @@
 import os
-import sys
 import time
-import traceback
+import logging
 from datetime import datetime
 import django
 
@@ -15,6 +14,8 @@ from ducatus_exchange.settings import STATS_NORMALIZED_TIME
 from ducatus_exchange.ducatus_api import DucatusAPI, DucatusXAPI
 from ducatus_exchange.stats.LastBlockPersister import get_last_block, save_last_block
 
+logger = logging.getLogger('stats_checker')
+
 
 def save_transfer(api, tx, network):
     normalized_time = datetime.strptime(tx.get('blockTime'), STATS_NORMALIZED_TIME)
@@ -26,23 +27,27 @@ def save_transfer(api, tx, network):
     if network == 'DUCX':
         try:
             address_from = tx.get('from'.lower())
-            net_account_from, new_from = StatisticsAddress.objects.get_or_create(user_address=tx.get('from'), network=network)
+            net_account_from, new_from = StatisticsAddress.objects.get_or_create(
+                                                                    user_address=tx.get('from'),
+                                                                    network=network)
             net_account_from.balance = api.get_address_balance(net_account_from.user_address)
             net_account_from.save()
 
             address_to = tx.get('to').lower()
             if address_to != address_from:
-                net_account_to, new_to = StatisticsAddress.objects.get_or_create(user_address=tx.get('to'), network=network)
+                net_account_to, new_to = StatisticsAddress.objects.get_or_create(
+                                                                    user_address=tx.get('to'),
+                                                                    network=network)
                 net_account_to.balance = api.get_address_balance(net_account_to.user_address)
                 net_account_to.save()
             else:
                 net_account_to = net_account_from
         except Exception as e:
-            print('could not save addresses pack: {from_addr} and {to_addr}'.format(
+            logger.error(msg='could not save addresses pack: {from_addr} and {to_addr}'.format(
                 from_addr=tx.get('from').lower(),
                 to_addr=tx.get('from'.lower())
-            ), flush=True)
-            print(e, flush=True)
+            ))
+            logger.error(msg=e)
 
     transfer = StatisticsTransfer.objects.filter(tx_hash=tx.get('txid'))
     transfer_saved = False
@@ -59,9 +64,9 @@ def save_transfer(api, tx, network):
         transfer.save()
         transfer_saved = True
     else:
-        print('transfer already saved at obj id {tr_id}, hash {tr_hash}'.format(
-            tr_id=transfer.first().id, tr_hash=tx.get('txid')),
-            flush=True
+        logger.info(msg='transfer already saved at obj id {tr_id}, hash {tr_hash}'.format(
+            tr_id=transfer.first().id,
+            tr_hash=tx.get('txid'))
         )
 
     return {
@@ -69,6 +74,7 @@ def save_transfer(api, tx, network):
         'address_to': net_account_to.user_address if net_account_to else None,
         'transfer_saved': transfer_saved
         }
+
 
 def update_stats(api, network):
     last_saved_block = get_last_block(network)
@@ -96,10 +102,10 @@ def update_stats(api, network):
                             now=duc_addr.balance,
                         ), flush=True)
 
-        print(f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
+        logger.info(msg=f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
 
-    print(addresses_in_txes)
+    logger.info(msg=addresses_in_txes)
     return {'current_block': current_block, 'transfer_addresses': addresses_in_txes}
 
 
@@ -112,18 +118,18 @@ def update_balances(api, addresses):
             account.balance = api.get_address_balance(account.user_address)
             account.save()
             c += 1
-            print('DUCX STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
+            logger.info(msg='account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
                 acc=account.user_address,
                 count=c,
                 total=len(addresses),
                 now=account.balance,
                 before=balance_before
-            ), flush=True)
+            ))
             # print(f'account {account.user_address} updated ({c}/{len(addresses)}), balance now: {account.balance}',
             #       flush=True)
         except Exception as e:
-            print(f'Skipped address {addr} because of error', flush=True)
-            print(f'Error: {e}', flush=True)
+            logger.error(msg=f'Skipped address {addr} because of error')
+            logger.error(msg=f'Error: {e}')
 
 
 if __name__ == '__main__':
@@ -131,17 +137,17 @@ if __name__ == '__main__':
     ducx_api = DucatusXAPI()
     while True:
         stats_duc_info = update_stats(duc_api, 'DUC')
-        print(stats_duc_info.get('current_block'), flush=True)
+        logger.info(msg=stats_duc_info.get('current_block'))
         save_last_block('DUC', stats_duc_info.get('current_block'))
 
         stats_ducx_info = update_stats(ducx_api, 'DUCX')
-        print(f'{stats_ducx_info.get("current_block")}', flush=True)
+        logger.info(msg=f'{stats_ducx_info.get("current_block")}')
         save_last_block('DUCX', stats_ducx_info.get('current_block'))
 
         # takes some time, around 12 minutes for 21k addresse
         ducx_addresses = set(stats_ducx_info.get('transfer_addresses'))
-        print(f'Updating current balances for {len(ducx_addresses)} addresses', flush=True)
+        logger.info(msg=f'Updating current balances for {len(ducx_addresses)} addresses')
         update_balances(ducx_api, ducx_addresses)
-        print('Current balances of DUCX updated', flush=True)
+        logger.info(msg='Current balances of DUCX updated')
 
         time.sleep(STATS_CHECKER_TIMEOUT)

@@ -1,3 +1,5 @@
+import logging
+
 from django.core.mail import send_mail
 from django.core.validators import EmailValidator
 from rest_framework.views import APIView
@@ -7,6 +9,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.settings import FEEDBACK_EMAIL, DEFAULT_FROM_EMAIL
+
+logger = logging.getLogger('FeedbackForm')
 
 
 class FeedbackForm(APIView):
@@ -27,11 +31,12 @@ class FeedbackForm(APIView):
 
     )
     def post(self, request):
-        print(request.data)
+        logger.info(msg=request.data)
         name = request.data.get('name')
         email = request.data.get('email')
         phone_number = request.data.get('tel')
         message = request.data.get('message')
+
 
         # validate data
         if any([name=='', email=='', phone_number=='', message=='']):
@@ -46,10 +51,8 @@ class FeedbackForm(APIView):
             Name: {name}
             E-mail: {email}
             Message: {message}
-            Phone: {phone}
-            """.format(
-            name=name, email=email, phone=phone_number, message=message
-        )
+            Phone: {phone_number}
+            """
         send_mail(
             'Request from rocknblock.io contact form',
             text,

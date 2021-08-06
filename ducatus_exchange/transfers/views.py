@@ -1,16 +1,16 @@
-import datetime
+import logging
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
+
+logger = logging.getLogger(__name__)
 
 
 check_limit_response = openapi.Response(
@@ -24,6 +24,7 @@ check_limit_response = openapi.Response(
         },
     )
 )
+
 
 class CheckLimitView(APIView):
 
@@ -41,16 +42,15 @@ class CheckLimitView(APIView):
     )
     def post(self, request):
         request_data = request.data
-        print('request data:', request_data, flush=True)
+        logger.info(msg=f'request data: {request_data}')
         address = request_data.get('address')
         ducatus_user = DucatusUser.objects.filter(address = address).last()
         exchange_request = ExchangeRequest.objects.get(user=ducatus_user)
         dayly_available = DAYLY_LIMIT - exchange_request.dayly_swap
         weekly_available = WEEKLY_LIMIT - exchange_request.weekly_swap
 
-
         response_data = {'daily_available': dayly_available, 'weekly_available': weekly_available}
 
-        print('res:', response_data)
+        logger.info(msg=f'res: {response_data}')
 
         return Response(response_data, status=status.HTTP_200_OK)

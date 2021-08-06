@@ -1,3 +1,5 @@
+import logging
+
 from django.db import IntegrityError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -14,6 +16,9 @@ from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.payments.api import create_voucher, send_voucher_email
 
 
+logger = logging.getLogger(__name__)
+
+
 def get_rates():
     usd_prices = {}
     rate = UsdRate.objects.first()
@@ -24,7 +29,7 @@ def get_rates():
     usd_prices['CHF'] = rate.chf_price
     usd_prices['DUC'] = rate.duc_price
 
-    print('current quantum rates:', usd_prices, flush=True)
+    logger.info(msg=f'current quantum rates: {usd_prices}')
     return usd_prices
 
 
@@ -113,12 +118,11 @@ def change_charge_status(request: Request):
         charge = Charge.objects.filter(charge_id=charge_id).first()
         if charge and status == 'Withdrawn':
             if Payment.objects.filter(charge_id=charge.id):
-                print('WARN! Payment for Charge {} with quantum id {} already exist. Decline payment'.format(
-                    charge.id, charge.charge_id
-                ), flush=True)
+                logger.info(msg=f'WARN! Payment for Charge {charge.id}'
+                      f' with quantum id {charge.charge_id} already exist. Decline payment')
                 return Response(200)
 
-            print(f'try create voucher for charge {charge_id}', flush=True)
+            logger.info(msg=f'try create voucher for charge {charge_id}')
             usd_amount, _ = calculate_amount(charge, 'USD')
             raw_usd_amount = usd_amount / DECIMALS['USD']
             try:
