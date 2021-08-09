@@ -22,6 +22,8 @@ class ExchangeRequest(models.Model):
     ducx_address = models.CharField(max_length=50, null=True, default=None)
     btc_address = models.CharField(max_length=50, null=True, default=None)
     eth_address = models.CharField(max_length=50, null=True, default=None)
+    usdc_address = models.CharField(max_length=50, null=True, default=None)
+    usdt_address = models.CharField(max_length=50, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     dayly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
     weekly_swap = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0, default=0)
@@ -46,6 +48,8 @@ class ExchangeRequest(models.Model):
         self.eth_address = eth_address
         self.duc_address = duc_address
         self.ducx_address = ducx_address
+        self.usdc_address = eth_address
+        self.usdt_address = eth_address
 
         self.save()
 

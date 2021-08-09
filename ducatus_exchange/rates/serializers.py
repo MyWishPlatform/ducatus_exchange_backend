@@ -10,6 +10,7 @@ def get_usd_prices():
     usd_prices['USDC'] = rate.usdc_price
     usd_prices['DUC'] = rate.duc_price
     usd_prices['DUCX'] = rate.ducx_price
+    usd_prices['USDT'] = rate.usd_price
 
     print('current rates', usd_prices, flush=True)
 

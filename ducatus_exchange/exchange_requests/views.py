@@ -29,6 +29,8 @@ exchange_response_duc = openapi.Response(
             'ducx_address': openapi.Schema(type=openapi.TYPE_STRING),
             'btc_address': openapi.Schema(type=openapi.TYPE_STRING),
             'eth_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'usdc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'usdt_address': openapi.Schema(type=openapi.TYPE_STRING),
         },
     )
 )
@@ -85,7 +87,9 @@ class ExchangeRequestView(APIView):
             response_data = {
                 'eth_address': exchange_request.eth_address,
                 'btc_address': exchange_request.btc_address,
-                'ducx_address': exchange_request.ducx_address
+                'ducx_address': exchange_request.ducx_address,
+                'usdc_address': exchange_request.usdc_address,
+                'usdt_address': exchange_request.usdc_address,
             }
         else:
             response_data = {'duc_address': exchange_request.duc_address}
