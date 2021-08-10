@@ -89,7 +89,7 @@ class ExchangeRequestView(APIView):
                 'btc_address': exchange_request.btc_address,
                 'ducx_address': exchange_request.ducx_address,
                 'usdc_address': exchange_request.usdc_address,
-                'usdt_address': exchange_request.usdc_address,
+                'usdt_address': exchange_request.usdt_address,
             }
         else:
             response_data = {'duc_address': exchange_request.duc_address}
