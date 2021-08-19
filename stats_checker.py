@@ -76,6 +76,29 @@ def save_transfer(api, tx, network):
         }
 
 
+def update_balances(api, addresses):
+    c = 0
+    for addr in addresses:
+        try:
+            account = StatisticsAddress.objects.get(user_address=addr)
+            balance_before = account.balance
+            account.balance = api.get_address_balance(account.user_address)
+            account.save()
+            c += 1
+            logger.info('DUCX STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
+                acc=account.user_address,
+                count=c,
+                total=len(addresses),
+                now=account.balance,
+                before=balance_before
+            ), flush=True)
+            # print(f'account {account.user_address} updated ({c}/{len(addresses)}), balance now: {account.balance}',
+            #       flush=True)
+        except Exception as e:
+            logger.error(f'Skipped address {addr} because of error', flush=True)
+            logger.error(f'Error: {e}', flush=True)
+
+
 def update_stats(api, network):
     last_saved_block = get_last_block(network)
     current_network_block = api.get_last_blockchain_block()
@@ -104,32 +127,11 @@ def update_stats(api, network):
 
         logger.info(msg=f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
+        save_last_block(network, current_block)
+        if network == "DUCX":
+            update_balances(api, set(addresses_in_txes))
 
-    logger.info(msg=addresses_in_txes)
-    return {'current_block': current_block, 'transfer_addresses': addresses_in_txes}
-
-
-def update_balances(api, addresses):
-    c = 0
-    for addr in addresses:
-        try:
-            account = StatisticsAddress.objects.get(user_address=addr)
-            balance_before = account.balance
-            account.balance = api.get_address_balance(account.user_address)
-            account.save()
-            c += 1
-            logger.info(msg='account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
-                acc=account.user_address,
-                count=c,
-                total=len(addresses),
-                now=account.balance,
-                before=balance_before
-            ))
-            # print(f'account {account.user_address} updated ({c}/{len(addresses)}), balance now: {account.balance}',
-            #       flush=True)
-        except Exception as e:
-            logger.error(msg=f'Skipped address {addr} because of error')
-            logger.error(msg=f'Error: {e}')
+    return {'current_block': current_block}
 
 
 if __name__ == '__main__':
@@ -137,17 +139,9 @@ if __name__ == '__main__':
     ducx_api = DucatusXAPI()
     while True:
         stats_duc_info = update_stats(duc_api, 'DUC')
-        logger.info(msg=stats_duc_info.get('current_block'))
-        save_last_block('DUC', stats_duc_info.get('current_block'))
+        logger.info(stats_duc_info.get('current_block'), flush=True)
 
         stats_ducx_info = update_stats(ducx_api, 'DUCX')
-        logger.info(msg=f'{stats_ducx_info.get("current_block")}')
-        save_last_block('DUCX', stats_ducx_info.get('current_block'))
-
-        # takes some time, around 12 minutes for 21k addresse
-        ducx_addresses = set(stats_ducx_info.get('transfer_addresses'))
-        logger.info(msg=f'Updating current balances for {len(ducx_addresses)} addresses')
-        update_balances(ducx_api, ducx_addresses)
-        logger.info(msg='Current balances of DUCX updated')
+        logger.info(f'{stats_ducx_info.get("current_block")}', flush=True)
 
         time.sleep(STATS_CHECKER_TIMEOUT)
