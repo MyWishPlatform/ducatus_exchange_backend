@@ -91,12 +91,12 @@ def update_balances(api, addresses):
                 total=len(addresses),
                 now=account.balance,
                 before=balance_before
-            ), flush=True)
+            ))
             # print(f'account {account.user_address} updated ({c}/{len(addresses)}), balance now: {account.balance}',
             #       flush=True)
         except Exception as e:
-            logger.error(f'Skipped address {addr} because of error', flush=True)
-            logger.error(f'Error: {e}', flush=True)
+            logger.error(f'Skipped address {addr} because of error')
+            logger.error(f'Error: {e}')
 
 
 def update_stats(api, network):
@@ -139,9 +139,9 @@ if __name__ == '__main__':
     ducx_api = DucatusXAPI()
     while True:
         stats_duc_info = update_stats(duc_api, 'DUC')
-        logger.info(stats_duc_info.get('current_block'), flush=True)
+        logger.info(stats_duc_info.get('current_block'))
 
         stats_ducx_info = update_stats(ducx_api, 'DUCX')
-        logger.info(f'{stats_ducx_info.get("current_block")}', flush=True)
+        logger.info(f'{stats_ducx_info.get("current_block")}')
 
         time.sleep(STATS_CHECKER_TIMEOUT)
