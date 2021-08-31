@@ -12,10 +12,10 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
-    COLLECTION_STATES = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
-    TRANSFER_STATES = list(zip(TRANSFER_STATES, TRANSFER_STATES))
-    COLLECTION_STATES = list(zip(COLLECTION_STATES, COLLECTION_STATES))
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
+    COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
+    TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
+    COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
 
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     charge = models.ForeignKey('quantum.Charge', on_delete=models.CASCADE, null=True)
@@ -25,8 +25,8 @@ class Payment(models.Model):
     rate = models.DecimalField(max_digits=512, decimal_places=0)
     sent_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     created_date = models.DateTimeField(auto_now_add=True)
-    transfer_state = FSMField(default=TRANSFER_STATES[0], choices=TRANSFER_STATES)
-    collection_state = FSMField(default=COLLECTION_STATES[0], choices=COLLECTION_STATES)
+    transfer_state = FSMField(default=TRANSFER_STATES_DEFAULT[0], choices=TRANSFER_STATES)
+    collection_state = FSMField(default=COLLECTION_STATES_DEFAULT[0], choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
 
     # States change

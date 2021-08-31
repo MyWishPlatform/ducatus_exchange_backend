@@ -201,7 +201,8 @@ def return_ducatus(payment_hash, amount):
 
     duc_root_key = DucatusWallet.deserialize(ROOT_KEYS['ducatus']['private'])
     duc_child = duc_root_key.get_child(p.exchange_request.user.id, is_prime=False)
-    child_private = duc_child.export_to_wif().decode()
+    print(f'{duc_child.export_to_wif()}')
+    child_private = duc_child.export_to_wif()
 
     # if p.transfer_state in ['ERROR', 'WAITING_FOR_TRANSFER']:
     #     amount = p.original_amount
