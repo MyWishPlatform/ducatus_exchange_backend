@@ -2,20 +2,24 @@
 Inkassation will not work with DUC (not implemented),
 DUCX (needs integration with both ExchangeRequest and DucatusUser models).
 """
-
+import logging
 import time
 import requests
 import collections
 from web3 import Web3, HTTPProvider
 from web3.exceptions import TransactionNotFound
 from eth_account import Account
+from eth_keys import keys
+from bip32utils import BIP32Key
 
-from ducatus_exchange.exchanges.models import ExchangeRequest
-from ducatus_exchange.settings import NETWORK_SETTINGS, ROOT_KEYS, USDC_CONTRACT
+from ducatus_exchange.exchange_requests.models import ExchangeRequest
+from ducatus_exchange.settings import NETWORK_SETTINGS, ROOT_KEYS
 from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.withdrawals.utils import get_private_keys
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.bitcoin_api import BitcoinAPI, BitcoinRPC
+
+logger = logging.getLogger('withdraw')
 
 def withdraw_ducx_funds():
 
@@ -26,12 +30,12 @@ def withdraw_ducx_funds():
 
     for key, value in withdraw_parameters.items():
         if not value:
-            print(f'Value not found for parameter {key}. Aborting', flush=True)
+            logger.info(f'Value not found for parameter {key}. Aborting')
             return
 
     all_requests = ExchangeRequest.objects.all().exclude(generated_address=None)
     for account in all_requests:
-        ducx_priv_key, _ = get_private_keys(withdraw_parameters['root_private_key'], account.id)
+        ducx_priv_key, _ = get_private_keys(withdraw_parameters['root_private_key'], account.user.id)
         process_withdraw_ducx(withdraw_parameters, account, ducx_priv_key)
 
 def normalize_gas_price(gas_price):
@@ -63,15 +67,15 @@ def process_withdraw_ducx(params, account, priv_key):
         'to': web3_ducx.toChecksumAddress(to_address),
         'value': int(withdraw_amount)
     }
-    print(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}', flush=True)
+    loger.info(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}')
     signed_tx = Account.signTransaction(tx_params, priv_key)
     try:
         sent_tx = web3_ducx.eth.sendRawTransaction(signed_tx['rawTransaction'])
-        print(f'sent tx: {sent_tx.hex()}', flush=True)
+        logger.info(f'sent tx: {sent_tx.hex()}')
     except Exception as e:
         err_str = f'Refund failed for address {from_address} and amount {withdraw_amount} ({balance} - {total_gas_fee})'
-        print(err_str, flush=True)
-        print(e, flush=True)
+        logger.error(err_str)
+        logger.error(e)
     return
 
 
@@ -83,7 +87,7 @@ def withdraw_eth_funds():
     }
     for key, value in withdraw_parameters.items():
         if not value:
-            print(f'Value not found for parameter {key}. Aborting', flush=True)
+            logger.info(f'Value not found for parameter {key}. Aborting')
             return
 
     all_requests = ExchangeRequest.objects.all().exclude(eth_address=None)
@@ -114,11 +118,13 @@ def withdraw_eth_funds():
     '''
     print('ETH WITHDRAW', flush=True)
     for account in all_requests:
-        eth_priv_key, btc_priv_key = get_private_keys(withdraw_parameters['root_private_key'], account.user.id)
-        print(f'ETH address: {account.eth_address}', flush=True)
+        eth_priv_key, _ = get_private_keys(withdraw_parameters['root_private_key'], account.user.id)
+        logger.info(f'ETH address: {account.eth_address}, {Account.from_key(eth_priv_key).address}')
+        '''
         if account.eth_address in delayed_transactions_addresses:
-            print('address {} skipped because of delayed gas transaction'.format(account.eth_address), flush=True)
+            logger.info('address {} skipped because of delayed gas transaction'.format(account.eth_address))
             continue
+        '''
         try:
             process_withdraw_eth(withdraw_parameters, account, eth_priv_key)
         except Exception as e:
@@ -151,8 +157,7 @@ def process_send_gas_for_usdc(params, account, priv_key, transactions, currency)
     gas_nonce = web3.eth.getTransactionCount(
         web3.toChecksumAddress(NETWORK_SETTINGS['ETH']['address']), 'pending')
     if balance_check <= (total_gas_fee + erc20_gas_fee):
-        print(f'Address {from_address} skipped: balance {balance_check} < tx fee of {total_gas_fee + erc20_gas_fee}',
-              flush=True)
+        logger.info(f'Address {from_address} skipped: balance {balance_check} < tx fee of {total_gas_fee + erc20_gas_fee}')
         return
 
     withdraw_amount = int(balance)
@@ -178,8 +183,8 @@ def process_send_gas_for_usdc(params, account, priv_key, transactions, currency)
     }
 
     if ETH_balance > int(erc20_gas_fee * 1.1):
-        print('Enough balance {} > {} for withdrawing {} from {}'.format(ETH_balance, int(erc20_gas_fee * 1.1), balance,
-                                                                         from_address), flush=True)
+        logger.info('Enough balance {} > {} for withdrawing {} from {}'.format(ETH_balance, int(erc20_gas_fee * 1.1), balance,
+                                                                         from_address))
         process_withdraw_usdc([tx_params], currency)
         return
 
@@ -247,7 +252,7 @@ def process_withdraw_usdc(tx_params, currency):
 
 
 def process_withdraw_eth(withdraw_parameters, account, priv_key):
-    web3 = Web3(HTTPProvider(NETWORK_SETTINGS['ETH']['endpoint']))
+    web3 = Web3(HTTPProvider(NETWORK_SETTINGS['ETH']['url']))
     gas_limit = 21000
     gas_price, fake_gas_price = normalize_gas_price(web3.eth.gasPrice)
     total_gas_fee = gas_price * gas_limit
@@ -256,7 +261,7 @@ def process_withdraw_eth(withdraw_parameters, account, priv_key):
     balance = web3.eth.getBalance(web3.toChecksumAddress(from_address))
     nonce = web3.eth.getTransactionCount(web3.toChecksumAddress(from_address), 'pending')
     if balance < total_gas_fee:
-        print(f'Address {from_address} skipped: balance {balance} < tx fee of {total_gas_fee}', flush=True)
+        logger.info(f'Address {from_address} skipped: balance {balance} < tx fee of {total_gas_fee}')
         return
     withdraw_amount = int(balance) - total_gas_fee
     tx_params = {
@@ -267,15 +272,15 @@ def process_withdraw_eth(withdraw_parameters, account, priv_key):
         'to': web3.toChecksumAddress(to_address),
         'value': int(withdraw_amount)
     }
-    print(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}', flush=True)
+    logger.info(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}')
     signed_tx = Account.signTransaction(tx_params, priv_key)
     try:
         sent_tx = web3.eth.sendRawTransaction(signed_tx['rawTransaction'])
-        print(f'sent tx: {sent_tx.hex()}', flush=True)
+        logger.info(f'sent tx: {sent_tx.hex()}')
     except Exception as e:
         err_str = f'Refund failed for address {from_address} and amount {withdraw_amount} ({balance} - {total_gas_fee})'
-        print(err_str, flush=True)
-        print(e, flush=True)
+        logger.error(err_str)
+        logger.error(e)
     return
 
 def check_tx_success(tx):
@@ -293,10 +298,10 @@ def check_tx_success(tx):
 def check_tx(tx):
         tx_found = False
 
-        print(f'Checking transaction {tx} until found in network', flush=True)
+        logging.info(f'Checking transaction {tx} until found in network')
         tx_found = check_tx_success(tx)
         if tx_found:
-            print(f'Ok, found transaction {tx} and it was completed', flush=True)
+            logging.info(f'Ok, found transaction {tx} and it was completed')
             return True
 
 
@@ -309,19 +314,19 @@ def withdraw_btc_funds():
 
     for key, value in withdraw_parameters.items():
         if not value:
-            print(f'Value not found for parameter {key}. Aborting', flush=True)
+            logging.info(f'Value not found for parameter {key}. Aborting')
             return
 
     all_requests = ExchangeRequest.objects.all().exclude(btc_address=None)
-    print('BTC WITHDRAW', flush=True)
+    logger.info('BTC WITHDRAW')
     for user in all_requests:
-        eth_priv_key, btc_priv_key = get_private_keys(withdraw_parameters['root_private_key'], user.id)
-        print(f'BTC address: {user.btc_address}', flush=True)
+        eth_priv_key, btc_priv_key = get_private_keys(withdraw_parameters['root_private_key'], user.user.id)
+        logger.info(f'BTC address: {user.btc_address}')
         try:
             process_withdraw_btc(withdraw_parameters, user, btc_priv_key)
         except Exception as e:
-            print('BTC withdraw failed. Error is:', flush=True)
-            print(e, flush=True)
+            logger.info('BTC withdraw failed. Error is:')
+            logger.info(e)
 
 
 def process_withdraw_btc(params, account, priv_key):
@@ -333,7 +338,7 @@ def process_withdraw_btc(params, account, priv_key):
     api = BitcoinAPI()
     inputs, value, response_ok = api.get_address_unspent_all(from_address)
     if not response_ok:
-        print(f'Failed to fetch information about BTC address {from_address}', flush=True)
+        logger.info(f'Failed to fetch information about BTC address {from_address}')
         return
     balance = int(value)
     if balance <= 0:
@@ -341,15 +346,15 @@ def process_withdraw_btc(params, account, priv_key):
     rpc = BitcoinRPC()
     transaction_fee = rpc.relay_fee
     if balance < transaction_fee:
-        print(f'Address skipped: {from_address}: balance {balance} < tx fee of {transaction_fee}', flush=True)
+        logger.info(f'Address skipped: {from_address}: balance {balance} < tx fee of {transaction_fee}')
         return
     withdraw_amount = (balance - transaction_fee) / DECIMALS['BTC']
     output_params = {to_address: withdraw_amount}
-    print(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}', flush=True)
-    print('input_params', inputs, flush=True)
-    print('output_params', output_params, flush=True)
+    logger.info(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}')
+    logger.info(f'input_params: {inputs}')
+    logger.info(f'output_params: {output_params}')
     sent_tx_hash = rpc.construct_and_send_tx(inputs, output_params, priv_key)
     if not sent_tx_hash:
         err_str = f'Withdraw failed for address {from_address} and amount {withdraw_amount} ({balance} - {transaction_fee})'
-        print(err_str, flush=True)
+        logger.info(err_str)
     return sent_tx_hash

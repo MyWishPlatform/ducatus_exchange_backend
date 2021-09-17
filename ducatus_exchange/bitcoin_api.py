@@ -16,7 +16,14 @@ class BitcoinRPC:
         self.establish_connection()
 
     def establish_connection(self):
-        self.connection = AuthServiceProxy(NETWORK_SETTINGS['BTC']['endpoint'])
+        endpoint = 'http://{user}:{pwd}@{host}:{port}'.format(
+            user=NETWORK_SETTINGS['BTC']['user'],
+            pwd=NETWORK_SETTINGS['BTC']['password'],
+            host=NETWORK_SETTINGS['BTC']['host'],
+            port=NETWORK_SETTINGS['BTC']['port']
+        )
+        print(endpoint)
+        self.connection = AuthServiceProxy(endpoint)
         self.network_info = self.connection.getnetworkinfo()
         self.version = int(str(self.network_info['version'])[:2])
         res = requests.get('https://api.bitcore.io/api/BTC/mainnet/fee/3')
