@@ -77,24 +77,33 @@ def save_transfer(api, tx, network):
         }
 
 
-def update_balances(api, addresses):
+def update_balances(network, api, addresses):
     c = 0
+    if network not in ['DUC', 'DUCX']:
+        raise Exception(f'network {network} is not supported to update balances')
     for addr in addresses:
         try:
-            account = StatisticsAddress.objects.get(user_address=addr)
+            if network == 'DUCX':
+                account = StatisticsAddress.objects.get(user_address=addr)
+            else:
+                # network == 'DUC'
+                account, new_duc_addr = StatisticsAddress.objects.get_or_create(
+                    user_address=addr, network=network)
+
             balance_before = account.balance
             account.balance = api.get_address_balance(account.user_address)
             account.save()
             c += 1
-            logger.info('DUCX STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
-                acc=account.user_address,
-                count=c,
-                total=len(addresses),
-                now=account.balance,
-                before=balance_before
-            ))
-            # print(f'account {account.user_address} updated ({c}/{len(addresses)}), balance now: {account.balance}',
-            #       flush=True)
+            logger.info(
+                '{net} STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
+                    net=network,
+                    acc=account.user_address,
+                    count=c,
+                    total=len(addresses),
+                    now=account.balance,
+                    before=balance_before
+                ))
+
         except Exception as e:
             logger.error(f'Skipped address {addr} because of error')
             logger.error(f'Error: {e}')
@@ -116,22 +125,14 @@ def update_stats(api, network):
                     addresses_in_txes.append(transfer_info.get('address_from'))
                     addresses_in_txes.append(transfer_info.get('address_to'))
                 elif network == 'DUC':
-                    addresses_in_txes = api.get_tx_addresses(tx.get('txid'))
-                    for duc_address in addresses_in_txes:
-                        duc_addr, new_addr = StatisticsAddress.objects.get_or_create(
-                            user_address=duc_address, network=network)
-                        duc_addr.balance = api.get_address_balance(duc_addr.user_address)
-                        duc_addr.save()
-                        print('DUC STATS: account {acc} saved/updated, balance now: {now}'.format(
-                            acc=duc_addr.user_address,
-                            now=duc_addr.balance,
-                        ), flush=True)
-
+                    addresses_in_single_tx = api.get_tx_addresses(tx.get('txid'))
+                    for duc_addr in addresses_in_single_tx:
+                        addresses_in_txes.append(duc_addr)
         logger.info(msg=f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
         save_last_block(network, current_block)
-        if network == "DUCX":
-            update_balances(api, set(addresses_in_txes))
+        if last_saved_block > (current_network_block - 1000):
+            update_balances(api, network, set(addresses_in_txes))
 
     return {'current_block': current_block}
 
