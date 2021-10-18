@@ -2,6 +2,7 @@ import os
 import time
 import logging
 from datetime import datetime
+from argparse import ArgumentParser
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
@@ -135,13 +136,17 @@ def update_stats(api, network):
 
 
 if __name__ == '__main__':
-    duc_api = DucatusAPI()
-    ducx_api = DucatusXAPI()
-    while True:
-        stats_duc_info = update_stats(duc_api, 'DUC')
-        logger.info(stats_duc_info.get('current_block'))
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument('network', help='specify network where checker runs (DUC/DUCX')
+    launch_args = arg_parser.parse_args()
 
-        stats_ducx_info = update_stats(ducx_api, 'DUCX')
-        logger.info(f'{stats_ducx_info.get("current_block")}')
+    if launch_args.network not in ['DUC', 'DUCX']:
+        raise Exception('Checker can be launched only on DUC or DUCX network')
+
+    stats_api = DucatusAPI() if launch_args.network is 'DUC' else DucatusXAPI()
+
+    while True:
+        stats_info = update_stats(stats_api, launch_args.network)
+        logger.info(stats_info.get('current_block'))
 
         time.sleep(STATS_CHECKER_TIMEOUT)
