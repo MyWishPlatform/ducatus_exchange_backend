@@ -103,6 +103,7 @@ def update_balances(api, addresses):
 def update_stats(api, network):
     last_saved_block = get_last_block(network)
     current_network_block = api.get_last_blockchain_block()
+    logger.info(f'saved block: {last_saved_block}, current: {current_network_block}')
 
     current_block = last_saved_block
     addresses_in_txes = []
@@ -143,7 +144,7 @@ if __name__ == '__main__':
     if launch_args.network not in ['DUC', 'DUCX']:
         raise Exception('Checker can be launched only on DUC or DUCX network')
 
-    stats_api = DucatusAPI() if launch_args.network is 'DUC' else DucatusXAPI()
+    stats_api = DucatusAPI() if launch_args.network == 'DUC' else DucatusXAPI()
 
     while True:
         stats_info = update_stats(stats_api, launch_args.network)
