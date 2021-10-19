@@ -132,6 +132,7 @@ def update_stats(api, network):
         current_block += 1
         save_last_block(network, current_block)
         if last_saved_block > (current_network_block - 1000):
+            logger.info('updating balances')
             update_balances(network, api, set(addresses_in_txes))
 
     return {'current_block': current_block}
