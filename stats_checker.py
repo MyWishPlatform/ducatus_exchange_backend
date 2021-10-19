@@ -80,7 +80,7 @@ def save_transfer(api, tx, network):
 def update_balances(network, api, addresses):
     c = 0
     if network not in ['DUC', 'DUCX']:
-        raise Exception(f'network {network} is not supported to update balances')
+        raise Exception(f'network is not supported to update balances')
     for addr in addresses:
         try:
             if network == 'DUCX':
@@ -132,7 +132,7 @@ def update_stats(api, network):
         current_block += 1
         save_last_block(network, current_block)
         if last_saved_block > (current_network_block - 1000):
-            update_balances(api, network, set(addresses_in_txes))
+            update_balances(network, api, set(addresses_in_txes))
 
     return {'current_block': current_block}
 
