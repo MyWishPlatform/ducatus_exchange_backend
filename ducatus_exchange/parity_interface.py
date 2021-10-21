@@ -69,13 +69,18 @@ class ParityInterface:
             return result['result']
         return f
 
-    def transfer(self, address, amount):
+    def transfer(self, address, amount, from_address=None, from_private=None):
+        if not from_address:
+            from_address = self.settings['address']
+        if not from_private:
+            from_private = self.settings['private']
+
         logger.info(msg='DUCATUSX TRANSFER STARTED: {address}, {amount} DUCX'.format(
             address=address,
             amount=amount / DECIMALS['DUCX']
         ))
 
-        nonce = self.eth_getTransactionCount(self.settings['address'], "pending")
+        nonce = self.eth_getTransactionCount(from_address, "pending")
         gas_price = self.eth_gasPrice()
         chain_id = self.settings['chainId']
 
@@ -89,7 +94,7 @@ class ParityInterface:
         }
         logger.info(msg=f'TX PARAMS {tx_params}')
 
-        signed = Account.sign_transaction(tx_params, self.settings['private'])
+        signed = Account.sign_transaction(tx_params, from_private)
 
         try:
             sent = self.eth_sendRawTransaction(signed.rawTransaction.hex())

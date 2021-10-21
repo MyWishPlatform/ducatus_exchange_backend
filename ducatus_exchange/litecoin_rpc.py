@@ -9,8 +9,6 @@ from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
 
 
-DUC_DECIMALS = 8
-
 logger = logging.getLogger('litecoin_rpc')
 
 
@@ -134,4 +132,4 @@ class DucatuscoreInterface:
 
     def get_balance(self):
         # return self.rpc.getbalance('')
-        return self.rpc.getbalance('') * DUC_DECIMALS
+        return self.rpc.getbalance('') * DECIMALS['DUC']

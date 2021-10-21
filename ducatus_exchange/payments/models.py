@@ -28,6 +28,7 @@ class Payment(models.Model):
     transfer_state = FSMField(default=TRANSFER_STATES_DEFAULT[0], choices=TRANSFER_STATES)
     collection_state = FSMField(default=COLLECTION_STATES_DEFAULT[0], choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
+    returned_tx_hash = models.CharField(max_length=100, null=True, default='')
 
     # States change
     @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
