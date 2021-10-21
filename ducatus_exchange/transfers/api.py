@@ -12,7 +12,7 @@ from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from ducatus_exchange.ducatus_api import return_ducatus
+from ducatus_exchange.ducatus_api import return_ducatus, return_ducatusx
 from ducatus_exchange.exchange_requests.models import ExchangeStatus
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ def transfer_currency(payment):
     currency = payment.exchange_request.user.platform
 
     if currency == 'DUC':
-            return transfer_ducatus(payment)
+        return transfer_ducatus(payment)
     else:
         status = ExchangeStatus.objects.all().first().status
         if not status:
@@ -93,11 +93,20 @@ def transfer_ducatus(payment):
     currency = 'DUC'
 
     rpc = DucatuscoreInterface()
-    tx = rpc.transfer(receiver, amount)
-    transfer = save_transfer(payment, tx, amount, currency)
+    # if not enough balance on admin address return tokens to user
+    if rpc.get_balance() > amount:
+        tx = rpc.transfer(receiver, amount)
+        transfer = save_transfer(payment, tx, amount, currency)
 
-    logger.info(msg='ducatus transfer ok')
-    return transfer
+        logger.info(msg='ducatus transfer ok')
+        return transfer
+    else:
+        logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
+        return_ducatusx(
+            payment_hash=payment.tx_hash,
+            amount=amount,
+        )
+        return None
 
 
 def transfer_ducatusx(payment):
@@ -107,13 +116,23 @@ def transfer_ducatusx(payment):
     currency = 'DUCX'
 
     parity = ParityInterface()
-    tx = parity.transfer(receiver, amount)
-    transfer = save_transfer(payment, tx, amount, currency)
+    # if not enough balance on admin address return tokens to user
+    if parity.get_balance() > amount:
+        tx = parity.transfer(receiver, amount)
+        transfer = save_transfer(payment, tx, amount, currency)
 
-    logger.info(msg='ducatusx transfer ok')
+        logger.info(msg='ducatusx transfer ok')
 
-    time.sleep(100)    # small timeout in case of multiple payment messages
-    return transfer
+        time.sleep(100)    # small timeout in case of multiple payment messages
+        return transfer
+    else:
+        logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
+        return_ducatus(
+            payment_hash=payment.tx_hash,
+            amount=amount,
+        )
+        return None
+
 
 
 def save_transfer(payment, tx, amount, currency):

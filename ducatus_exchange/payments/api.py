@@ -74,8 +74,14 @@ def transfer_with_handle_lottery_and_referral(payment):
     logger.info(msg='starting transfer')
     try:
         if not payment.exchange_request.user.address.startswith('voucher'):
-            transfer_currency(payment)
-            payment.state_transfer_done()
+            # transfer_currency return None 
+            # if not enought balance on wallet and token returned to user
+            # else return object
+            is_transfer_success = transfer_currency(payment)
+            if is_transfer_success:
+                payment.state_transfer_done()
+            else:
+                payment.state_transfer_returned()
         elif payment.exchange_request.user.platform == 'DUC':
             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
             try:

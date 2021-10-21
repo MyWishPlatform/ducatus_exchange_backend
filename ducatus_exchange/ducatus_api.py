@@ -263,6 +263,7 @@ def return_ducatus(payment_hash, amount):
     logger.info(msg=f'tx {tx_hash}')
     logger.info(msg=f'receive address was: {p.exchange_request.duc_address}')
 
+
 def return_ducatusx(payment_hash, amount):
     
     payment = Payment.objects.get(tx_hash=payment_hash)
@@ -276,7 +277,7 @@ def return_ducatusx(payment_hash, amount):
     parity = ParityInterface()
     tx = parity.transfer(receiver, amount)
 
-    logger.info(msg='ducatusx return ok')
+    logger.info(msg=f'ducatusx return with hash {tx.hex()}')
 
     time.sleep(100)    # small timeout in case of multiple payment messages
     return 
