@@ -128,3 +128,6 @@ class DucatuscoreInterface:
             logger.error(msg=f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address_to} failed')
             logger.error(msg=e)
             raise DucatuscoreInterfaceException(e)
+
+    def get_balance(self):
+        return self.rpc.getbalance('')

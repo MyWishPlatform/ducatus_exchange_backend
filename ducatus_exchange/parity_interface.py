@@ -101,3 +101,9 @@ class ParityInterface:
             logger.error(msg=err)
             logger.error(msg=e)
             raise ParityInterfaceException(err)
+
+    def get_balance(self):
+        address = NETWORK_SETTINGS['DUCX']['address']
+        raw_balance = self.eth_getBalance(self.toChecksumAddress(address))
+        return raw_balance 
+    
