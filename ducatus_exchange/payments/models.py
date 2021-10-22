@@ -1,8 +1,9 @@
 from django.db import models
+from django_fsm import FSMField, transition
 
+from ducatus_exchange.bot.services import send_or_update_message
 from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from django_fsm import FSMField, transition
 
 
 class Payment(models.Model):
@@ -33,23 +34,24 @@ class Payment(models.Model):
     # States change
     @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
     def state_transfer_done(self):
-        pass
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=transfer_state, source='*', target='ERROR')
     def state_transfer_error(self):
+        send_or_update_message(self.tx_hash, self.transfer_state)
         print('Transfer not completed, reverting payment', flush=True)
 
     @transition(field=transfer_state, source='*', target='RETURNED')
     def state_transfer_returned(self):
-        pass
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=transfer_state, source='*', target='IN_QUEUE')
     def state_transfer_in_queue(self):
-        pass
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=transfer_state, source=['IN_QUEUE',], target='IN_PROCESS')
     def state_transfer_in_process(self):
-        pass
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')
     def state_collect_duc(self):

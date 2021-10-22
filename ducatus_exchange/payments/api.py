@@ -1,32 +1,38 @@
-import os
 import csv
+import logging
+import os
 import random
 import string
 import time
-import logging
 from sys import platform
-import requests
 
+import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
-
-from ducatus_exchange.exchange_requests.models import ExchangeRequest, ExchangeStatus
-from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.rates.serializers import get_usd_prices
-from ducatus_exchange.consts import DAYLY_LIMIT, DECIMALS, WEEKLY_LIMIT
-from ducatus_exchange.parity_interface import ParityInterface, ParityInterfaceException
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
 from ducatus_exchange import payments, settings_local
-from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
+from ducatus_exchange.consts import DAYLY_LIMIT, DECIMALS, WEEKLY_LIMIT
+from ducatus_exchange.email_messages import (
+    voucher_html_body,
+    warning_html_style
+)
+from ducatus_exchange.exchange_requests.models import (
+    ExchangeRequest,
+    ExchangeStatus
+)
+from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
+from ducatus_exchange.lottery.api import LotteryRegister
+from ducatus_exchange.parity_interface import (
+    ParityInterface,
+    ParityInterfaceException
+)
+from ducatus_exchange.payments.models import Payment
+from ducatus_exchange.payments.utils import calculate_amount
+from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.settings import MINIMAL_RETURN
 from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
-from ducatus_exchange.lottery.api import LotteryRegister
-from ducatus_exchange.payments.utils import calculate_amount
 # from ducatus_exchange.transfers.api import check_limits, save_transfer, transfer_currency, make_ref_transfer, transfer_ducatusx
 from ducatus_exchange.transfers.api import save_transfer
-
-
 
 logger = logging.getLogger(__name__)
 

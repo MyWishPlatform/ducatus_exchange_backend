@@ -13,9 +13,9 @@ def update_duc_and_ducx_balances():
         exchange_status.duc_balance = DucatuscoreInterface.get_balance()
         exchange_status.ducx_balance = ParityInterface.get_balance()
         exchange_status.save()
-        logger(msg=f'Update DUC and DUCX balamces, everything is OK.')
+        logger.info(msg=f'Update DUC and DUCX balamces, everything is OK.')
         return
     except Exception as e:
-        logger(msg=f'Cannot update DUC and DUCX balamces, something gone wrong wuth exception: \n {e}.')
+        logger.error(msg=f'Cannot update DUC and DUCX balamces, something gone wrong wuth exception: \n {e}.')
         return
     

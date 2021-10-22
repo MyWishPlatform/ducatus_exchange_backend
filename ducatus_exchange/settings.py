@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.lottery',
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
+    'ducatus_exchange.bot',
 ]
 
 MIDDLEWARE = [
