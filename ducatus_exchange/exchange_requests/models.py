@@ -3,7 +3,7 @@ from eth_keys import keys
 
 from django.db import models
 
-from ducatus_exchange.consts import MAX_DIGITS
+from ducatus_exchange.consts import MAX_DIGITS, DECIMALS
 from ducatus_exchange.settings import ROOT_KEYS
 from ducatus_exchange.exchange_requests.api import get_root_key, registration_btc_address
 from ducatus_exchange.bip32_ducatus import DucatusWallet
@@ -53,3 +53,11 @@ class ExchangeRequest(models.Model):
 class ExchangeStatus(models.Model):
     status = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+    duc_balance = models.DecimalField(
+        max_digits=100,
+        decimal_places=len(str(DECIMALS['DUC']))-1
+        )
+    ducx_balance = models.DecimalField(
+        max_digits=100,
+        decimal_places=len(str(DECIMALS['DUCX']))-1
+    )

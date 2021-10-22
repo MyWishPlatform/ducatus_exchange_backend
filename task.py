@@ -9,8 +9,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
 django.setup()
 
+from ducatus_exchange.exchange_requests.task_services import update_duc_and_ducx_balances
 from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
-from ducatus_exchange.transfers.task_services import send_duc_on_queue
+from ducatus_exchange.payments.task_services import send_duc_on_queue
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
 
@@ -53,6 +54,13 @@ def send_duc_queue():
     send_duc_on_queue()
 
 
+@app.task
+def update_duc_and_ducx_balance():
+    logger.info(msg='Starting update DUC and DUCX wallet balance task')
+    update_duc_and_ducx_balances()
+
+
+
 app.conf.beat_schedule = {
     'dayly_task': {
         'task': 'task.reset_dayly',
@@ -72,6 +80,10 @@ app.conf.beat_schedule = {
     },
     'send_duc_queue': {
         'task': 'task.send_duc_queue',
+        'schedule': crontab(minute='*'),
+    },
+    'update_duc_and_ducx_balance': {
+        'task': 'task.update_duc_and_ducx_balance',
         'schedule': crontab(minute='*'),
     }
 

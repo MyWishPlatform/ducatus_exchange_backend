@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +12,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest, ExchangeStatus
+from ducatus_exchange.exchange_requests.serializers import ExchangeStatusSerializer
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.transfers.serializers import DucatusTransferSerializer
@@ -229,3 +231,7 @@ def total_id_count(request):
 @api_view(http_method_names=['GET'])
 def status_check(request):
     return Response(ExchangeStatus.objects.all().first().status, status=status.HTTP_200_OK)
+
+
+class ExchangeStatusView(RetrieveModelMixin):
+    serializer_class = ExchangeStatusSerializer
