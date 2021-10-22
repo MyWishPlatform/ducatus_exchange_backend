@@ -10,6 +10,7 @@ import django
 django.setup()
 
 from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
+from ducatus_exchange.transfers.task_services import send_duc_on_queue
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
 
@@ -46,6 +47,12 @@ def update_ducx_node_balandes():
     logger.info(msg='DUC node balance updating complete')
 
 
+@app.task
+def send_duc_queue():
+    logger.info(msg='Starting DUC send queue task')
+    send_duc_on_queue()
+
+
 app.conf.beat_schedule = {
     'dayly_task': {
         'task': 'task.reset_dayly',
@@ -62,5 +69,10 @@ app.conf.beat_schedule = {
     'update_ducx_nodes': {
         'task': 'task.update_ducx_node_balandes',
         'schedule': crontab(minute=0),
+    },
+    'send_duc_queue': {
+        'task': 'task.send_duc_queue',
+        'schedule': crontab(minute=1),
     }
+
 }
