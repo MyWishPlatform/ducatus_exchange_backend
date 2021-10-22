@@ -12,6 +12,8 @@ def calculate_amount(original_amount, from_currency):
 
     rates = AllRatesSerializer({})
     currency_rate = rates.data[to_currency][from_currency]
+    # TODO: Need to rewrite
+    value = 0
     if from_currency in DECIMALS.keys() and to_currency in DECIMALS.keys():
         value = original_amount * DECIMALS[to_currency]/ DECIMALS[from_currency]
     # if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:

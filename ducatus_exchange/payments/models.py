@@ -12,7 +12,7 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED')
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'IN_QUEUE', 'IN_PROCESS')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
     COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
@@ -41,6 +41,14 @@ class Payment(models.Model):
 
     @transition(field=transfer_state, source='*', target='RETURNED')
     def state_transfer_returned(self):
+        pass
+
+    @transition(field=transfer_state, source='*', target='IN_QUEUE')
+    def state_transfer_in_queue(self):
+        pass
+
+    @transition(field=transfer_state, source=['IN_QUEUE',], target='IN_PROCESS')
+    def state_transfer_in_process(self):
         pass
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')

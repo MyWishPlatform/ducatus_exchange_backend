@@ -18,58 +18,58 @@ from ducatus_exchange.exchange_requests.models import ExchangeStatus
 logger = logging.getLogger(__name__)
 
 
-def transfer_currency(payment):
-    currency = payment.exchange_request.user.platform
+# def transfer_currency(payment):
+#     currency = payment.exchange_request.user.platform
 
-    if currency == 'DUC':
-        return transfer_ducatus(payment)
-    else:
-        status = ExchangeStatus.objects.all().first().status
-        if not status:
-            logger.info(msg='exchange is disabled')
-            return_ducatus(payment.tx_hash, payment.original_amount)
-        else:
-            allowed, return_amount = check_limits(payment)
-            if return_amount > MINIMAL_RETURN:
-                return_ducatus(payment.tx_hash, return_amount)
-            if allowed:
-                return transfer_ducatusx(payment)
-            else:
-                logger.info(
-                    msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
-                )
+#     if currency == 'DUC':
+#         return transfer_ducatus(payment)
+#     else:
+#         status = ExchangeStatus.objects.all().first().status
+#         if not status:
+#             logger.info(msg='exchange is disabled')
+#             return_ducatus(payment.tx_hash, payment.original_amount)
+#         else:
+#             allowed, return_amount = check_limits(payment)
+#             if return_amount > MINIMAL_RETURN:
+#                 return_ducatus(payment.tx_hash, return_amount)
+#             if allowed:
+#                 return transfer_ducatusx(payment)
+#             else:
+#                 logger.info(
+#                     msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
+#                 )
         
 
-def check_limits(payment):
-    dayly_reserve = 0
-    weekly_reserve = 0
-    original_amount=payment.original_amount
-    if payment.original_amount + payment.exchange_request.dayly_swap > DAYLY_LIMIT:
-        dayly_reserve = DAYLY_LIMIT - payment.exchange_request.dayly_swap
-        logger.info(msg=dayly_reserve)
-        payment.original_amount = dayly_reserve
-        if dayly_reserve <= 0:
-            return False, original_amount
-    if payment.original_amount + payment.exchange_request.weekly_swap > WEEKLY_LIMIT:
-        weekly_reserve = WEEKLY_LIMIT - payment.exchange_request.weekly_swap
-        if dayly_reserve > 0:
-            payment.original_amount = min(dayly_reserve, weekly_reserve)
-        else:
-            payment.original_amount = weekly_reserve
-        if weekly_reserve <= 0:
-            return False, original_amount
-    logger.info(msg=f' amount {payment.original_amount}')
-    exchange_request=ExchangeRequest.objects.get(id=payment.exchange_request.id)
-    exchange_request.dayly_swap += payment.original_amount
-    exchange_request.weekly_swap += payment.original_amount
-    exchange_request.save()
-    logger.info(msg=f'daily {exchange_request.dayly_swap}')
-    if payment.original_amount !=original_amount:
-        payment.sent_amount, payment.rate = calculate_amount(payment.original_amount, payment.currency)
-        logger.info(msg=f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits")
-        payment.save()
-        return True, original_amount-payment.original_amount
-    return True, 0
+# def check_limits(payment):
+#     dayly_reserve = 0
+#     weekly_reserve = 0
+#     original_amount=payment.original_amount
+#     if payment.original_amount + payment.exchange_request.dayly_swap > DAYLY_LIMIT:
+#         dayly_reserve = DAYLY_LIMIT - payment.exchange_request.dayly_swap
+#         logger.info(msg=dayly_reserve)
+#         payment.original_amount = dayly_reserve
+#         if dayly_reserve <= 0:
+#             return False, original_amount
+#     if payment.original_amount + payment.exchange_request.weekly_swap > WEEKLY_LIMIT:
+#         weekly_reserve = WEEKLY_LIMIT - payment.exchange_request.weekly_swap
+#         if dayly_reserve > 0:
+#             payment.original_amount = min(dayly_reserve, weekly_reserve)
+#         else:
+#             payment.original_amount = weekly_reserve
+#         if weekly_reserve <= 0:
+#             return False, original_amount
+#     logger.info(msg=f' amount {payment.original_amount}')
+#     exchange_request=ExchangeRequest.objects.get(id=payment.exchange_request.id)
+#     exchange_request.dayly_swap += payment.original_amount
+#     exchange_request.weekly_swap += payment.original_amount
+#     exchange_request.save()
+#     logger.info(msg=f'daily {exchange_request.dayly_swap}')
+#     if payment.original_amount !=original_amount:
+#         payment.sent_amount, payment.rate = calculate_amount(payment.original_amount, payment.currency)
+#         logger.info(msg=f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits")
+#         payment.save()
+#         return True, original_amount-payment.original_amount
+#     return True, 0
 
 
 def make_ref_transfer(payment):
@@ -109,29 +109,29 @@ def transfer_ducatus(payment):
         return None
 
 
-def transfer_ducatusx(payment):
-    amount = payment.sent_amount
-    receiver = payment.exchange_request.user.address
-    logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
-    currency = 'DUCX'
+# def transfer_ducatusx(payment):
+#     amount = payment.sent_amount
+#     receiver = payment.exchange_request.user.address
+#     logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
+#     currency = 'DUCX'
 
-    parity = ParityInterface()
-    # if not enough balance on admin address return tokens to user
-    if parity.get_balance() > amount:
-        tx = parity.transfer(receiver, amount)
-        transfer = save_transfer(payment, tx, amount, currency)
+#     parity = ParityInterface()
+#     # if not enough balance on admin address return tokens to user
+#     if parity.get_balance() > amount:
+#         tx = parity.transfer(receiver, amount)
+#         transfer = save_transfer(payment, tx, amount, currency)
 
-        logger.info(msg='ducatusx transfer ok')
+#         logger.info(msg='ducatusx transfer ok')
 
-        time.sleep(100)    # small timeout in case of multiple payment messages
-        return transfer
-    else:
-        logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
-        return_ducatus(
-            payment_hash=payment.tx_hash,
-            amount=amount,
-        )
-        return None
+#         time.sleep(100)    # small timeout in case of multiple payment messages
+#         return transfer
+#     else:
+#         logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
+#         return_ducatus(
+#             payment_hash=payment.tx_hash,
+#             amount=amount,
+#         )
+#         return None
 
 
 

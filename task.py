@@ -72,7 +72,7 @@ app.conf.beat_schedule = {
     },
     'send_duc_queue': {
         'task': 'task.send_duc_queue',
-        'schedule': crontab(minute=1),
+        'schedule': crontab(minute='*'),
     }
 
 }
