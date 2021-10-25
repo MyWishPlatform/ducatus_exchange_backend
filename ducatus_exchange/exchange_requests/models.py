@@ -54,10 +54,10 @@ class ExchangeStatus(models.Model):
     status = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     duc_balance = models.DecimalField(
-        max_digits=100,
+        max_digits=MAX_DIGITS,
         decimal_places=len(str(DECIMALS['DUC']))-1
         )
     ducx_balance = models.DecimalField(
-        max_digits=100,
+        max_digits=MAX_DIGITS,
         decimal_places=len(str(DECIMALS['DUCX']))-1
     )
