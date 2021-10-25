@@ -4,5 +4,5 @@ from .views import PaymentView
 
 
 urlpatterns = [
-    path('', PaymentView.as_view()),
+    path('<str:tx_hash>', PaymentView.as_view({'get': 'retrieve'})),
 ]

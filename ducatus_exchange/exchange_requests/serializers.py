@@ -13,3 +13,4 @@ class ExchangeStatusSerializer(serializers.ModelSerializer):
             'duc_balance',
             'ducx_balance'
         )
+        lookup_field = 'id'
