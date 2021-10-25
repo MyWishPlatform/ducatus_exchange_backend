@@ -35,5 +35,7 @@ def send_duc_on_queue():
             #  case when we try to transfer_ducx but wallet_balance + fee < amount
             else :
                 return_ducatus(payment.tx_hash, payment.send_amount)
+        payment.state_transfer_in_process()
+        payment.save()
 
     return
