@@ -11,5 +11,5 @@ urlpatterns = [
     path('total/', total_id_count),
     path('status/', status_check),
     url(r'^$', ExchangeRequestView.as_view(), name='create-exchange-request'),
-    url(r'^exchange_status/<int:id>', ExchangeStatusView.as_view()),
+    url(r'^exchange_status/', ExchangeStatusView.as_view({'get': 'list'})),
 ]

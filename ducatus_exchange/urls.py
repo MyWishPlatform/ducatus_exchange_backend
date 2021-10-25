@@ -65,5 +65,5 @@ urlpatterns = [
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
     url(r'^api/v1/', include('ducatus_exchange.stats.urls')),
-    url(r'^api/v1/', include('ducatus_exchange.payments.urls'))
+    url(r'^api/v1/payments/', include('ducatus_exchange.payments.urls'))
 ]
