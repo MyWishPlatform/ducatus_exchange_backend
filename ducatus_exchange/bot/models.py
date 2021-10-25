@@ -7,7 +7,7 @@ class BotSub(models.Model):
 
 
 class BotSwapMessage(models.Model):
-    swap = models.ForeignKey('ducatus_exchange.payments.Payment', on_delete=models.CASCADE)
+    swap = models.ForeignKey('payments.Payment', on_delete=models.CASCADE)
     sub = models.ForeignKey(BotSub, on_delete=models.CASCADE)
     message_id = models.IntegerField(default=0)
 

@@ -1,8 +1,9 @@
-from rest_framework.mixins import RetrieveModelMixin
+from rest_framework.generics import RetrieveAPIView
+
 from ducatus_exchange.payments.serializers import PaymentSerializer
 
 
-class PaymentView(RetrieveModelMixin):
+class PaymentView(RetrieveAPIView):
 
     serializer_class = PaymentSerializer
     lookup_field = 'tx_hash'

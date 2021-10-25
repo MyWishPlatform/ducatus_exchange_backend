@@ -1,75 +1,37 @@
-import time
+# import time
 import sys
 import traceback
 import logging
 from decimal import Decimal
 
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
-from ducatus_exchange.parity_interface import ParityInterface
+# from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
 from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN
 from ducatus_exchange.bip32_ducatus import DucatusWallet
-from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
-from ducatus_exchange.payments.utils import calculate_amount
-from ducatus_exchange.exchange_requests.models import ExchangeRequest
+# from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
+# from ducatus_exchange.payments.utils import calculate_amount
+# from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus, return_ducatusx
-from ducatus_exchange.exchange_requests.models import ExchangeStatus
+# from ducatus_exchange.exchange_requests.models import ExchangeStatus
 
 logger = logging.getLogger(__name__)
 
 
-# def transfer_currency(payment):
-#     currency = payment.exchange_request.user.platform
+def save_transfer(payment, tx, amount, currency):
+    exchange_request = payment.exchange_request
+    transfer = DucatusTransfer(
+        exchange_request=exchange_request,
+        tx_hash=tx,
+        amount=amount,
+        payment=payment,
+        currency=currency,
+        state='WAITING_FOR_CONFIRMATION'
+    )
+    transfer.save()
 
-#     if currency == 'DUC':
-#         return transfer_ducatus(payment)
-#     else:
-#         status = ExchangeStatus.objects.all().first().status
-#         if not status:
-#             logger.info(msg='exchange is disabled')
-#             return_ducatus(payment.tx_hash, payment.original_amount)
-#         else:
-#             allowed, return_amount = check_limits(payment)
-#             if return_amount > MINIMAL_RETURN:
-#                 return_ducatus(payment.tx_hash, return_amount)
-#             if allowed:
-#                 return transfer_ducatusx(payment)
-#             else:
-#                 logger.info(
-#                     msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
-#                 )
-        
-
-# def check_limits(payment):
-#     dayly_reserve = 0
-#     weekly_reserve = 0
-#     original_amount=payment.original_amount
-#     if payment.original_amount + payment.exchange_request.dayly_swap > DAYLY_LIMIT:
-#         dayly_reserve = DAYLY_LIMIT - payment.exchange_request.dayly_swap
-#         logger.info(msg=dayly_reserve)
-#         payment.original_amount = dayly_reserve
-#         if dayly_reserve <= 0:
-#             return False, original_amount
-#     if payment.original_amount + payment.exchange_request.weekly_swap > WEEKLY_LIMIT:
-#         weekly_reserve = WEEKLY_LIMIT - payment.exchange_request.weekly_swap
-#         if dayly_reserve > 0:
-#             payment.original_amount = min(dayly_reserve, weekly_reserve)
-#         else:
-#             payment.original_amount = weekly_reserve
-#         if weekly_reserve <= 0:
-#             return False, original_amount
-#     logger.info(msg=f' amount {payment.original_amount}')
-#     exchange_request=ExchangeRequest.objects.get(id=payment.exchange_request.id)
-#     exchange_request.dayly_swap += payment.original_amount
-#     exchange_request.weekly_swap += payment.original_amount
-#     exchange_request.save()
-#     logger.info(msg=f'daily {exchange_request.dayly_swap}')
-#     if payment.original_amount !=original_amount:
-#         payment.sent_amount, payment.rate = calculate_amount(payment.original_amount, payment.currency)
-#         logger.info(msg=f"User's {payment.exchange_request.user.id} sent_amount was recalculated due to limits")
-#         payment.save()
-#         return True, original_amount-payment.original_amount
-#     return True, 0
+    logger.info(msg='transfer saved')
+    return transfer
 
 
 def make_ref_transfer(payment):
@@ -132,23 +94,6 @@ def transfer_ducatus(payment):
 #             amount=amount,
 #         )
 #         return None
-
-
-
-def save_transfer(payment, tx, amount, currency):
-    exchange_request = payment.exchange_request
-    transfer = DucatusTransfer(
-        exchange_request=exchange_request,
-        tx_hash=tx,
-        amount=amount,
-        payment=payment,
-        currency=currency,
-        state='WAITING_FOR_CONFIRMATION'
-    )
-    transfer.save()
-
-    logger.info(msg='transfer saved')
-    return transfer
 
 
 def confirm_transfer(message):

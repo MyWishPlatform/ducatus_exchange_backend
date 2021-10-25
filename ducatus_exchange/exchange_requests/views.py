@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from rest_framework.mixins import RetrieveModelMixin
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -233,5 +233,5 @@ def status_check(request):
     return Response(ExchangeStatus.objects.all().first().status, status=status.HTTP_200_OK)
 
 
-class ExchangeStatusView(RetrieveModelMixin):
+class ExchangeStatusView(RetrieveAPIView):
     serializer_class = ExchangeStatusSerializer

@@ -7,18 +7,19 @@ import traceback
 
 import telebot
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
-import django
+#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
+#import django
 
-django.setup()
+#django.setup()
 
 from django.db import IntegrityError
 
-from bot.models import BotSub
+from ducatus_exchange.bot.models import BotSub
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
-from ducatus_exchange.settings import BOT_TOKEN, NETWORK_SETTINGS
-
+# from ducatus_exchange.settings import BOT_TOKEN, NETWORK_SETTINGS
+from ducatus_exchange.settings import NETWORK_SETTINGS
+BOT_TOKEN = ''
 
 logger = logging.getLogger('bot')
 
