@@ -77,5 +77,5 @@ class Bot(threading.Thread):
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
                 time.sleep(15)
 
-
-Bot().start()
+if __name__ == '__main__':
+    Bot().start()
