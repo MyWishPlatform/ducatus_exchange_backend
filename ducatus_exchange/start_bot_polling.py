@@ -4,13 +4,13 @@ import sys
 import threading
 import time
 import traceback
-
 import telebot
 
-#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
-#import django
+sys.path.append(os.path.abspath(os.path.join(__file__, *[os.pardir] * 2)))
 
-#django.setup()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
+import django
+django.setup()
 
 from django.db import IntegrityError
 
