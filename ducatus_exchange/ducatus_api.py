@@ -11,7 +11,6 @@ from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
 from ducatus_exchange.withdrawals.utils import get_private_keys
-import receiver
 
 logger = logging.getLogger('ducatus_api')
 
