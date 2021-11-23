@@ -8,6 +8,7 @@ import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
+from urllib.parse import urljoin
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
@@ -185,3 +186,42 @@ def get_payments_statistics():
         logger.info(msg=f'Done, {len(pl_usdc)} items saved to: {usdc_file}')
     else:
         logger.info(msg='No payments in USDC at this period')
+
+
+
+WALLET_API_URL = 'https://ducapi.rocknblock.io/api/{currency}/mainnet/'
+
+
+def parse_payment_manyally(tx_hash, currency):
+    if currency == 'DUC':
+        url = urljoin(WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins')
+        response = requests.get(url)
+        if response.status_code == 404:
+            raise ValueError(f'Transaction {tx_hash} not found')
+            
+        data = response.json()
+        address_field_name = currency.lower() + '_address'
+
+        for output in data['outputs']:
+            try:
+                exchange_request = ExchangeRequest.objects.get(**{ address_field_name: output['address'] })
+                if currency == 'DUC':
+                    message = {
+                        'exchangeId': exchange_request.pk,
+                        'address': data['inputs']['address'],
+                        'transactionHash': tx_hash,
+                        'currency': currency,
+                        'amount': output['value'],
+                        'success': True,
+                        'status': 'COMMITED'
+                    }
+                    parse_payment_message(message)
+
+            except ExchangeRequest.DoesNotExist:
+                pass
+    else:
+        raise ValueError(f'Invalid currency: {currency}')
+
+   
+            
+            
