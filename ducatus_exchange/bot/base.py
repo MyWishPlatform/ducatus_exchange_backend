@@ -6,14 +6,7 @@ import time
 import traceback
 import telebot
 
-sys.path.append(os.path.abspath(os.path.join(__file__, *[os.pardir] * 2)))
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
-import django
-django.setup()
-
 from django.db import IntegrityError
-
 from ducatus_exchange.bot.models import BotSub
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
@@ -77,6 +70,3 @@ class Bot(threading.Thread):
             except Exception:
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
                 time.sleep(15)
-
-if __name__ == '__main__':
-    Bot().start()
