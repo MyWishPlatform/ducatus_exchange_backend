@@ -69,3 +69,5 @@ class Bot(threading.Thread):
             except Exception:
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
                 time.sleep(15)
+
+bot = Bot()
