@@ -16,7 +16,7 @@ class DucatusMainNet(object):
 
 
 class DucatusTestNet(object):
-    NAME = "Ducatus Main Net"
+    NAME = "Ducatus Test Net"
     COIN = "DUC"
     SCRIPT_ADDRESS = 0x3b
     PUBKEY_ADDRESS = 0x70
