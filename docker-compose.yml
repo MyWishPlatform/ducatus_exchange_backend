@@ -48,4 +48,16 @@ services:
   bot:
     <<: *python-service
     command: python start_bot_polling.py
+  scanner:
+    build:
+      context: .
+      dockerfile: scanner.Dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      CONFIG: settings/config.yaml
+    restart: unless-stopped
+    volumes:
+      - ./mywill_scanner:/app
 
