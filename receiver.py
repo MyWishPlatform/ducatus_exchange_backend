@@ -24,10 +24,13 @@ class Receiver(threading.Thread):
 
     def run(self):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
-            'localhost',
+            'rabbitmq',
             5672,
-            'ducatus_exchange',
-            pika.PlainCredentials('ducatus_exchange', 'ducatus_exchange'),
+            os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit'),
+            pika.PlainCredentials(
+                os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit'),
+                os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit'),
+            ),
             heartbeat=3600,
             blocked_connection_timeout=3600
         ))

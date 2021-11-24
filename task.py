@@ -14,10 +14,11 @@ from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
 from ducatus_exchange.payments.task_services import send_duc_on_queue
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
+from ducatus_exchange.settings import RABBITMQ_URL
 
 logger = logging.getLogger('task')
 
-app = celery.Celery('task', broker='amqp://')
+app = celery.Celery('task', broker=RABBITMQ_URL)
 
 
 @app.task
@@ -86,5 +87,4 @@ app.conf.beat_schedule = {
         'task': 'task.update_duc_and_ducx_balance',
         'schedule': crontab(minute='*'),
     }
-
 }
