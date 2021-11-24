@@ -1,0 +1,51 @@
+version: "3.8"
+
+
+services:
+  db:
+    image: postgres:9.6.21
+    env_file:
+      - .env
+    volumes:
+      - ./.docker/postgres-data:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    env_file: .env
+    restart: unless-stopped
+  receiver: &python-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    command: python receiver.py
+  web: 
+    <<: *python-service
+    ports:
+      - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
+    command: gunicorn --bind :${DJANGO_PORT:-8000} --workers 8 ducatus_exchange.wsgi:application
+  lottery_checker:
+    <<: *python-service
+    command: python lottery_checker.py
+  rates_checker:
+    <<: *python-service
+    command: python rates_checker.py
+  status_checker_ducx:
+    <<: *python-service
+    command: python stats_checker.py DUCX
+  status_checker_duc:
+    <<: *python-service
+    command: python stats_checker.py DUC
+  celery:
+    <<: *python-service
+    command: celery -A task worker -B --loglevel=info
+  bot:
+    <<: *python-service
+    command: python start_bot_polling.py
+

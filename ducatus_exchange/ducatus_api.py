@@ -1,3 +1,4 @@
+from time import time
 import requests
 import datetime
 import logging
@@ -7,7 +8,9 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
+from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
+from ducatus_exchange.withdrawals.utils import get_private_keys
 
 logger = logging.getLogger('ducatus_api')
 
@@ -257,5 +260,37 @@ def return_ducatus(payment_hash, amount):
     logger.info(msg=f'signed tx {signed}')
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
+    p.returned_tx_hash = tx_hash
+    p.save()
     logger.info(msg=f'tx {tx_hash}')
     logger.info(msg=f'receive address was: {p.exchange_request.duc_address}')
+
+
+def return_ducatusx(payment_hash, amount):
+    
+    payment = Payment.objects.get(tx_hash=payment_hash)
+
+    receiver = payment.exchange_request.user.address
+    logger.info(msg='DUCATUSX RETURN STARTED: sending {amount} to {address}'.format(
+        address=receiver,
+        amount=amount / DECIMALS['DUCX']
+    ))
+
+    # return ducx to user using HD Wallet address and private
+    parity = ParityInterface()
+    tx = parity.transfer(
+        receiver=receiver,
+        amount=amount,
+        from_address='',
+        from_private=get_private_keys(
+            root_private_key=ROOT_KEYS['ducx']['private'],
+            child_id=payment.exchange_request.user.id
+        )
+    )
+
+    logger.info(msg=f'ducatusx return with hash {tx}')
+    payment.returned_tx_hash = tx
+    payment.save()
+
+    time.sleep(100)    # small timeout in case of multiple payment messages
+    return 

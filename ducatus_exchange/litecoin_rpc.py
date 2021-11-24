@@ -8,6 +8,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
 
+
 logger = logging.getLogger('litecoin_rpc')
 
 
@@ -128,3 +129,7 @@ class DucatuscoreInterface:
             logger.error(msg=f'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {address_to} failed')
             logger.error(msg=e)
             raise DucatuscoreInterfaceException(e)
+
+    def get_balance(self):
+        # return self.rpc.getbalance('')
+        return self.rpc.getbalance('') * DECIMALS['DUC']

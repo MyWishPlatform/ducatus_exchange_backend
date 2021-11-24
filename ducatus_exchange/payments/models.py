@@ -1,8 +1,8 @@
 from django.db import models
+from django_fsm import FSMField, transition
 
 from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from django_fsm import FSMField, transition
 
 
 class Payment(models.Model):
@@ -12,7 +12,7 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'IN_QUEUE', 'IN_PROCESS')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
     COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
@@ -28,15 +28,44 @@ class Payment(models.Model):
     transfer_state = FSMField(default=TRANSFER_STATES_DEFAULT[0], choices=TRANSFER_STATES)
     collection_state = FSMField(default=COLLECTION_STATES_DEFAULT[0], choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
+    returned_tx_hash = models.CharField(max_length=100, null=True, default='')
 
     # States change
     @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
     def state_transfer_done(self):
-        pass
+        # import function locally avoiding circle imports
+        from ducatus_exchange.bot.services import send_or_update_message
+
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=transfer_state, source='*', target='ERROR')
     def state_transfer_error(self):
+        # import function locally avoiding circle imports
+        from ducatus_exchange.bot.services import send_or_update_message
+
+        send_or_update_message(self.tx_hash, self.transfer_state)
         print('Transfer not completed, reverting payment', flush=True)
+
+    @transition(field=transfer_state, source='*', target='RETURNED')
+    def state_transfer_returned(self):
+        # import function locally avoiding circle imports
+        from ducatus_exchange.bot.services import send_or_update_message
+
+        send_or_update_message(self.tx_hash, self.transfer_state)
+
+    @transition(field=transfer_state, source='*', target='IN_QUEUE')
+    def state_transfer_in_queue(self):
+        # import function locally avoiding circle imports
+        from ducatus_exchange.bot.services import send_or_update_message
+
+        send_or_update_message(self.tx_hash, self.transfer_state)
+
+    @transition(field=transfer_state, source=['IN_QUEUE',], target='IN_PROCESS')
+    def state_transfer_in_process(self):
+        # import function locally avoiding circle imports
+        from ducatus_exchange.bot.services import send_or_update_message
+        
+        send_or_update_message(self.tx_hash, self.transfer_state)
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')
     def state_collect_duc(self):
@@ -45,3 +74,5 @@ class Payment(models.Model):
     @transition(field=collection_state, source='*', target='ERROR')
     def state_error_collect_duc(self):
         pass
+
+    

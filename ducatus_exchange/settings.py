@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.lottery',
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
+    'ducatus_exchange.bot',
 ]
 
 MIDDLEWARE = [
@@ -88,11 +89,11 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ducatus_exchange',
-        'USER': 'ducatus_exchange',
-        'PASSWORD': 'ducatus_exchange',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB', 'ducatus_exchage'),
+        'USER': os.getenv('POSTGRES_USER', 'ducatus_exchage'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'ducatus_exchage'),
+        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
+        'PORT': os.getenv('POSTGRES_PORT', 5432),
     }
 }
 
@@ -159,6 +160,12 @@ REST_FRAMEWORK = {
 }
 
 SHELL_PLUS = 'ptpython'
+
+RABBITMQ_URL = 'amqp://{user}:{password}@rabbitmq:5672/{vhost}'.format(
+    user=os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit'),
+    password=os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit'),
+    vhost=os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit'),
+)
 
 try:
     from ducatus_exchange.settings_local import *
