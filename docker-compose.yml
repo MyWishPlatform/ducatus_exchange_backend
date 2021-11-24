@@ -29,7 +29,7 @@ services:
     <<: *python-service
     ports:
       - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
-    command: gunicorn ducatus_exchange.wsgi:application -c gunicorn.conf.py
+    command: gunicorn --bind :${DJANGO_PORT:-8000} --workers 8 ducatus_exchange.wsgi:application
   lottery_checker:
     <<: *python-service
     command: python lottery_checker.py
