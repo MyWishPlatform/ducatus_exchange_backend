@@ -1,0 +1,3 @@
+[submodule "mywill_scanner"]
+	path = mywill_scanner
+	url = https://github.com/MyWishPlatform/mywill_scanner.git
