@@ -43,7 +43,9 @@ class Bot(threading.Thread):
             try:
                 ducx_balance = ParityInterface().get_balance()
                 duc_balance = DucatuscoreInterface().get_balance()
-                self.bot.reply_to(message, f'DUC balance: {duc_balance}, DUCX balance {ducx_balance}')
+                self.bot.reply_to(
+                    message, 
+                    f'DUC balance: {duc_balance}\nDUCX balance {ducx_balance / (10 ** 18)}')
             except Exception as e:
                 logger.info(msg=f'Error while handling message_handler balance with exception:\n {e}')
 

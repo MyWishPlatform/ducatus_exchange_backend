@@ -111,5 +111,6 @@ class ParityInterface:
     def get_balance(self):
         address = NETWORK_SETTINGS['DUCX']['address']
         raw_balance = self.eth_getBalance(Web3.toChecksumAddress(address))
-        return raw_balance 
+        balance = int(raw_balance, 16)
+        return balance
     
