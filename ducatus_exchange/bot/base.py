@@ -55,7 +55,7 @@ class Bot(threading.Thread):
             try:
                 ducx_address = NETWORK_SETTINGS['DUCX']['address']
                 duc_address = DucatuscoreInterface().rpc.getaccountaddress('')
-                self.bot.reply_to(message, f'DUC balance: {ducx_address}, DUCX balance {duc_address}')
+                self.bot.reply_to(message, f'DUC balance: {duc_address}\nDUCX balance {ducx_address}')
             except Exception as e:
                 logger.info(msg=f'Error while handling message_handler address with exception:\n {e}')
 
