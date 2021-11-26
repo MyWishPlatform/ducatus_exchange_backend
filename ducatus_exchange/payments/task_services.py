@@ -9,7 +9,7 @@ from ducatus_exchange.transfers.api import make_ref_transfer, transfer_ducatus
 def send_duc_on_queue():
 
     payment_in_process = Payment.objects.filter(transfer_state='IN_PROCESS').first()
-    if (payment_in_process):
+    if payment_in_process:
         return 
     payment = Payment.objects.filter(transfer_state='IN_QUEUE').first()
     if payment:
