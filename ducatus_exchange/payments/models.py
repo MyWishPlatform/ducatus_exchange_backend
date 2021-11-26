@@ -31,7 +31,7 @@ class Payment(models.Model):
     returned_tx_hash = models.CharField(max_length=100, null=True, default='')
 
     # States change
-    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
+    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR', 'IN_PROCESS'], target='DONE')
     def state_transfer_done(self):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
