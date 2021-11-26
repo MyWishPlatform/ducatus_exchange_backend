@@ -10,7 +10,7 @@ def update_duc_and_ducx_balances():
     logger = getLogger('task')
     try:
         exchange_status = ExchangeStatus.objects.first()
-        exchange_status.duc_balance = DucatuscoreInterface.get_balance()
+        exchange_status.duc_balance = DucatuscoreInterface().get_balance()
         exchange_status.ducx_balance = ParityInterface().get_balance()
         exchange_status.save()
         logger.info(msg=f'Update DUC and DUCX balamces, everything is OK.')
