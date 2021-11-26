@@ -62,7 +62,7 @@ class Payment(models.Model):
 
 
 
-def transfer_state_transition_dispatcher(sender, instance, created, **kwargs):
+def transfer_state_transition_dispatcher(sender, instance, **kwargs):
     from ducatus_exchange.bot.services import send_or_update_message
     send_or_update_message(instance.id, instance.transfer_state)
 
