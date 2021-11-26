@@ -4,6 +4,7 @@ import logging
 
 from eth_utils import to_checksum_address
 from eth_account import Account
+from web3 import Web3
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
 from ducatus_exchange.consts import DECIMALS
@@ -109,6 +110,6 @@ class ParityInterface:
 
     def get_balance(self):
         address = NETWORK_SETTINGS['DUCX']['address']
-        raw_balance = self.eth_getBalance(self.toChecksumAddress(address))
+        raw_balance = self.eth_getBalance(Web3.toChecksumAddress(address))
         return raw_balance 
     
