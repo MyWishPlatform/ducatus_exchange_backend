@@ -36,14 +36,14 @@ class Payment(models.Model):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
 
-        send_or_update_message(self.tx_hash, self.transfer_state)
+        send_or_update_message(self.id, self.transfer_state)
 
     @transition(field=transfer_state, source='*', target='ERROR')
     def state_transfer_error(self):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
 
-        send_or_update_message(self.tx_hash, self.transfer_state)
+        send_or_update_message(self.id, self.transfer_state)
         print('Transfer not completed, reverting payment', flush=True)
 
     @transition(field=transfer_state, source='*', target='RETURNED')
@@ -51,21 +51,21 @@ class Payment(models.Model):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
 
-        send_or_update_message(self.tx_hash, self.transfer_state)
+        send_or_update_message(self.id, self.transfer_state)
 
     @transition(field=transfer_state, source='*', target='IN_QUEUE')
     def state_transfer_in_queue(self):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
 
-        send_or_update_message(self.tx_hash, self.transfer_state)
+        send_or_update_message(self.id, self.transfer_state)
 
     @transition(field=transfer_state, source=['IN_QUEUE',], target='IN_PROCESS')
     def state_transfer_in_process(self):
         # import function locally avoiding circle imports
         from ducatus_exchange.bot.services import send_or_update_message
         
-        send_or_update_message(self.tx_hash, self.transfer_state)
+        send_or_update_message(self.id, self.transfer_state)
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')
     def state_collect_duc(self):
