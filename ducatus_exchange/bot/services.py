@@ -19,11 +19,11 @@ def send_or_update_message(swap_id, state):
                 swap_id=swap_id, sub=sub
             )
             if created:
-                message_model.message_id = bot.send_message(sub.chat_id, message, parse_mode='html',
+                message_model.message_id = bot.bot.send_message(sub.chat_id, message, parse_mode='html',
                                                                     disable_web_page_preview=True).message_id
                 message_model.save()
             else:
-                bot.edit_message_text(message, sub.chat_id, message_model.message_id, parse_mode='html',
+                bot.bot.edit_message_text(message, sub.chat_id, message_model.message_id, parse_mode='html',
                                                 disable_web_page_preview=True)
         except Exception as e:
             logger.error(msg=f'send_or_update_message FAILED on payment: {swap_id} with exception: \n {e}')
