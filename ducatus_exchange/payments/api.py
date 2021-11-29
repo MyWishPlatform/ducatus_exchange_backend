@@ -201,7 +201,7 @@ def parse_payment_message(message):
         # try to remove transfer_with_handle_lottery_and_referral(payment) method
         if payment.exchange_request.user.platform == 'DUCX' and \
             not payment.exchange_request.user.address.startswith('voucher'):
-            transfer_ducx()
+            transfer_ducx(payment)
         elif payment.exchange_request.user.platform == 'DUC':
             if payment.exchange_request.user.address.startswith('voucher'):
                 process_vaucher(payment)
@@ -256,7 +256,7 @@ def get_payments_statistics():
         logger.info(msg='No payments in USDC at this period')
 
 
-WALLET_API_URL = 'https://ducapi.rocknblock.io/api/{currency}/mainnet/'
+WALLET_API_URL = 'https://ducapi.rocknblock.itask.send_duc_queueo/api/{currency}/mainnet/'
 
 
 def parse_payment_manyally(tx_hash, currency):
