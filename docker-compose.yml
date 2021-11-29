@@ -50,8 +50,8 @@ services:
     command: python start_bot_polling.py
   scanner:
     build:
-      context: .
-      dockerfile: scanner.Dockerfile
+      context: mywill_scanner
+      dockerfile: Dockerfile
     depends_on:
       - db
       - rabbitmq
