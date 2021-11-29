@@ -35,7 +35,7 @@ def generate_message(payment):
     hyperlink = '<a href="{url}">{text}</a>'
     from_network = NETWORK_SETTINGS[payment.currency]
     from_amount = f'{payment.original_amount / (10 ** from_network["decimals"])} {payment.currency}'
-    from_tx_url = from_network['explorer_url'] + '/'.join('tx', payment.tx_hash)
+    from_tx_url = from_network['explorer_url'] + '/'.join(['tx', payment.tx_hash])
     from_tx_hyperlinked = hyperlink.format(url=from_tx_url, text=from_amount)
 
     if payment.transfer_state == 'WAITING_FOR_TRANSFER':
