@@ -17,6 +17,11 @@ logger = logging.getLogger('bot')
 
 
 class Bot(threading.Thread):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Bot, cls).__new__(cls)
+        return cls.instance
+
     def __init__(self):
         super().__init__()
         self.bot = telebot.TeleBot(BOT_TOKEN)
@@ -71,5 +76,3 @@ class Bot(threading.Thread):
             except Exception:
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
                 time.sleep(15)
-
-bot = Bot()
