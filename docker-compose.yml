@@ -9,7 +9,7 @@ services:
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
   rabbitmq:
-    image: rabbitmq:3.8-management-alpine
+    image: rabbitmq:3.8.11
     env_file: .env
     restart: unless-stopped
   receiver: &python-service
