@@ -38,13 +38,13 @@ def generate_message(payment):
     from_tx_url = urljoin(from_network['explorer_url'], 'tx', payment.tx_hash)
     from_tx_hyperlinked = hyperlink.format(url=from_tx_url, text=from_amount)
 
-    if payment.state == 'WAITING_FOR_TRANSFER':
+    if payment.transfer_state == 'WAITING_FOR_TRANSFER':
         return f'received: {from_tx_hyperlinked}'
-    elif payment.state == 'IN_PROCESS':
+    elif payment.transfer_state == 'IN_PROCESS':
         return f'in process: {from_tx_hyperlinked}'
-    elif payment.state == 'IN_QUEUE':
+    elif payment.transfer_state == 'IN_QUEUE':
         return f'in queue: {from_tx_hyperlinked}'
-    elif payment.state == 'RETURNED':
+    elif payment.transfer_state == 'RETURNED':
         return f'returned: {from_tx_hyperlinked}'
-    elif payment.state == 'DONE':
+    elif payment.transfer_state == 'DONE':
         return f'success: {from_tx_hyperlinked}'
