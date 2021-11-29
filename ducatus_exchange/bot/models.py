@@ -12,4 +12,4 @@ class BotSwapMessage(models.Model):
     message_id = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = (('swap_id', 'sub_id'),)
+        unique_together = (('payment_id', 'sub_id'),)
