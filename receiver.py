@@ -13,6 +13,7 @@ django.setup()
 from django.core.exceptions import ObjectDoesNotExist
 from ducatus_exchange.settings import NETWORK_SETTINGS, RABBITMQ_HOSTNAME, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_VHOST
 
+logging.getLogger('pika').setLevel(logging.WARNING)
 logger = logging.getLogger('receiver')
 
 
