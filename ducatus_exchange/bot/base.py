@@ -28,6 +28,7 @@ class Bot(threading.Thread):
 
         @self.bot.message_handler(commands=['start'])
         def start_handler(message):
+            logger.info('run start handler')
             try:
                 BotSub(chat_id=message.chat.id).save()
                 self.bot.reply_to(message, 'Hello!')
@@ -36,6 +37,7 @@ class Bot(threading.Thread):
 
         @self.bot.message_handler(commands=['stop'])
         def stop_handler(message):
+            logger.info('run stop handler')
             try:
                 BotSub.objects.get(chat_id=message.chat.id).delete()
                 self.bot.reply_to(message, 'Bye!')
@@ -43,30 +45,27 @@ class Bot(threading.Thread):
                 pass
 
 
-        @self.bot.message_handler(commands=['balance'])
-        def balance_handle(message):
-            try:
-                ducx_balance = ParityInterface().get_balance()
-                duc_balance = DucatuscoreInterface().get_balance()
-                self.bot.reply_to(
-                    message, 
-                    f'DUC balance: {duc_balance}\nDUCX balance {ducx_balance / (10 ** 18)}')
-            except Exception as e:
-                logger.info(msg=f'Error while handling message_handler balance with exception:\n {e}')
+        @self.bot.message_handler(commands=['balances'])
+        def balances_handle(message):
+            logger.info('run balances handler')
+            ducx_balance = ParityInterface().get_balance()
+            duc_balance = DucatuscoreInterface().get_balance()
+            response = f'DUC balance: {duc_balance}\nDUCX balance {ducx_balance / (10 ** 18)}'
+            self.bot.reply_to(message, response)
 
 
-        @self.bot.message_handler(commands=['address'])
-        def address_handle(message):
-            try:
-                ducx_address = NETWORK_SETTINGS['DUCX']['address']
-                duc_address = DucatuscoreInterface().rpc.getaccountaddress('')
-                self.bot.reply_to(message, f'DUC balance: {duc_address}\nDUCX balance {ducx_address}')
-            except Exception as e:
-                logger.info(msg=f'Error while handling message_handler address with exception:\n {e}')
+        @self.bot.message_handler(commands=['addresses'])
+        def addresses_handle(message):
+            logger.info('run addresses handler')
+            ducx_address = NETWORK_SETTINGS['DUCX']['address']
+            duc_address = DucatuscoreInterface().rpc.getaccountaddress('')
+            response = f'DUC balance: {duc_address}\nDUCX balance {ducx_address}'
+            self.bot.reply_to(message, response)
 
 
         @self.bot.message_handler(commands=['ping'])
         def ping_handler(message):
+            logger.info('run ping handler')
             self.bot.reply_to(message, 'Pong')
 
     def run(self):
