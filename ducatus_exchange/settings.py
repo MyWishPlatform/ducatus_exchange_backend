@@ -161,10 +161,19 @@ REST_FRAMEWORK = {
 
 SHELL_PLUS = 'ptpython'
 
-RABBITMQ_URL = 'amqp://{user}:{password}@rabbitmq:5672/{vhost}'.format(
-    user=os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit'),
-    password=os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit'),
-    vhost=os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit'),
+RABBITMQ_HOSTNAME = os.getenv('RABBITMQ_HOSTNAME', 'rabbitmq')
+
+RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit')
+
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit')
+
+RABBITMQ_VHOST = os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit')
+
+RABBITMQ_URL = 'amqp://{user}:{password}@{hostname}:5672/{vhost}'.format(
+    hostname=RABBITMQ_HOSTNAME,
+    user=RABBITMQ_USER,
+    password=RABBITMQ_PASSWORD,
+    vhost=RABBITMQ_VHOST,
 )
 
 try:

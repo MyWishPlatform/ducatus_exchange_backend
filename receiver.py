@@ -11,7 +11,7 @@ import django
 django.setup()
 
 from django.core.exceptions import ObjectDoesNotExist
-from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.settings import NETWORK_SETTINGS, RABBITMQ_HOSTNAME, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_VHOST
 
 logger = logging.getLogger('receiver')
 
@@ -24,13 +24,10 @@ class Receiver(threading.Thread):
 
     def run(self):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
-            'rabbitmq',
+            RABBITMQ_HOSTNAME,
             5672,
-            os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit'),
-            pika.PlainCredentials(
-                os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit'),
-                os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit'),
-            ),
+            RABBITMQ_VHOST,
+            pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD),
             heartbeat=3600,
             blocked_connection_timeout=3600
         ))
