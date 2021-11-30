@@ -74,6 +74,28 @@ def register_payment(request_id, tx_hash, currency, amount):
     return payment
 
 
+def parse_payment_message(message):
+    tx = message.get('transactionHash')
+    if not Payment.objects.filter(tx_hash=tx).count() > 0:
+        request_id = message.get('exchangeId')
+        amount = message.get('amount')
+        currency = message.get('currency')
+        logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
+        payment = register_payment(request_id, tx, currency, amount)
+        # try to remove transfer_with_handle_lottery_and_referral(payment) method
+        if payment.exchange_request.user.platform == 'DUCX' and \
+            not payment.exchange_request.user.address.startswith('voucher'):
+            transfer_ducx(payment)
+        elif payment.exchange_request.user.platform == 'DUC':
+            if payment.exchange_request.user.address.startswith('voucher'):
+                process_vaucher(payment)
+            else:
+                add_transfer_duc_in_queue(payment) # fifth case 
+        # transfer_with_handle_lottery_and_referral(payment)
+    else:
+        logger.info(msg=f'tx {tx} already registered')
+
+
 def add_transfer_duc_in_queue(payment):
     payment.state_transfer_in_queue()
     payment.save()
@@ -190,26 +212,7 @@ def process_vaucher(payment):
         raise TransferException(e)
 
 
-def parse_payment_message(message):
-    tx = message.get('transactionHash')
-    if not Payment.objects.filter(tx_hash=tx).count() > 0:
-        request_id = message.get('exchangeId')
-        amount = message.get('amount')
-        currency = message.get('currency')
-        logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
-        payment = register_payment(request_id, tx, currency, amount)
-        # try to remove transfer_with_handle_lottery_and_referral(payment) method
-        if payment.exchange_request.user.platform == 'DUCX' and \
-            not payment.exchange_request.user.address.startswith('voucher'):
-            transfer_ducx(payment)
-        elif payment.exchange_request.user.platform == 'DUC':
-            if payment.exchange_request.user.address.startswith('voucher'):
-                process_vaucher(payment)
-            else:
-                add_transfer_duc_in_queue(payment) # fifth case 
-        # transfer_with_handle_lottery_and_referral(payment)
-    else:
-        logger.info(msg=f'tx {tx} already registered')
+
 
 
 def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
