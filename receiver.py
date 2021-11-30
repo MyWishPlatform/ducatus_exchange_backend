@@ -12,6 +12,8 @@ django.setup()
 
 from django.core.exceptions import ObjectDoesNotExist
 from ducatus_exchange.settings import NETWORK_SETTINGS, RABBITMQ_HOSTNAME, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_VHOST
+from ducatus_exchange.payments.api import parse_payment_message, TransferException
+from ducatus_exchange.transfers.api import confirm_transfer
 
 logging.getLogger('pika').setLevel(logging.WARNING)
 logger = logging.getLogger('receiver')
@@ -53,23 +55,14 @@ class Receiver(threading.Thread):
         channel.start_consuming()
 
     def payment(self, message):
-        # import function locally avoiding circle imports
-        from ducatus_exchange.payments.api import parse_payment_message
-
         logger.info(msg='PAYMENT MESSAGE RECEIVED')
         parse_payment_message(message)
 
     def transferred(self, message):
-        # import function locally avoiding circle imports
-        from ducatus_exchange.transfers.api import confirm_transfer
-        
         logger.info(msg='TRANSFER CONFIRMATION RECEIVED')
         confirm_transfer(message)
 
     def callback(self, ch, method, properties, body):
-        # import function locally avoiding circle imports
-        from ducatus_exchange.payments.api import TransferException
-
         logger.info(msg=f'received {body} {properties} {method}')
         try:
             message = json.loads(body.decode())
