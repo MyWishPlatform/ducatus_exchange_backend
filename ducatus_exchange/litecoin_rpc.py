@@ -131,4 +131,4 @@ class DucatuscoreInterface:
             raise DucatuscoreInterfaceException(e)
 
     def get_balance(self):
-        return self.rpc.getbalance('') * DECIMALS['DUC']
+        return int(self.rpc.getbalance('') * DECIMALS['DUC'])
