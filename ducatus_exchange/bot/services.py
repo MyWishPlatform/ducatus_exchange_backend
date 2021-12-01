@@ -47,7 +47,7 @@ def generate_message(payment):
     elif payment.transfer_state == 'RETURNED':
         return f'returned: {from_tx_hyperlinked}'
     elif payment.transfer_state == 'DONE':
-        transfer = payment.transfer
+        transfer = payment.transfers.first()
         to_network = NETWORK_SETTINGS[transfer.currency]
         to_amount = f'{transfer.amount / (10 ** to_network["decimals"])} {transfer.currency}'
         to_tx_url = to_network['explorer_url'] + '/'.join(['tx', transfer.tx_hash])

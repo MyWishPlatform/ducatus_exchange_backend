@@ -12,7 +12,7 @@ class DucatusTransfer(models.Model):
     exchange_request = models.ForeignKey(ExchangeRequest, on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='transfer')
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='transfers')
     currency = models.CharField(max_length=25, null=True, default=None)
     state = FSMField(default=STATES[0], choices=STATES)
     created_date = models.DateTimeField(auto_now_add=True)
