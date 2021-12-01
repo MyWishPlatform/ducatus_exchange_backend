@@ -57,7 +57,7 @@ class ExchangeStatus(models.Model):
         max_digits=MAX_DIGITS,
         decimal_places=0,
         default=0
-        )
+    )
     ducx_balance = models.DecimalField(
         max_digits=MAX_DIGITS,
         decimal_places=0,
