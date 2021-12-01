@@ -235,7 +235,14 @@ def status_check(request):
     return Response(ExchangeStatus.objects.all().first().status, status=status.HTTP_200_OK)
 
 
-class ExchangeStatusView(ModelViewSet):
-    queryset = ExchangeStatus.objects.all()
-    serializer_class = ExchangeStatusSerializer
-    lookup_field = 'id'
+class ExchangeStatusView(APIView):
+    @swagger_auto_schema(
+        operation_description="Get advanced status info",
+        responses={
+            200: ExchangeStatusSerializer()
+        },
+    )
+    def get(self, request):
+        status = ExchangeStatus.objects.first()
+        serializer = ExchangeStatusSerializer(status)
+        return Response(serializer.data)
