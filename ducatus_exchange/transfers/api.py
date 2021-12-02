@@ -22,22 +22,6 @@ class TransferException(Exception):
     pass
 
 
-def save_transfer(payment, tx, amount, currency):
-    exchange_request = payment.exchange_request
-    transfer = DucatusTransfer(
-        exchange_request=exchange_request,
-        tx_hash=tx,
-        amount=amount,
-        payment=payment,
-        currency=currency,
-        state='WAITING_FOR_CONFIRMATION'
-    )
-    transfer.save()
-
-    logger.info(msg='transfer saved')
-    return transfer
-
-
 def check_limits(payment):
     dayly_reserve = 0
     weekly_reserve = 0
@@ -150,6 +134,21 @@ def transfer_ducx(payment):
         raise TransferException(e)
     logger.info(msg='transfer completed')
 
+
+def save_transfer(payment, tx, amount, currency):
+    exchange_request = payment.exchange_request
+    transfer = DucatusTransfer(
+        exchange_request=exchange_request,
+        tx_hash=tx,
+        amount=amount,
+        payment=payment,
+        currency=currency,
+        state='WAITING_FOR_CONFIRMATION'
+    )
+    transfer.save()
+
+    logger.info(msg='transfer saved')
+    return transfer
 
 
 def confirm_transfer(message):
