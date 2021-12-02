@@ -10,14 +10,9 @@ from celery_config import app
 @app.task
 def update_duc_and_ducx_balances():
     logger = getLogger('task')
-    try:
-        exchange_status = ExchangeStatus.objects.first()
-        exchange_status.duc_balance = DucatuscoreInterface().get_balance()
-        exchange_status.ducx_balance = ParityInterface().get_balance()
-        exchange_status.save()
-        logger.info(msg=f'Update DUC and DUCX balamces, everything is OK.')
-        return
-    except Exception as e:
-        logger.error(msg=f'Cannot update DUC and DUCX balamces, something gone wrong wuth exception: \n {e}.')
-        return
+    exchange_status = ExchangeStatus.objects.first()
+    exchange_status.duc_balance = DucatuscoreInterface().get_balance()
+    exchange_status.ducx_balance = ParityInterface().get_balance()
+    exchange_status.save()
+    logger.info(msg=f'Update DUC and DUCX balamces, everything is OK.')
     
