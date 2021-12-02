@@ -9,16 +9,21 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 import django
 django.setup()
 
-from ducatus_exchange.exchange_requests.task_services import update_duc_and_ducx_balances
 from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
-from ducatus_exchange.payments.task_services import send_duc_on_queue
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
 from ducatus_exchange.settings import RABBITMQ_URL
 
 logger = logging.getLogger('task')
 
-app = celery.Celery('task', broker=RABBITMQ_URL)
+app = celery.Celery(
+    'task', 
+    broker=RABBITMQ_URL,
+    include=[
+        'ducatus_exchange.payments.tasks',
+        'ducatus_exchange.exchange_requests.tasks',
+    ]
+)
 
 
 @app.task
@@ -49,19 +54,6 @@ def update_ducx_node_balandes():
     logger.info(msg='DUC node balance updating complete')
 
 
-@app.task
-def send_duc_queue():
-    logger.info(msg='Starting DUC send queue task')
-    send_duc_on_queue()
-
-
-@app.task
-def update_duc_and_ducx_balance():
-    logger.info(msg='Starting update DUC and DUCX wallet balance task')
-    update_duc_and_ducx_balances()
-
-
-
 app.conf.beat_schedule = {
     'dayly_task': {
         'task': 'task.reset_dayly',
@@ -79,12 +71,12 @@ app.conf.beat_schedule = {
         'task': 'task.update_ducx_node_balandes',
         'schedule': crontab(minute=0),
     },
-    'send_duc_queue': {
-        'task': 'task.send_duc_queue',
+    'process_queued_duc_transfer': {
+        'task': 'ducatus_exchange.payments.tasks.process_queued_duc_transfer',
         'schedule': crontab(minute='*'),
     },
-    'update_duc_and_ducx_balance': {
-        'task': 'task.update_duc_and_ducx_balance',
+    'update_duc_and_ducx_balances': {
+        'task': 'ducatus_exchange.exchange_requests.tasks.update_duc_and_ducx_balances',
         'schedule': crontab(minute='*'),
     }
 }

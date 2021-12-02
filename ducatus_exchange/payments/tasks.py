@@ -4,26 +4,25 @@ from ducatus_exchange.exchange_requests.models import ExchangeStatus
 from ducatus_exchange.payments.api import check_limits
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.transfers.api import make_ref_transfer, transfer_ducatus
+from celery_config import app
 
 
-def send_duc_on_queue():
-
+@app.task
+def process_queued_duc_transfer():
     payment_in_process = Payment.objects.filter(transfer_state='IN_PROCESS').first()
     if payment_in_process:
         return 
     payment = Payment.objects.filter(transfer_state='IN_QUEUE').first()
     if payment:
-        # starting to send DUC
-        
-        if payment.exchange_request.user.platform == 'DUC':
+        user = payment.exchange_request.user     
+        if user.platform == 'DUC':
             # first case when vaucher was created
-            if payment.exchange_request.user.address.startswith('voucher') and \
-                payment.exchange_request.user.ref_address:
+            if user.address.startswith('voucher') and user.ref_address:
                 make_ref_transfer(payment)
             # second case when we just need to send DUC
-            if not payment.exchange_request.user.address.startswith('voucher'):
+            if not user.address.startswith('voucher'):
                 transfer_ducatus(payment)
-        elif payment.exchange_request.user.platform == 'DUCX':
+        elif user.platform == 'DUCX':
             _, return_amount = check_limits(payment)
 
             # third case when we try to transfer_ducx but status not exist

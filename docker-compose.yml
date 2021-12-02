@@ -44,7 +44,7 @@ services:
     command: python stats_checker.py DUC
   celery:
     <<: *python-service
-    command: celery -A task worker -B --loglevel=info
+    command: celery -A celery_config worker -B --loglevel=info
   bot:
     <<: *python-service
     command: python start_bot_polling.py

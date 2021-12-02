@@ -4,8 +4,10 @@ from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 
 from .models import ExchangeStatus
+from celery_config import app
 
 
+@app.task
 def update_duc_and_ducx_balances():
     logger = getLogger('task')
     try:
