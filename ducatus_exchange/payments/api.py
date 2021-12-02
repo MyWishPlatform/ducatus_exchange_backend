@@ -80,11 +80,11 @@ def parse_payment_message(message):
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
         payment = register_payment(request_id, tx, currency, amount)
         # try to remove transfer_with_handle_lottery_and_referral(payment) method
-        if payment.exchange_request.user.platform == 'DUCX' and \
-            not payment.exchange_request.user.address.startswith('voucher'):
+        user = payment.exchange_request.user
+        if user.platform == 'DUCX' and not user.address.startswith('voucher'):
             transfer_ducx(payment)
-        elif payment.exchange_request.user.platform == 'DUC':
-            if payment.exchange_request.user.address.startswith('voucher'):
+        elif user.platform == 'DUC':
+            if user.address.startswith('voucher'):
                 process_vaucher(payment)
             else:
                 add_transfer_duc_in_queue(payment) # fifth case 
@@ -151,8 +151,9 @@ def process_vaucher(payment):
             if 'voucher code' not in e.args[0]:
                 raise e
             voucher = create_voucher(usd_amount, payment_id=payment.id)
-        send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
-        if payment.exchange_request.user.ref_address:
+        user = payment.exchange_request.user
+        send_voucher_email(voucher, user.email, usd_amount)
+        if user.ref_address:
             logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
             add_transfer_duc_in_queue(payment)
             # make_ref_transfer(payment) // first if in queue
@@ -246,7 +247,7 @@ def parse_payment_manyally(tx_hash, currency):
 # def transfer_with_handle_lottery_and_referral(payment):
 #     logger.info(msg='starting transfer')
 #     try:
-#         if not payment.exchange_request.user.address.startswith('voucher'):
+#         if not user.address.startswith('voucher'):
 #             # transfer_currency return None 
 #             # if not enought balance on wallet and token returned to user
 #             # else return object
@@ -255,7 +256,7 @@ def parse_payment_manyally(tx_hash, currency):
 #                 payment.state_transfer_done()
 #             else:
 #                 payment.state_transfer_returned()
-#         elif payment.exchange_request.user.platform == 'DUC':
+#         elif user.platform == 'DUC':
 #             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
 #             try:
 #                 voucher = create_voucher(usd_amount, payment_id=payment.id)
@@ -263,8 +264,8 @@ def parse_payment_manyally(tx_hash, currency):
 #                 if 'voucher code' not in e.args[0]:
 #                     raise e
 #                 voucher = create_voucher(usd_amount, payment_id=payment.id)
-#             send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
-#             if payment.exchange_request.user.ref_address:
+#             send_voucher_email(voucher, user.email, usd_amount)
+#             if user.ref_address:
 #                 payment.state_transfer_in_queue()
 #                 payment.save()
 #                 logger.info(msg=f'payment with id: {payment.id} added to queue to send.')

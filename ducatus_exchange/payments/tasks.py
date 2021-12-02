@@ -16,24 +16,22 @@ def process_queued_duc_transfer():
     if payment:
         user = payment.exchange_request.user     
         if user.platform == 'DUC':
-            # first case when vaucher was created
             if user.address.startswith('voucher') and user.ref_address:
                 make_ref_transfer(payment)
-            # second case when we just need to send DUC
             if not user.address.startswith('voucher'):
                 transfer_ducatus(payment)
         elif user.platform == 'DUCX':
             _, return_amount = check_limits(payment)
 
-            # third case when we try to transfer_ducx but status not exist
             if not ExchangeStatus.objects.first().status:
                 return_ducatus(payment.tx_hash, payment.original_amount)
-            # fourth case when we try to transfer_ducx but amount > MINIMAL_RETURN
             elif return_amount > MINIMAL_RETURN:
                 return_ducatus(payment.tx_hash, return_amount)
-            #  case when we try to transfer_ducx but wallet_balance + fee < amount
-            else :
+            else:
                 return_ducatus(payment.tx_hash, payment.send_amount)
+        else:
+            raise ValueError('Platform is None')
+
         payment.state_transfer_in_process()
         payment.save()
 

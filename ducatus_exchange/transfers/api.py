@@ -117,13 +117,11 @@ def transfer_ducx(payment):
         status = ExchangeStatus.objects.all().first().status
         if not status:
             logger.info(msg='exchange is disabled')
-            add_transfer_duc_in_queue(payment) # second task if in queue
-            # return_ducatus(payment.tx_hash, payment.original_amount)
+            return_ducatus(payment.tx_hash, payment.original_amount)
         else:
             allowed, return_amount = check_limits(payment)
             if return_amount > MINIMAL_RETURN:
-                add_transfer_duc_in_queue(payment) # third task if in queue
-                # return_ducatus(payment.tx_hash, return_amount)
+                return_ducatus(payment.tx_hash, return_amount)
             if allowed:
                 amount = payment.sent_amount
                 receiver = payment.exchange_request.user.address
@@ -141,8 +139,7 @@ def transfer_ducx(payment):
                     return transfer
                 else:
                     logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
-                    add_transfer_duc_in_queue(payment) # 4 test case in queue
-                    # return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
+                    return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
             else:
                 logger.info(
                     msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
