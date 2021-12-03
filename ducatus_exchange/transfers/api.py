@@ -95,40 +95,42 @@ def transfer_ducatusx(payment):
     if not status:
         logger.info(msg='exchange is disabled')
         return_ducatus(payment.tx_hash, payment.original_amount)
-    else:
-        allowed, return_amount = check_limits(payment)
-        if return_amount > MINIMAL_RETURN:
-            return_ducatus(payment.tx_hash, return_amount)
-        if allowed:
-            amount = payment.sent_amount
-            receiver = payment.exchange_request.user.address
+        return
+
+    allowed, return_amount = check_limits(payment)
+
+    if return_amount > MINIMAL_RETURN:
+        return_ducatus(payment.tx_hash, return_amount)
+
+    if not allowed:
+        logger.info(
+            msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
+        )
+        return
+
+    amount = payment.sent_amount
+    receiver = payment.exchange_request.user.address
+    parity = ParityInterface()
+    try:
+        if parity.get_balance() > amount:
             logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
-            currency = 'DUCX'
-            parity = ParityInterface()
-            # if not enough balance on admin address return tokens to user
-            try:
-                if parity.get_balance() > amount:
-                    tx = parity.transfer(receiver, amount)
-                    transfer = save_transfer(payment, tx, amount, currency)
-
-                    logger.info(msg='ducatusx transfer ok')
-
-                    time.sleep(100)    # small timeout in case of multiple payment messages
-                    return transfer
-                else:
-                    logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
-                    return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
-            except ParityInterfaceException as e:
-                payment.state_transfer_error()
-                payment.save()
-                raise TransferException(e)
+            
+            tx = parity.transfer(receiver, amount)
+            transfer = save_transfer(payment, tx, amount, 'DUCX')
+            
+            logger.info(msg='ducatusx transfer ok')
+            time.sleep(100) #  small timeout in case of multiple payment messages
+            logger.info(msg='transfer completed')
+            
+            return transfer
         else:
-            logger.info(
-                msg=f"User's {payment.exchange_request.user.id} swap amount reached limits, cancelling transfer"
-            )
-
-    logger.info(msg='transfer completed')
-
+            logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
+            return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
+    except ParityInterfaceException as e:
+        payment.state_transfer_error()
+        payment.save()
+        raise TransferException(e)
+       
 
 def add_transfer_duc_in_queue(payment):
     payment.state_transfer_in_queue()
