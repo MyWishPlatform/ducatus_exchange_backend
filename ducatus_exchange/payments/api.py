@@ -38,7 +38,7 @@ from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.settings import MINIMAL_RETURN
 from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
-from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, add_transfer_duc_in_queue, transfer_ducx
+from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, add_transfer_duc_in_queue, transfer_ducatusx
 from ducatus_exchange.transfers.api import save_transfer, TransferException
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ def parse_payment_message(message):
         # try to remove transfer_with_handle_lottery_and_referral(payment) method
         user = payment.exchange_request.user
         if user.platform == 'DUCX' and not user.address.startswith('voucher'):
-            transfer_ducx(payment)
+            transfer_ducatusx(payment)
         elif user.platform == 'DUC':
             if user.address.startswith('voucher'):
                 process_vaucher(payment)
