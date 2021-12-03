@@ -260,6 +260,7 @@ def return_ducatus(payment_hash, amount):
     logger.info(msg=f'signed tx {signed}')
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
+    p.state_transfer_returned()
     p.returned_tx_hash = tx_hash
     p.save()
     logger.info(msg=f'tx {tx_hash}')
