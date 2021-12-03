@@ -267,30 +267,29 @@ def return_ducatus(payment_hash, amount):
 
 
 def return_ducatusx(payment_hash, amount):
-    
     payment = Payment.objects.get(tx_hash=payment_hash)
 
-    receiver = payment.exchange_request.user.address
-    logger.info(msg='DUCATUSX RETURN STARTED: sending {amount} to {address}'.format(
+    exchange_request = payment.exchange_request 
+    receiver = exchange_request.user.address
+
+    logger.info('DUCATUSX RETURN STARTED: sending {amount} to {address}'.format(
         address=receiver,
         amount=amount / DECIMALS['DUCX']
     ))
 
-    # return ducx to user using HD Wallet address and private
-    parity = ParityInterface()
-    tx = parity.transfer(
+    tx_hash = ParityInterface().transfer(
         receiver=receiver,
         amount=amount,
-        from_address='',
+        from_address=exchange_request.ducx_address,
         from_private=get_private_keys(
             root_private_key=ROOT_KEYS['ducx']['private'],
-            child_id=payment.exchange_request.user.id
-        )
+            child_id=exchange_request.user.id
+        )[0]
     )
 
-    logger.info(msg=f'ducatusx return with hash {tx}')
-    payment.returned_tx_hash = tx
+    logger.info(msg=f'ducatusx return with hash {tx_hash}')
+    payment.state_transfer_returned()
+    payment.returned_tx_hash = tx_hash
     payment.save()
 
     time.sleep(100)    # small timeout in case of multiple payment messages
-    return 
