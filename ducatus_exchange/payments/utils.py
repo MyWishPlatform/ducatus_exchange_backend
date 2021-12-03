@@ -12,16 +12,12 @@ def calculate_amount(original_amount, from_currency):
 
     rates = AllRatesSerializer({})
     currency_rate = rates.data[to_currency][from_currency]
-    # TODO: Need to rewrite
-    value = 0
-    if from_currency in DECIMALS.keys() and to_currency in DECIMALS.keys():
-        value = original_amount * DECIMALS[to_currency]/ DECIMALS[from_currency]
-    # if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:
-    #     value = original_amount * DECIMALS['DUC'] / DECIMALS[from_currency]
-    # elif from_currency == 'DUC':
-    #     value = original_amount * DECIMALS[to_currency] / DECIMALS['DUC']
-    # else:
-    #     value = original_amount
+    if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:
+        value = original_amount * DECIMALS['DUC'] / DECIMALS[from_currency]
+    elif from_currency == 'DUC':
+        value = original_amount * DECIMALS[to_currency] / DECIMALS['DUC']
+    else:
+        value = original_amount
 
     logger.info(msg=f'value: {value}, rate: {currency_rate}')
     amount = int(float(value) / float(currency_rate))
