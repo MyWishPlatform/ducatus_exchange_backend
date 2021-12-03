@@ -93,6 +93,41 @@ def parse_payment_message(message):
         logger.info(msg=f'tx {tx} already registered')
 
 
+# def transfer_with_handle_lottery_and_referral(payment):
+#     logger.info(msg='starting transfer')
+#     user = payment.exchange_request.user
+#     try:
+#         if not user.address.startswith('voucher'):
+#             # transfer_currency return None 
+#             # if not enought balance on wallet and token returned to user
+#             # else return object
+#             is_transfer_success = transfer_currency(payment)
+#             if is_transfer_success:
+#                 payment.state_transfer_done()
+#             else:
+#                 payment.state_transfer_returned()
+#         elif user.platform == 'DUC':
+#             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
+#             try:
+#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
+#             except IntegrityError as e:
+#                 if 'voucher code' not in e.args[0]:
+#                     raise e
+#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
+#             send_voucher_email(voucher, user.email, usd_amount)
+#             if user.ref_address:
+#                 payment.state_transfer_in_queue()
+#                 payment.save()
+#                 logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
+#                 # make_ref_transfer(payment)
+#     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
+#         payment.state_transfer_error()
+#         payment.save()
+#         raise TransferException(e)
+#     logger.info(msg='transfer completed')
+
+
+
 def get_random_string():
     chars_for_random = string.ascii_uppercase + string.digits
     return ''.join(random.choices(chars_for_random, k=12))
@@ -243,35 +278,3 @@ def parse_payment_manyally(tx_hash, currency):
     else:
         raise ValueError(f'Invalid currency: {currency}')
 
-
-# def transfer_with_handle_lottery_and_referral(payment):
-#     logger.info(msg='starting transfer')
-#     try:
-#         if not user.address.startswith('voucher'):
-#             # transfer_currency return None 
-#             # if not enought balance on wallet and token returned to user
-#             # else return object
-#             is_transfer_success = transfer_currency(payment)
-#             if is_transfer_success:
-#                 payment.state_transfer_done()
-#             else:
-#                 payment.state_transfer_returned()
-#         elif user.platform == 'DUC':
-#             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
-#             try:
-#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
-#             except IntegrityError as e:
-#                 if 'voucher code' not in e.args[0]:
-#                     raise e
-#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
-#             send_voucher_email(voucher, user.email, usd_amount)
-#             if user.ref_address:
-#                 payment.state_transfer_in_queue()
-#                 payment.save()
-#                 logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
-#                 # make_ref_transfer(payment)
-#     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-#         payment.state_transfer_error()
-#         payment.save()
-#         raise TransferException(e)
-#     logger.info(msg='transfer completed')
