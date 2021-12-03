@@ -272,6 +272,10 @@ def return_ducatusx(payment_hash, amount):
 
     exchange_request = payment.exchange_request 
     receiver = exchange_request.user.address
+    gas_price = 80000000000
+    amount -= gas_price
+    if amount <= 0:
+        logger.info(f'gas fee is more than return amount')
 
     logger.info('DUCATUSX RETURN STARTED: sending {amount} to {address}'.format(
         address=receiver,
