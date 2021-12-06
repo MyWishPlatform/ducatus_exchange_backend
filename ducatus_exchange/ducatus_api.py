@@ -1,8 +1,11 @@
 from time import time
+from django.http.response import Http404
 import requests
 import datetime
 import logging
 from decimal import Decimal
+
+from web3 import Web3, HTTPProvider
 
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
@@ -266,9 +269,13 @@ def return_ducatus(payment_hash, amount):
 def return_ducatusx(payment_hash, amount):
     payment = Payment.objects.get(tx_hash=payment_hash)
 
-    exchange_request = payment.exchange_request 
-    receiver = exchange_request.user.address
+    exchange_request = payment.exchange_request
+
+    w3 = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['url']))
+    receipt = w3.eth.getTransactionReceipt(payment_hash)
+    receiver = receipt['from']
     amount -= DUCX_GAS_PRICE
+    
     if amount <= 0:
         logger.info(f'gas fee is more than return amount')
 
