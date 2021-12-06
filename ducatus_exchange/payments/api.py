@@ -248,7 +248,7 @@ def get_payments_statistics():
 def parse_payment_manyally(tx_hash, currency):
     address_field_name = currency.lower() + '_address__iexact'
     if currency == 'DUC':
-        url = '/'.join(WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins')
+        url = '/'.join([WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins'])
         response = requests.get(url)
         if response.status_code == 404:
             raise ValueError(f'Transaction {tx_hash} not found')
