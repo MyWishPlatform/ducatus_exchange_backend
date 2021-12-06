@@ -13,7 +13,7 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'IN_QUEUE', 'IN_PROCESS')
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'QUEUED', 'PENDING')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
     COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
@@ -32,7 +32,7 @@ class Payment(models.Model):
     returned_tx_hash = models.CharField(max_length=100, null=True, default='')
 
     # States change
-    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR', 'IN_PROCESS'], target='DONE')
+    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR', 'PENDING'], target='DONE')
     def state_transfer_done(self):
         pass
 
@@ -44,12 +44,12 @@ class Payment(models.Model):
     def state_transfer_returned(self):
         pass
 
-    @transition(field=transfer_state, source='*', target='IN_QUEUE')
-    def state_transfer_in_queue(self):
+    @transition(field=transfer_state, source='*', target='QUEUED')
+    def state_transfer_queued(self):
         pass
 
-    @transition(field=transfer_state, source=['IN_QUEUE',], target='IN_PROCESS')
-    def state_transfer_in_process(self):
+    @transition(field=transfer_state, source=['QUEUED',], target='PENDING')
+    def state_transfer_pending(self):
         pass
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')

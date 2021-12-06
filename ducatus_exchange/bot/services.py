@@ -40,16 +40,19 @@ def generate_message(payment):
 
     if payment.transfer_state == 'WAITING_FOR_TRANSFER':
         return f'received: {from_tx_hyperlinked}'
-    elif payment.transfer_state == 'IN_PROCESS':
-        return f'in process: {from_tx_hyperlinked}'
-    elif payment.transfer_state == 'IN_QUEUE':
-        return f'in queue: {from_tx_hyperlinked}'
+    elif payment.transfer_state == 'QUEUED':
+        return f'queued: {from_tx_hyperlinked}'
     elif payment.transfer_state == 'RETURNED':
-        return f'returned: {from_tx_hyperlinked}'
-    elif payment.transfer_state == 'DONE':
+        return_tx_url = from_network['explorer_url'] + '/'.join(['tx', payment.returned_tx_hash])
+        return_tx_hyperlinked = hyperlink.format(url=return_tx_url, text=from_amount)
+        return f'returned: {from_tx_hyperlinked} → {return_tx_hyperlinked}'
+    else:
         transfer = payment.transfers.first()
         to_network = NETWORK_SETTINGS[transfer.currency]
         to_amount = f'{transfer.amount / (10 ** to_network["decimals"])} {transfer.currency}'
         to_tx_url = to_network['explorer_url'] + '/'.join(['tx', transfer.tx_hash])
         to_tx_hyperlinked = hyperlink.format(url=to_tx_url, text=to_amount)
-        return f'success: {from_tx_hyperlinked} → {to_tx_hyperlinked}'
+        if payment.transfer_state == 'PENDING':
+            return f'pending: {from_tx_hyperlinked} → {to_tx_hyperlinked}'
+        elif payment.transfer_state == 'DONE':
+            return f'success: {from_tx_hyperlinked} → {to_tx_hyperlinked}'

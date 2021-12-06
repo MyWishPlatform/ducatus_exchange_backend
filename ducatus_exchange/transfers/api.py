@@ -3,11 +3,12 @@ import sys
 import traceback
 import logging
 from decimal import Decimal
+from django.db import transaction
 
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface, ParityInterfaceException
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN
+from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN, DUCX_GAS_PRICE
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
 from ducatus_exchange.payments.utils import calculate_amount
@@ -79,8 +80,8 @@ def transfer_ducatus(payment):
     if rpc.get_balance() > amount:
         tx = rpc.transfer(receiver, amount)
         transfer = save_transfer(payment, tx, amount, currency)
-
         logger.info(msg='ducatus transfer ok')
+        transaction.on_commit(lambda: payment.state_transfer_pending())
         return transfer
     else:
         logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
@@ -112,30 +113,27 @@ def transfer_ducatusx(payment):
     receiver = payment.exchange_request.user.address
     parity = ParityInterface()
     try:
-        if parity.get_balance() > amount:
-            logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
-            
-            tx = parity.transfer(receiver, amount)
-            transfer = save_transfer(payment, tx, amount, 'DUCX')
-            
-            logger.info(msg='ducatusx transfer ok')
-            time.sleep(100) #  small timeout in case of multiple payment messages
-            logger.info(msg='transfer completed')
-            
-            return transfer
-        else:
+        if parity.get_balance() < amount + DUCX_GAS_PRICE:
             logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
             return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
+            return
+
+        logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
+        
+        tx = parity.transfer(receiver, amount)
+        transfer = save_transfer(payment, tx, amount, 'DUCX')
+        transaction.on_commit(lambda: payment.state_transfer_pending())
+
+        logger.info(msg='ducatusx transfer ok')
+        time.sleep(100) #  small timeout in case of multiple payment messages
+        logger.info(msg='transfer completed')
+        
+        return transfer
     except ParityInterfaceException as e:
         payment.state_transfer_error()
         payment.save()
         raise TransferException(e)
        
-
-def add_transfer_duc_in_queue(payment):
-    payment.state_transfer_in_queue()
-    payment.save()
-
 
 def save_transfer(payment, tx, amount, currency):
     exchange_request = payment.exchange_request

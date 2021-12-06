@@ -38,7 +38,7 @@ from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.settings import MINIMAL_RETURN
 from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, NETWORK_SETTINGS, WALLET_API_URL
-from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, add_transfer_duc_in_queue, transfer_ducatusx
+from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, transfer_ducatusx
 from ducatus_exchange.transfers.api import save_transfer, TransferException
 from web3 import Web3, HTTPProvider
 from web3.exceptions import TransactionNotFound
@@ -89,7 +89,7 @@ def parse_payment_message(message):
             if user.address.startswith('voucher'):
                 process_vaucher(payment)
             else:
-                add_transfer_duc_in_queue(payment) # fifth case 
+                payment.state_transfer_queued()
         # transfer_with_handle_lottery_and_referral(payment)
     else:
         logger.info(msg=f'tx {tx} already registered')
@@ -192,7 +192,7 @@ def process_vaucher(payment):
         send_voucher_email(voucher, user.email, usd_amount)
         if user.ref_address:
             logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
-            add_transfer_duc_in_queue(payment)
+            payment.state_transfer_queued()
             # make_ref_transfer(payment) // first if in queue
     except DucatuscoreInterfaceException as e:
         payment.state_transfer_error()

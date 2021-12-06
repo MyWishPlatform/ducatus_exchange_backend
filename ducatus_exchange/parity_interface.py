@@ -6,7 +6,7 @@ from eth_utils import to_checksum_address
 from eth_account import Account
 from web3 import Web3
 
-from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.settings import NETWORK_SETTINGS, DUCX_GAS_PRICE
 from ducatus_exchange.consts import DECIMALS
 
 logger = logging.getLogger('parity_interface')
@@ -89,7 +89,7 @@ class ParityInterface:
             'to': to_checksum_address(address),
             'value': int(amount),
             'gas': 30000,
-            'gasPrice': 80000000000,
+            'gasPrice': DUCX_GAS_PRICE,
             'nonce': int(nonce, 16),
             'chainId': int(chain_id, 16)
         }

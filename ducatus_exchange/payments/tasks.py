@@ -9,10 +9,11 @@ from celery_config import app
 
 @app.task
 def process_queued_duc_transfer():
-    payment_in_process = Payment.objects.filter(transfer_state='IN_PROCESS').first()
-    if payment_in_process:
+    pending_payments = Payment.objects.filter(transfer_state='PENDING').first()
+    if pending_payments:
         return 
-    payment = Payment.objects.filter(transfer_state='IN_QUEUE').first()
+
+    payment = Payment.objects.filter(transfer_state='QUEUED').first()
     if payment:
         user = payment.exchange_request.user     
         if user.platform == 'DUC':
@@ -31,8 +32,5 @@ def process_queued_duc_transfer():
                 return_ducatus(payment.tx_hash, payment.send_amount)
         else:
             raise ValueError('Platform is None')
-
-        payment.state_transfer_in_process()
-        payment.save()
 
     return

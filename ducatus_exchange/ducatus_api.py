@@ -9,7 +9,7 @@ from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.parity_interface import ParityInterface
-from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
+from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME, DUCX_GAS_PRICE
 from ducatus_exchange.withdrawals.utils import get_private_keys
 
 logger = logging.getLogger('ducatus_api')
@@ -272,8 +272,7 @@ def return_ducatusx(payment_hash, amount):
 
     exchange_request = payment.exchange_request 
     receiver = exchange_request.user.address
-    gas_price = 80000000000
-    amount -= gas_price
+    amount -= DUCX_GAS_PRICE
     if amount <= 0:
         logger.info(f'gas fee is more than return amount')
 
