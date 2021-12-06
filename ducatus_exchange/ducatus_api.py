@@ -278,8 +278,8 @@ def return_ducatusx(payment_hash, amount):
     ))
 
     tx_hash = ParityInterface().transfer(
-        receiver=receiver,
-        amount=amount,
+        receiver,
+        amount,
         from_address=exchange_request.ducx_address,
         from_private=get_private_keys(
             ROOT_KEYS['ducatusx']['private'],
