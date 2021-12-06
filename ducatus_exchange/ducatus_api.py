@@ -282,7 +282,7 @@ def return_ducatusx(payment_hash, amount):
         amount=amount,
         from_address=exchange_request.ducx_address,
         from_private=get_private_keys(
-            ROOT_KEYS['DUCX']['private'],
+            ROOT_KEYS['ducatusx']['private'],
             exchange_request.user.id
         )[0]
     )
