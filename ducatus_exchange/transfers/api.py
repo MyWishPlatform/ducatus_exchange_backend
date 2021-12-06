@@ -92,7 +92,6 @@ def transfer_ducatus(payment):
             payment_hash=payment.tx_hash,
             amount=amount,
         )
-        return None
 
 def transfer_ducatusx(payment):
     status = ExchangeStatus.objects.all().first().status
@@ -118,7 +117,7 @@ def transfer_ducatusx(payment):
     try:
         if parity.get_balance() < amount + DUCX_GAS_PRICE:
             logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
-            return_ducatus(payment_hash=payment.tx_hash,amount=amount,)
+            return_ducatus(payment_hash=payment.tx_hash,amount=amount)
             return
 
         logger.info(msg=f'ducatusX transfer started: sending {amount} DUCX to {receiver}')
