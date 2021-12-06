@@ -89,6 +89,7 @@ def parse_payment_message(message):
                 process_vaucher(payment)
             else:
                 payment.state_transfer_queued()
+                payment.save()
         # transfer_with_handle_lottery_and_referral(payment)
     else:
         logger.info(msg=f'tx {tx} already registered')

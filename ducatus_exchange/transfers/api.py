@@ -81,7 +81,10 @@ def transfer_ducatus(payment):
         tx = rpc.transfer(receiver, amount)
         transfer = save_transfer(payment, tx, amount, currency)
         logger.info(msg='ducatus transfer ok')
-        transaction.on_commit(lambda: payment.state_transfer_pending())
+        transaction.on_commit(lambda: (
+            payment.state_transfer_pending(), 
+            payment.save()
+        ))
         return transfer
     else:
         logger.info(msg=f'Not enough balance on wallet DUC, transaction with hash {payment.tx_hash} will return to user on DUCX')
@@ -122,7 +125,10 @@ def transfer_ducatusx(payment):
         
         tx = parity.transfer(receiver, amount)
         transfer = save_transfer(payment, tx, amount, 'DUCX')
-        transaction.on_commit(lambda: payment.state_transfer_pending())
+        transaction.on_commit(lambda: (
+            payment.state_transfer_pending(), 
+            payment.save()
+        ))
 
         logger.info(msg='ducatusx transfer ok')
         time.sleep(100) #  small timeout in case of multiple payment messages
