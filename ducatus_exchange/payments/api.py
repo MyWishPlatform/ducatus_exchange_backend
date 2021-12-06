@@ -262,7 +262,7 @@ def parse_payment_manyally(tx_hash, currency):
 
             message = {
                     'exchangeId': exchange_request.pk,
-                    'address': data['inputs']['address'],
+                    'address': output['address'],
                     'transactionHash': tx_hash,
                     'currency': currency,
                     'amount': output['value'],
