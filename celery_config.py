@@ -68,7 +68,7 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=12, minute=0),
     },
     'update_ducx_nodes': {
-        'task': 'task.update_ducx_node_balandes',
+        'task': 'task.update_ducx_node_balances',
         'schedule': crontab(minute=0),
     },
     'process_queued_duc_transfer': {
