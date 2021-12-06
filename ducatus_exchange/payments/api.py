@@ -193,7 +193,6 @@ def process_vaucher(payment):
         if user.ref_address:
             logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
             payment.state_transfer_queued()
-            # make_ref_transfer(payment) // first if in queue
     except DucatuscoreInterfaceException as e:
         payment.state_transfer_error()
         payment.save()
