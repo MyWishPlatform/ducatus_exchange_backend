@@ -256,8 +256,8 @@ def return_ducatus(payment_hash, amount):
     logger.info(msg=f'signed tx {signed}')
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
-    p.state_transfer_returned()
     p.returned_tx_hash = tx_hash
+    p.state_transfer_returned()
     p.save()
     logger.info(msg=f'tx {tx_hash}')
     logger.info(msg=f'receive address was: {p.exchange_request.duc_address}')
@@ -288,8 +288,8 @@ def return_ducatusx(payment_hash, amount):
     )
 
     logger.info(msg=f'ducatusx return with hash {tx_hash}')
-    payment.state_transfer_returned()
     payment.returned_tx_hash = tx_hash
+    payment.state_transfer_returned()
     payment.save()
 
     time.sleep(100)    # small timeout in case of multiple payment messages
