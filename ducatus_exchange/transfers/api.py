@@ -8,7 +8,7 @@ from django.db import transaction
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface, ParityInterfaceException
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN, DUCX_GAS_PRICE
+from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN, DUCX_GAS_PRICE, DUCX_TRANSFER_GAS_LIMIT
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
 from ducatus_exchange.payments.utils import calculate_amount
@@ -118,7 +118,7 @@ def transfer_ducatusx(payment):
     receiver = payment.exchange_request.user.address
     parity = ParityInterface()
     try:
-        if parity.get_balance() < amount + DUCX_GAS_PRICE:
+        if parity.get_balance() < amount + DUCX_GAS_PRICE * DUCX_TRANSFER_GAS_LIMIT:
             logger.info(msg=f'Not enough balance on wallet DUCX, transaction with hash {payment.tx_hash} will return to user on DUC')
             return_ducatus(payment.tx_hash, payment.original_amount)
             return
