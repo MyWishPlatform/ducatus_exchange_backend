@@ -258,7 +258,7 @@ def parse_payment_manyally(tx_hash, currency):
             try:
                 exchange_request = ExchangeRequest.objects.get(**{ address_field_name: output['address'] })
             except ExchangeRequest.DoesNotExist:
-                pass
+                continue
 
             message = {
                     'exchangeId': exchange_request.pk,
