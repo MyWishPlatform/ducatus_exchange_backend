@@ -62,7 +62,8 @@ def register_payment(request_id, tx_hash, currency, amount):
     # exchange_request.from_currency = currency
     # exchange_request.save()
     logger.info(msg=(
-        f'PAYMENT: {amount} {currency} ({cal0xb00650682131b3fe9b85c40eb6cf336b1285f0a46fb040f946ca02fa8afa864bchange_request.id} with TXID: {tx_hash}')
+        f'PAYMENT: {amount} {currency} ({calculated_amount} DUC)'
+        f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}')
     )
 
     payment.save()
