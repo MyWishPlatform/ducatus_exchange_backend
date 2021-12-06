@@ -37,9 +37,11 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.settings import MINIMAL_RETURN
-from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL
+from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, NETWORK_SETTINGS, WALLET_API_URL
 from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, add_transfer_duc_in_queue, transfer_ducatusx
 from ducatus_exchange.transfers.api import save_transfer, TransferException
+from web3 import Web3, HTTPProvider
+from web3.exceptions import TransactionNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -245,10 +247,8 @@ def get_payments_statistics():
         logger.info(msg='No payments in USDC at this period')
 
 
-WALLET_API_URL = 'https://ducapi.rocknblock.itask.send_duc_queueo/api/{currency}/mainnet/'
-
-
 def parse_payment_manyally(tx_hash, currency):
+    address_field_name = currency.lower() + '_address__iexact'
     if currency == 'DUC':
         url = urljoin(WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins')
         response = requests.get(url)
@@ -256,25 +256,45 @@ def parse_payment_manyally(tx_hash, currency):
             raise ValueError(f'Transaction {tx_hash} not found')
             
         data = response.json()
-        address_field_name = currency.lower() + '_address'
-
         for output in data['outputs']:
             try:
                 exchange_request = ExchangeRequest.objects.get(**{ address_field_name: output['address'] })
-                if currency == 'DUC':
-                    message = {
-                        'exchangeId': exchange_request.pk,
-                        'address': data['inputs']['address'],
-                        'transactionHash': tx_hash,
-                        'currency': currency,
-                        'amount': output['value'],
-                        'success': True,
-                        'status': 'COMMITED'
-                    }
-                    parse_payment_message(message)
-
             except ExchangeRequest.DoesNotExist:
                 pass
+
+            message = {
+                    'exchangeId': exchange_request.pk,
+                    'address': data['inputs']['address'],
+                    'transactionHash': tx_hash,
+                    'currency': currency,
+                    'amount': output['value'],
+                    'success': True,
+                    'status': 'COMMITED'
+            }
+            parse_payment_message(message)
+    elif currency == 'DUCX':
+        w3 = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['url']))
+        receipt = w3.eth.getTransactionReceipt(tx_hash)
+        tx = w3.eth.getTransaction(tx_hash)
+
+        if receipt.status != 1:
+            raise ValueError(f'Transaction {tx_hash} failed')
+
+        try:
+            exchange_request = ExchangeRequest.objects.get(**{ address_field_name: receipt.to })
+        except ExchangeRequest.DoesNotExist:
+            raise ValueError(f'Exchange request not found')
+
+        message = {
+            'exchangeId': exchange_request.pk,
+            'address': receipt['from'],
+            'transactionHash': tx_hash,
+            'currency': currency,
+            'amount': tx.value,
+            'success': True,
+            'status': 'COMMITED'
+        }
+        parse_payment_message(message)
     else:
         raise ValueError(f'Invalid currency: {currency}')
 
