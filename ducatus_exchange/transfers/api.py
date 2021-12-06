@@ -75,6 +75,12 @@ def transfer_ducatus(payment):
     logger.info(msg=f'ducatus transfer started: sending {amount} DUC to {receiver}')
     currency = 'DUC'
 
+    status = ExchangeStatus.objects.all().first().status
+    if not status:
+        logger.info(msg='exchange is disabled')
+        return_ducatusx(payment.tx_hash, payment.original_amount)
+        return
+
     rpc = DucatuscoreInterface()
     # if not enough balance on admin address return tokens to user
     if rpc.get_balance() > amount:
