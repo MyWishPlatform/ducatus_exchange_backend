@@ -48,7 +48,7 @@ class Payment(models.Model):
     def state_transfer_queued(self):
         pass
 
-    @transition(field=transfer_state, source=['QUEUED',], target='PENDING')
+    @transition(field=transfer_state, source=['QUEUED', 'WAITING_FOR_TRANSFER'], target='PENDING')
     def state_transfer_pending(self):
         pass
 
