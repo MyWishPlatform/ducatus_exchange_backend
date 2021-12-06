@@ -9,7 +9,7 @@ from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.parity_interface import ParityInterface
-from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME, DUCX_GAS_PRICE
+from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME, DUCX_GAS_PRICE, NETWORK_SETTINGS
 from ducatus_exchange.withdrawals.utils import get_private_keys
 
 logger = logging.getLogger('ducatus_api')
@@ -18,12 +18,8 @@ logger = logging.getLogger('ducatus_api')
 class DucatusAPI:
 
     def __init__(self):
-        self.network = 'mainnet'
-        self.base_url = None
-        self.set_base_url()
-
-    def set_base_url(self):
-        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/{self.network}'
+        self.network = 'testnet' if NETWORK_SETTINGS['DUC']['is_testnet'] else 'mainnet'
+        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/{self.network}'        
 
     def get_address_response(self, address):
         endpoint_url = f'{self.base_url}/address/{address}'
