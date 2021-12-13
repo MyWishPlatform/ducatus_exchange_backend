@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from ducatus_exchange.settings import IS_TESTNET_PAYMENTS
+from django.db.models import Q
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -25,14 +26,20 @@ class PaymentStatusView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            properties={'tx_hashes': openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(type=openapi.TYPE_STRING))}),
+            properties={
+                'tx_hashes': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_STRING)),
+                'chain': openapi.Schema(
+                    type=openapi.TYPE_STRING)}),
         required=['tx_hashes'],
         responses={200: PaymentStatusSerializer()})
     def post(self, request):
-        txs = Payment.objects.filter(tx_hash__in=request.data.get('tx_hashes'))
-        serializer = PaymentStatusSerializer(txs, many=True)
+        q = Q(tx_hash__in=request.data.get('tx_hashes'))
+        if request.data.get('chain'):
+            q &= Q(currency=request.data['chain'])
+        payments_qs = Payment.objects.filter(q)
+        serializer = PaymentStatusSerializer(payments_qs, many=True)
         return Response({
             'is_testnet': IS_TESTNET_PAYMENTS,
             'payments': serializer.data}, status.HTTP_200_OK)

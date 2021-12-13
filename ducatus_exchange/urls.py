@@ -68,4 +68,4 @@ urlpatterns = [
     url(r'^api/v1/', include(router.urls)),
     url(r'^api/v1/payments/', include('ducatus_exchange.payments.urls'))
 
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
