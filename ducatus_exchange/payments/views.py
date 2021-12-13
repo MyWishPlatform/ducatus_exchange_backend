@@ -26,13 +26,13 @@ class PaymentStatusView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
+            required=['tx_hashes'],
             properties={
                 'tx_hashes': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Items(type=openapi.TYPE_STRING)),
                 'chain': openapi.Schema(
                     type=openapi.TYPE_STRING)}),
-        required=['tx_hashes'],
         responses={200: PaymentStatusSerializer()})
     def post(self, request):
         q = Q(tx_hash__in=request.data.get('tx_hashes'))
