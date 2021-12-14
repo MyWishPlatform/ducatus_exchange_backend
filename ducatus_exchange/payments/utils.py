@@ -1,9 +1,18 @@
 import logging
+from datetime import datetime
+# from django.utils import timezone, dateformat
 
 from ducatus_exchange.rates.serializers import AllRatesSerializer
 from ducatus_exchange.consts import DECIMALS
 
 logger = logging.getLogger(__name__)
+
+
+def generate_transfer_state_history_default() -> list:
+    return [{
+        "status": "WAITING_FOR_VALIDATION",
+        "timestamp": datetime.now().timestamp()
+    }]
 
 
 def calculate_amount(original_amount, from_currency):

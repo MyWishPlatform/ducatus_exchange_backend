@@ -9,3 +9,6 @@ gunicorn.conf.py
 celerybeat-schedule
 /.idea
 /ducatus_exchange/stats/last_block_info/DUC*
+.env
+/static/
+/.docker/

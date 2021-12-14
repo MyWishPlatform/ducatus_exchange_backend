@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
+from django.conf.urls.static import static
+from django.conf import settings
 
 from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
@@ -64,5 +66,6 @@ urlpatterns = [
     url(r'api/v1/register_payments_manually/', register_payments_manually),
     url(r'api/v1/register_voucher_in_lottery/', register_voucher_in_lottery),
     url(r'^api/v1/', include(router.urls)),
-    url(r'^api/v1/', include('ducatus_exchange.stats.urls'))
+    url(r'^api/v1/', include('ducatus_exchange.stats.urls')),
+    url(r'^api/v1/payments/', include('ducatus_exchange.payments.urls'))
 ]

@@ -1,8 +1,13 @@
+from datetime import datetime
+
 from django.db import models
+from django.utils import timezone
+from django_fsm import FSMField, transition, post_transition
+from django.contrib.postgres.fields.jsonb import JSONField
 
 from ducatus_exchange.consts import MAX_DIGITS
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from django_fsm import FSMField, transition
+from ducatus_exchange.payments.utils import generate_transfer_state_history_default
 
 
 class Payment(models.Model):
@@ -13,6 +18,7 @@ class Payment(models.Model):
     """
 
     TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
+    ADAPTED_TRANSFER_STATES_DEFAULT = ('WAITING_FOR_VALIDATION', 'SUCCESS', 'FAIL')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
     COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
@@ -28,6 +34,13 @@ class Payment(models.Model):
     transfer_state = FSMField(default=TRANSFER_STATES_DEFAULT[0], choices=TRANSFER_STATES)
     collection_state = FSMField(default=COLLECTION_STATES_DEFAULT[0], choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
+    transfer_state_history = JSONField(default=generate_transfer_state_history_default)
+
+
+    @property
+    def adapted_state(self):
+        """ Temporary addon to adjust statuses for /payments/get-status/ endpoint """
+        return dict(zip(self.TRANSFER_STATES_DEFAULT, self.ADAPTED_TRANSFER_STATES_DEFAULT))[self.transfer_state]
 
     # States change
     @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
@@ -45,3 +58,16 @@ class Payment(models.Model):
     @transition(field=collection_state, source='*', target='ERROR')
     def state_error_collect_duc(self):
         pass
+
+
+def transfer_state_transition_dispatcher(sender, instance, **kwargs):
+    # appending to transfer_state_history on status change
+    instance.transfer_state_history.append(
+        {
+            "status": instance.adapted_state,
+            "timestamp": datetime.now().timestamp()
+        })
+    instance.save()
+
+post_transition.connect(transfer_state_transition_dispatcher, Payment)
+    
