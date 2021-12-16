@@ -1,62 +1,34 @@
 import logging
 
-from django.core.mail import send_mail
-from django.core.validators import EmailValidator
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from ducatus_exchange.serializers import FeedbackFormSerializer
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
-from ducatus_exchange.settings import FEEDBACK_EMAIL, DEFAULT_FROM_EMAIL
 
 logger = logging.getLogger('FeedbackForm')
 
 
 class FeedbackForm(APIView):
+    serializer_class = FeedbackFormSerializer
 
     @swagger_auto_schema(
         operation_description="post parameters to send feedback message",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['name', 'email', 'phone', 'message'],
+            required=['isWallet', 'subject', 'email', 'message'],
             properties={
-                'name': openapi.Schema(type=openapi.TYPE_STRING),
+                'isWallet': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'subject': openapi.Schema(type=openapi.TYPE_STRING),
                 'email': openapi.Schema(type=openapi.TYPE_STRING),
-                'tel': openapi.Schema(type=openapi.TYPE_STRING),
                 'message': openapi.Schema(type=openapi.TYPE_STRING)
-            },
-        ),
-        # responses={200: {'result': 'ok'}},
-
+            },),
+        responses={200: 'OK'}
     )
     def post(self, request):
-        logger.info(msg=request.data)
-        name = request.data.get('name')
-        email = request.data.get('email')
-        phone_number = request.data.get('tel')
-        message = request.data.get('message')
-
-
-        # validate data
-        if any([name=='', email=='', phone_number=='', message=='']):
-            return Response({'result': 'empty data not allowed'})
-        validator = EmailValidator()
-        validator(email)
-        if not phone_number.isdigit() or len(phone_number) < 10:
-            return Response({'result': 'invalid phone number'})
-
-        # send message
-        text = """
-            Name: {name}
-            E-mail: {email}
-            Message: {message}
-            Phone: {phone_number}
-            """
-        send_mail(
-            'Request from rocknblock.io contact form',
-            text,
-            DEFAULT_FROM_EMAIL,
-            [FEEDBACK_EMAIL]
-        )
-        return Response({'result': 'ok'})
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.send_to_email()
+        return Response(status=status.HTTP_200_OK)
