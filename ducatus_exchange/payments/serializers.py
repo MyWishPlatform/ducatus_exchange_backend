@@ -4,6 +4,7 @@ from ducatus_exchange.payments.models import Payment
 
 
 class PaymentStatusSerializer(serializers.ModelSerializer):
+    txid = serializers.CharField(source='tx_hash')
     status = serializers.CharField(source='adapted_state')
     convertedFrom = serializers.CharField(source='currency')
     convertedFromAmount = serializers.CharField(source='original_amount')
@@ -15,6 +16,7 @@ class PaymentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = (
+            'txid',
             'status',
             'convertedFrom',
             'convertedFromAmount',

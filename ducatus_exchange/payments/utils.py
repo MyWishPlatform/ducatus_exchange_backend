@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-# from django.utils import timezone, dateformat
 
 from ducatus_exchange.rates.serializers import AllRatesSerializer
 from ducatus_exchange.consts import DECIMALS
