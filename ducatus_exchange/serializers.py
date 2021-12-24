@@ -6,6 +6,7 @@ from ducatus_exchange.settings import (
 
 
 class FeedbackFormSerializer(serializers.Serializer):
+    isWallet = serializers.BooleanField()
     email = serializers.EmailField()
     message = serializers.CharField(max_length=500)
     subject = serializers.CharField(max_length=30)
@@ -15,7 +16,11 @@ class FeedbackFormSerializer(serializers.Serializer):
             Email: {self.data['email']}
             Message: {self.data['message']}
         """
-        send_mail(self.data['subject'], email_body,
+        subject = self.data['subject']
+        if self.data['isWallet']:
+            subject = f"Wallet Issue: {subject}"
+
+        send_mail(subject, email_body,
                   DEFAULT_FROM_EMAIL, [FEEDBACK_EMAIL])
 
 
