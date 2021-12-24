@@ -13,5 +13,5 @@ def get_private_keys(root_private_key, child_id):
 if __name__ == '__main__':
     root_private_key = sys.argv[1]
     child_id = int(sys.argv[2])
-    eth_private= get_private_keys(root_private_key, child_id)
+    eth_private = get_private_keys(root_private_key, child_id)
     print(f'private keys for child with id {child_id}:\neth: {eth_private}', flush=True)

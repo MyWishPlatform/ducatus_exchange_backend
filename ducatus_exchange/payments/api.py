@@ -45,8 +45,7 @@ from web3.exceptions import TransactionNotFound
 logger = logging.getLogger(__name__)
 
 
-
-def register_payment(request_id, tx_hash, currency, amount):
+def register_payment(request_id, tx_hash, currency, amount, from_address):
     exchange_request = ExchangeRequest.objects.get(id=request_id)
 
     calculated_amount, rate = calculate_amount(amount, currency)
@@ -57,12 +56,13 @@ def register_payment(request_id, tx_hash, currency, amount):
         currency=currency,
         original_amount=amount,
         rate=rate,
-        sent_amount=calculated_amount
+        sent_amount=calculated_amount,
+        from_address=from_address
     )
     # exchange_request.from_currency = currency
     # exchange_request.save()
     logger.info(msg=(
-        f'PAYMENT: {amount} {currency} ({calculated_amount} DUC)'
+        f'PAYMENT: {amount} {currency} from: {from_address} ({calculated_amount} DUC)'
         f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}')
     )
 
@@ -78,8 +78,9 @@ def parse_payment_message(message):
         request_id = message.get('exchangeId')
         amount = message.get('amount')
         currency = message.get('currency')
+        from_address = message.get('fromAddress')
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
-        payment = register_payment(request_id, tx, currency, amount)
+        payment = register_payment(request_id, tx, currency, amount, from_address)
         # try to remove transfer_with_handle_lottery_and_referral(payment) method
         user = payment.exchange_request.user
         if user.platform == 'DUCX' and not user.address.startswith('voucher'):

@@ -27,6 +27,7 @@ class Payment(models.Model):
     charge = models.ForeignKey('quantum.Charge', on_delete=models.CASCADE, null=True)
     tx_hash = models.CharField(max_length=100, null=True, default='')
     currency = models.CharField(max_length=50, null=True, default='')
+    from_address = models.CharField(max_length=100, null=True, default='')
     original_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     rate = models.DecimalField(max_digits=512, decimal_places=0)
     sent_amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)

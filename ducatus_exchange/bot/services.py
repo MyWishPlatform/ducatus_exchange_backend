@@ -41,7 +41,12 @@ def send_or_update_message(payment):
 
 def generate_message(payment):
     hyperlink = '<a href="{url}">{text}</a>'
-    from_network = NETWORK_SETTINGS[payment.currency]
+
+    currency = payment.currency
+    if currency in ['USDT', 'USDC']:
+        currency = 'ETH'
+
+    from_network = NETWORK_SETTINGS[currency]
     from_amount = f'{payment.original_amount / (10 ** from_network["decimals"])} {payment.currency}'
     from_tx_url = from_network['explorer_url'] + '/'.join(['tx', payment.tx_hash])
     from_tx_hyperlinked = hyperlink.format(url=from_tx_url, text=from_amount)
