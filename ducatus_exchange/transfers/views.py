@@ -9,6 +9,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest
 from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
+import logging
+
 
 logger = logging.getLogger(__name__)
 

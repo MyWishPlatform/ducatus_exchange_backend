@@ -27,7 +27,7 @@ def save_transfer(api, tx, network):
 
     if network == 'DUCX':
         try:
-            address_from = tx.get('from'.lower())
+            address_from = tx.get('from').lower()
             net_account_from, new_from = StatisticsAddress.objects.get_or_create(
                                                                     user_address=tx.get('from'),
                                                                     network=network)

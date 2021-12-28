@@ -10,6 +10,7 @@ class PaymentStatusSerializer(serializers.ModelSerializer):
     convertedFromAmount = serializers.CharField(source='original_amount')
     convertedTo = serializers.CharField(source='exchange_request.user.platform')
     convertedToAmount = serializers.CharField(source='sent_amount')
+    sentFrom = serializers.CharField(source='from_address')
     sentTo = serializers.CharField(source='exchange_request.user.address')
     statusHistory = serializers.JSONField(source='transfer_state_history')
 
@@ -22,6 +23,7 @@ class PaymentStatusSerializer(serializers.ModelSerializer):
             'convertedFromAmount',
             'convertedTo',
             'convertedToAmount',
+            'sentFrom',
             'sentTo',
             'statusHistory')
 

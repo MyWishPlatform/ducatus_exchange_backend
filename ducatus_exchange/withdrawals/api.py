@@ -21,6 +21,7 @@ from ducatus_exchange.bitcoin_api import BitcoinAPI, BitcoinRPC
 
 logger = logging.getLogger('withdraw')
 
+
 def withdraw_ducx_funds():
 
     withdraw_parameters = {

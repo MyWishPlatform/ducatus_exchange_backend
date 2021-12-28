@@ -25,8 +25,8 @@ class FeedbackForm(APIView):
                 'email': openapi.Schema(type=openapi.TYPE_STRING),
                 'message': openapi.Schema(type=openapi.TYPE_STRING)
             },),
-        responses={200: 'OK'}
-    )
+        responses={200: 'OK'})
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
