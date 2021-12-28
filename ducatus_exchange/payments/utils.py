@@ -22,7 +22,7 @@ def calculate_amount(original_amount, from_currency):
     rates = AllRatesSerializer({})
     currency_rate = rates.data[to_currency][from_currency]
 
-    if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC']:
+    if from_currency in ['ETH', 'DUCX', 'BTC', 'USDC', 'USDT']:
         value = original_amount * DECIMALS['DUC'] / DECIMALS[from_currency]
     elif from_currency == 'DUC':
         value = original_amount * DECIMALS[to_currency] / DECIMALS['DUC']
