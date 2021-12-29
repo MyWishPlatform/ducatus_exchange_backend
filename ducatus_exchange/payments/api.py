@@ -63,9 +63,9 @@ def parse_payment_message(message):
         request_id = message.get('exchangeId')
         amount = message.get('amount')
         currency = message.get('currency')
-        from_address = message.get('fromAddress')
+        from_address = message.get('fromAddress', None)
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
-        payment = register_payment(request_id, tx, currency, amount)
+        payment = register_payment(request_id, tx, currency, amount, from_address)
 
         transfer_with_handle_lottery_and_referral(payment)
     else:
