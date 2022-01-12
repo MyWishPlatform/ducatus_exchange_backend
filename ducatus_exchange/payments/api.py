@@ -10,6 +10,7 @@ import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
+from web3 import Web3, HTTPProvider
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.models import Payment
@@ -78,7 +79,7 @@ def parse_payment_message(message):
         request_id = message.get('exchangeId')
         amount = message.get('amount')
         currency = message.get('currency')
-        from_address = message.get('fromAddress')
+        from_address = message.get('fromAddress', None)
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
         payment = register_payment(request_id, tx, currency, amount, from_address)
         # try to remove transfer_with_handle_lottery_and_referral(payment) method
@@ -287,4 +288,3 @@ def parse_payment_manyally(tx_hash, currency):
         parse_payment_message(message)
     else:
         raise ValueError(f'Invalid currency: {currency}')
-
