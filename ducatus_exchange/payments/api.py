@@ -238,7 +238,7 @@ def get_payments_statistics():
         logger.info(msg='No payments in USDC at this period')
 
 
-def parse_payment_manyally(tx_hash, currency):
+def parse_payment_manually(tx_hash, currency):
     address_field_name = currency.lower() + '_address__iexact'
     if currency == 'DUC':
         url = '/'.join([WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins'])
@@ -263,8 +263,9 @@ def parse_payment_manyally(tx_hash, currency):
                     'status': 'COMMITED'
             }
             parse_payment_message(message)
-    elif currency == 'DUCX':
-        w3 = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['url']))
+
+    elif currency in ['DUCX', 'ETH']:
+        w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
         receipt = w3.eth.getTransactionReceipt(tx_hash)
         tx = w3.eth.getTransaction(tx_hash)
 
@@ -285,6 +286,7 @@ def parse_payment_manyally(tx_hash, currency):
             'success': True,
             'status': 'COMMITED'
         }
+
         parse_payment_message(message)
     else:
         raise ValueError(f'Invalid currency: {currency}')
