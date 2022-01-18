@@ -245,8 +245,14 @@ def parse_payment_manually(tx_hash, currency):
         response = requests.get(url)
         if response.status_code == 404:
             raise ValueError(f'Transaction {tx_hash} not found')
-            
+
         data = response.json()
+
+        try:
+            from_address = data['inputs'][0]['address']
+        except (KeyError, IndexError):
+            from_address = None
+
         for output in data['outputs']:
             try:
                 exchange_request = ExchangeRequest.objects.get(**{ address_field_name: output['address'] })
@@ -255,6 +261,7 @@ def parse_payment_manually(tx_hash, currency):
 
             message = {
                     'exchangeId': exchange_request.pk,
+                    'fromAddress': from_address,
                     'address': output['address'],
                     'transactionHash': tx_hash,
                     'currency': currency,
@@ -279,6 +286,7 @@ def parse_payment_manually(tx_hash, currency):
 
         message = {
             'exchangeId': exchange_request.pk,
+            'fromAddress': tx['from'],
             'address': receipt['to'],
             'transactionHash': tx_hash,
             'currency': currency,
