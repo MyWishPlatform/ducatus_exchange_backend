@@ -1,5 +1,7 @@
 from pywallet.utils.bip32 import *
 from pywallet.wallet import generate_mnemonic
+from ducatus_exchange.settings import NETWORK_SETTINGS
+
 
 
 class DucatusMainNet(object):
@@ -13,11 +15,22 @@ class DucatusMainNet(object):
     BIP32_PATH = "m/44'/0'/0'/"
 
 
+class DucatusTestNet(object):
+    NAME = "Ducatus Test Net"
+    COIN = "DUC"
+    SCRIPT_ADDRESS = 0x3b
+    PUBKEY_ADDRESS = 0x70
+    SECRET_KEY = PUBKEY_ADDRESS + 128
+    EXT_PUBLIC_KEY = 0x043587cf
+    EXT_SECRET_KEY = 0x04358394
+    BIP32_PATH = "m/44'/0'/0'/"
+
+
 class DucatusWallet(Wallet):
 
     @classmethod
     def get_network(self, network):
-        return DucatusMainNet
+        return DucatusTestNet if NETWORK_SETTINGS['DUC']['is_testnet'] else DucatusMainNet
 
     @classmethod
     def from_master_secret(cls, seed, network='ducatus'):
@@ -96,7 +109,7 @@ class DucatusWallet(Wallet):
 
 
 def get_network():
-    return DucatusMainNet
+    return DucatusTestNet if NETWORK_SETTINGS['DUC']['is_testnet'] else DucatusMainNet
 
 
 def create_wallet(seed=None, children=1):

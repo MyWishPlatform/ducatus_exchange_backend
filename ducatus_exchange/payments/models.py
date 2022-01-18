@@ -17,8 +17,8 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR')
-    ADAPTED_TRANSFER_STATES_DEFAULT = ('WAITING_FOR_VALIDATION', 'SUCCESS', 'FAIL')
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'QUEUED', 'PENDING')
+    ADAPTED_TRANSFER_STATES_DEFAULT = ('WAITING_FOR_VALIDATION', 'SUCCESS', 'FAIL', 'RETURN', 'WAITING_FOR_RELAY', 'PENDING')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
     COLLECTION_STATES = list(zip(COLLECTION_STATES_DEFAULT, COLLECTION_STATES_DEFAULT))
@@ -35,6 +35,7 @@ class Payment(models.Model):
     transfer_state = FSMField(default=TRANSFER_STATES_DEFAULT[0], choices=TRANSFER_STATES)
     collection_state = FSMField(default=COLLECTION_STATES_DEFAULT[0], choices=COLLECTION_STATES)
     collection_tx_hash = models.CharField(max_length=100, null=True, default='')
+    returned_tx_hash = models.CharField(max_length=100, null=True, default='')
     transfer_state_history = JSONField(default=generate_transfer_state_history_default)
 
 
@@ -44,13 +45,25 @@ class Payment(models.Model):
         return dict(zip(self.TRANSFER_STATES_DEFAULT, self.ADAPTED_TRANSFER_STATES_DEFAULT))[self.transfer_state]
 
     # States change
-    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR'], target='DONE')
+    @transition(field=transfer_state, source=['WAITING_FOR_TRANSFER', 'ERROR', 'PENDING'], target='DONE')
     def state_transfer_done(self):
         pass
 
     @transition(field=transfer_state, source='*', target='ERROR')
     def state_transfer_error(self):
         print('Transfer not completed, reverting payment', flush=True)
+
+    @transition(field=transfer_state, source='*', target='RETURNED')
+    def state_transfer_returned(self):
+        pass
+
+    @transition(field=transfer_state, source='*', target='QUEUED')
+    def state_transfer_queued(self):
+        pass
+
+    @transition(field=transfer_state, source=['QUEUED', 'WAITING_FOR_TRANSFER'], target='PENDING')
+    def state_transfer_pending(self):
+        pass
 
     @transition(field=collection_state, source=['NOT_COLLECTED', 'ERROR'], target='COLLECTED')
     def state_collect_duc(self):
@@ -62,6 +75,10 @@ class Payment(models.Model):
 
 
 def transfer_state_transition_dispatcher(sender, instance, **kwargs):
+    from ducatus_exchange.bot.services import send_or_update_message
+
+    send_or_update_message(instance)
+
     # appending to transfer_state_history on status change
     instance.transfer_state_history.append(
         {

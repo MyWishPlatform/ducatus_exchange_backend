@@ -12,10 +12,18 @@ django.setup()
 from ducatus_exchange.exchange_requests.utils import dayly_reset, weekly_reset
 from ducatus_exchange.stats.mongo_checker import get_duc_balances
 from ducatus_exchange.stats.api import update_nodes
+from ducatus_exchange.settings import RABBITMQ_URL
 
 logger = logging.getLogger('task')
 
-app = celery.Celery('task', broker='amqp://')
+app = celery.Celery(
+    'task', 
+    broker=RABBITMQ_URL,
+    include=[
+        'ducatus_exchange.payments.tasks',
+        'ducatus_exchange.exchange_requests.tasks',
+    ]
+)
 
 
 @app.task
@@ -60,7 +68,15 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=12, minute=0),
     },
     'update_ducx_nodes': {
-        'task': 'task.update_ducx_node_balandes',
+        'task': 'task.update_ducx_node_balances',
         'schedule': crontab(minute=0),
+    },
+    'process_queued_duc_transfer': {
+        'task': 'ducatus_exchange.payments.tasks.process_queued_duc_transfer',
+        'schedule': crontab(minute='*'),
+    },
+    'update_duc_and_ducx_balances': {
+        'task': 'ducatus_exchange.exchange_requests.tasks.update_duc_and_ducx_balances',
+        'schedule': crontab(minute='*'),
     }
 }

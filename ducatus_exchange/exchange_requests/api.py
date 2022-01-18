@@ -3,7 +3,7 @@ import os
 
 import requests
 
-from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URLS, IS_TESTNET_PAYMENTS
+from ducatus_exchange.settings import ROOT_KEYS, BITCOIN_URL, IS_TESTNET_PAYMENTS
 
 
 def generate_memo(m):
@@ -15,7 +15,7 @@ def generate_memo(m):
 
 def registration_btc_address(btc_address):
     requests.post(
-        BITCOIN_URLS['main'],
+        BITCOIN_URL,
         json={
             'method': 'importaddress',
             'params': [btc_address, btc_address, False],

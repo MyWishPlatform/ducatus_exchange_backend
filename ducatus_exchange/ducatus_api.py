@@ -1,13 +1,19 @@
+from time import time
+from django.http.response import Http404
 import requests
 import datetime
 import logging
 from decimal import Decimal
 
+from web3 import Web3, HTTPProvider
+
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
-from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME
+from ducatus_exchange.parity_interface import ParityInterface
+from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME, DUCX_GAS_PRICE, NETWORK_SETTINGS, DUCX_TRANSFER_GAS_LIMIT
+from ducatus_exchange.withdrawals.utils import get_private_keys
 
 logger = logging.getLogger('ducatus_api')
 
@@ -15,12 +21,8 @@ logger = logging.getLogger('ducatus_api')
 class DucatusAPI:
 
     def __init__(self):
-        self.network = 'mainnet'
-        self.base_url = None
-        self.set_base_url()
-
-    def set_base_url(self):
-        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/{self.network}'
+        self.network = 'testnet' if NETWORK_SETTINGS['DUC']['is_testnet'] else 'mainnet'
+        self.base_url = f'https://ducapi.rocknblock.io/api/DUC/{self.network}'        
 
     def get_address_response(self, address):
         endpoint_url = f'{self.base_url}/address/{address}'
@@ -257,5 +259,44 @@ def return_ducatus(payment_hash, amount):
     logger.info(msg=f'signed tx {signed}')
 
     tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
+    p.returned_tx_hash = tx_hash
+    p.state_transfer_returned()
+    p.save()
     logger.info(msg=f'tx {tx_hash}')
     logger.info(msg=f'receive address was: {p.exchange_request.duc_address}')
+
+
+def return_ducatusx(payment_hash, amount):
+    payment = Payment.objects.get(tx_hash=payment_hash)
+
+    exchange_request = payment.exchange_request
+
+    w3 = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['url']))
+    receipt = w3.eth.getTransactionReceipt(payment_hash)
+    receiver = receipt['from']
+    amount -= DUCX_GAS_PRICE * DUCX_TRANSFER_GAS_LIMIT
+
+    if amount <= 0:
+        logger.info(f'gas fee is more than return amount')
+
+    logger.info('DUCATUSX RETURN STARTED: sending {amount} to {address}'.format(
+        address=receiver,
+        amount=amount / DECIMALS['DUCX']
+    ))
+
+    tx_hash = ParityInterface().transfer(
+        receiver,
+        amount,
+        from_address=exchange_request.ducx_address,
+        from_private=get_private_keys(
+            ROOT_KEYS['ducatusx']['private'],
+            exchange_request.user.id
+        )[0]
+    )
+
+    logger.info(msg=f'ducatusx return with hash {tx_hash}')
+    payment.returned_tx_hash = tx_hash
+    payment.state_transfer_returned()
+    payment.save()
+
+    time.sleep(100)    # small timeout in case of multiple payment messages

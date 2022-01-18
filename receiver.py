@@ -11,10 +11,11 @@ import django
 django.setup()
 
 from django.core.exceptions import ObjectDoesNotExist
-from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.settings import NETWORK_SETTINGS, RABBITMQ_HOSTNAME, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_VHOST
 from ducatus_exchange.payments.api import parse_payment_message, TransferException
 from ducatus_exchange.transfers.api import confirm_transfer
 
+logging.getLogger('pika').setLevel(logging.WARNING)
 logger = logging.getLogger('receiver')
 
 
@@ -26,10 +27,10 @@ class Receiver(threading.Thread):
 
     def run(self):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
-            'localhost',
+            RABBITMQ_HOSTNAME,
             5672,
-            'ducatus_exchange',
-            pika.PlainCredentials('ducatus_exchange', 'ducatus_exchange'),
+            RABBITMQ_VHOST,
+            pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD),
             heartbeat=3600,
             blocked_connection_timeout=3600
         ))

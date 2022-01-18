@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.lottery',
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
+    'ducatus_exchange.bot',
 ]
 
 MIDDLEWARE = [
@@ -88,11 +89,11 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ducatus_exchange',
-        'USER': 'ducatus_exchange',
-        'PASSWORD': 'ducatus_exchange',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB', 'ducatus_exchange'),
+        'USER': os.getenv('POSTGRES_USER', 'ducatus_exchange'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'ducatus_exchange'),
+        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
+        'PORT': os.getenv('POSTGRES_PORT', 5432),
     }
 }
 
@@ -142,8 +143,8 @@ STATS_NORMALIZED_TIME = '%Y-%m-%dT%H:%M:%S.%fZ'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'ducatus_exchange', 'static/')
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/django-static/'
 # STATICFILES_DIRS = [
 #    os.path.join(BASE_DIR, 'ducatus_exchange', 'static'),
 # ]
@@ -159,6 +160,21 @@ REST_FRAMEWORK = {
 }
 
 SHELL_PLUS = 'ptpython'
+
+RABBITMQ_HOSTNAME = os.getenv('RABBITMQ_HOSTNAME', 'rabbitmq')
+
+RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'rabbit')
+
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_DEFAULT_PASSWORD', 'rabbit')
+
+RABBITMQ_VHOST = os.getenv('RABBITMQ_DEFAULT_VHOST', 'rabbit')
+
+RABBITMQ_URL = 'amqp://{user}:{password}@{hostname}:5672/{vhost}'.format(
+    hostname=RABBITMQ_HOSTNAME,
+    user=RABBITMQ_USER,
+    password=RABBITMQ_PASSWORD,
+    vhost=RABBITMQ_VHOST,
+)
 
 try:
     from ducatus_exchange.settings_local import *

@@ -13,7 +13,7 @@ from eth_keys import keys
 from bip32utils import BIP32Key
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from ducatus_exchange.settings import NETWORK_SETTINGS, ROOT_KEYS
+from ducatus_exchange.settings import NETWORK_SETTINGS, ROOT_KEYS, DUCX_GAS_PRICE
 from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.withdrawals.utils import get_private_keys
 from ducatus_exchange.consts import DECIMALS
@@ -49,7 +49,7 @@ def normalize_gas_price(gas_price):
 def process_withdraw_ducx(params, account, priv_key):
     web3_ducx = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['endpoint']))
     gas_limit = 21000
-    gas_price, fake_gas_price = normalize_gas_price(8000000000)
+    gas_price, fake_gas_price = normalize_gas_price(DUCX_GAS_PRICE)
     total_gas_fee = gas_price * gas_limit
     from_address = account.generated_address
     to_address = NETWORK_SETTINGS['DUCX']['address']
@@ -68,7 +68,7 @@ def process_withdraw_ducx(params, account, priv_key):
         'to': web3_ducx.toChecksumAddress(to_address),
         'value': int(withdraw_amount)
     }
-    loger.info(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}')
+    logger.info(f'Withdraw tx params: from {from_address} to {to_address} on amount {withdraw_amount}')
     signed_tx = Account.signTransaction(tx_params, priv_key)
     try:
         sent_tx = web3_ducx.eth.sendRawTransaction(signed_tx['rawTransaction'])

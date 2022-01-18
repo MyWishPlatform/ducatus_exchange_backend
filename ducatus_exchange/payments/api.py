@@ -1,10 +1,12 @@
-import os
 import csv
-import string
-import random
 import logging
-import requests
+import os
+import random
+import string
+import time
+from sys import platform
 
+import requests
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
@@ -15,20 +17,33 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.parity_interface import ParityInterfaceException
+from ducatus_exchange import payments, settings_local
+from ducatus_exchange.consts import DAYLY_LIMIT, DECIMALS, WEEKLY_LIMIT
+from ducatus_exchange.email_messages import (
+    voucher_html_body,
+    warning_html_style
+)
+from ducatus_exchange.exchange_requests.models import (
+    ExchangeRequest,
+    ExchangeStatus
+)
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
-from ducatus_exchange import settings_local
-from ducatus_exchange.email_messages import voucher_html_body, warning_html_style
-from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, WALLET_API_URL, NETWORK_SETTINGS
 from ducatus_exchange.lottery.api import LotteryRegister
+from ducatus_exchange.parity_interface import (
+    ParityInterface,
+    ParityInterfaceException
+)
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.payments.utils import calculate_amount
-from ducatus_exchange.transfers.api import transfer_currency, make_ref_transfer
-
+from ducatus_exchange.rates.serializers import get_usd_prices
+from ducatus_exchange.settings import MINIMAL_RETURN
+from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, NETWORK_SETTINGS, WALLET_API_URL
+from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, transfer_ducatusx
+from ducatus_exchange.transfers.api import save_transfer, TransferException
+from web3 import Web3, HTTPProvider
+from web3.exceptions import TransactionNotFound
 
 logger = logging.getLogger(__name__)
-
-
-class TransferException(Exception):
-    pass
 
 
 def register_payment(request_id, tx_hash, currency, amount, from_address):
@@ -67,34 +82,44 @@ def parse_payment_message(message):
         from_address = message.get('fromAddress', None)
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
         payment = register_payment(request_id, tx, currency, amount, from_address)
-
-        transfer_with_handle_lottery_and_referral(payment)
+        # try to remove transfer_with_handle_lottery_and_referral(payment) method
+        user = payment.exchange_request.user
+        if user.platform == 'DUCX' and not user.address.startswith('voucher'):
+            transfer_ducatusx(payment)
+        elif user.platform == 'DUC':
+            if user.address.startswith('voucher'):
+                process_vaucher(payment)
+            else:
+                payment.state_transfer_queued()
+                payment.save()
+        # transfer_with_handle_lottery_and_referral(payment)
     else:
         logger.info(msg=f'tx {tx} already registered')
 
 
-def transfer_with_handle_lottery_and_referral(payment):
-    logger.info(msg='starting transfer')
-    try:
-        if not payment.exchange_request.user.address.startswith('voucher'):
-            transfer_currency(payment)
-            payment.state_transfer_done()
-        elif payment.exchange_request.user.platform == 'DUC':
-            usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
-            try:
-                voucher = create_voucher(usd_amount, payment_id=payment.id)
-            except IntegrityError as e:
-                if 'voucher code' not in e.args[0]:
-                    raise e
-                voucher = create_voucher(usd_amount, payment_id=payment.id)
-            send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
-            if payment.exchange_request.user.ref_address:
-                make_ref_transfer(payment)
-    except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-        payment.state_transfer_error()
-        payment.save()
-        raise TransferException(e)
-    logger.info(msg='transfer completed')
+# def transfer_with_handle_lottery_and_referral(payment):
+#     logger.info(msg='starting transfer')
+#     try:
+#         if not payment.exchange_request.user.address.startswith('voucher'):
+#             transfer_currency(payment)
+#             payment.state_transfer_done()
+#         elif payment.exchange_request.user.platform == 'DUC':
+#             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
+#             try:
+#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
+#             except IntegrityError as e:
+#                 if 'voucher code' not in e.args[0]:
+#                     raise e
+#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
+#             send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
+#             if payment.exchange_request.user.ref_address:
+#                 make_ref_transfer(payment)
+#     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
+#         payment.state_transfer_error()
+#         payment.save()
+#         raise TransferException(e)
+#     logger.info(msg='transfer completed')
+
 
 
 def get_random_string():
@@ -146,6 +171,29 @@ def send_voucher_email(voucher, to_email, usd_amount):
     logger.info(msg=f'voucher message sent successfully to {to_email}')
 
 
+def process_vaucher(payment):
+    try:
+        usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
+        try:
+            voucher = create_voucher(usd_amount, payment_id=payment.id)
+        except IntegrityError as e:
+            if 'voucher code' not in e.args[0]:
+                raise e
+            voucher = create_voucher(usd_amount, payment_id=payment.id)
+        user = payment.exchange_request.user
+        send_voucher_email(voucher, user.email, usd_amount)
+        if user.ref_address:
+            logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
+            payment.state_transfer_queued()
+    except DucatuscoreInterfaceException as e:
+        payment.state_transfer_error()
+        payment.save()
+        raise TransferException(e)
+
+
+
+
+
 def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
     with open(outfile_path, 'w') as outfile:
         writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -190,7 +238,7 @@ def get_payments_statistics():
         logger.info(msg='No payments in USDC at this period')
 
 
-def parse_payment_manyally(tx_hash, currency):
+def parse_payment_manually(tx_hash, currency):
     address_field_name = currency.lower() + '_address__iexact'
     if currency == 'DUC':
         url = '/'.join([WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins'])
@@ -215,8 +263,9 @@ def parse_payment_manyally(tx_hash, currency):
                     'status': 'COMMITED'
             }
             parse_payment_message(message)
-    elif currency == 'DUCX':
-        w3 = Web3(HTTPProvider(NETWORK_SETTINGS['DUCX']['url']))
+
+    elif currency in ['DUCX', 'ETH']:
+        w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
         receipt = w3.eth.getTransactionReceipt(tx_hash)
         tx = w3.eth.getTransaction(tx_hash)
 
@@ -237,6 +286,7 @@ def parse_payment_manyally(tx_hash, currency):
             'success': True,
             'status': 'COMMITED'
         }
+
         parse_payment_message(message)
     else:
         raise ValueError(f'Invalid currency: {currency}')

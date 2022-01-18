@@ -42,5 +42,6 @@ class PaymentSerializer(serializers.ModelSerializer):
             'transfer_state',
             'collection_state',
             'collection_tx_hash',
+            'returned_tx_hash',
         )
         lookup_field = 'tx_hash'
