@@ -9,7 +9,10 @@ from celery_config import app
 
 @app.task
 def process_queued_duc_transfer():
-    pending_payments = Payment.objects.filter(transfer_state='PENDING').first()
+    pending_payments = Payment.objects.filter(
+        transfer_state='PENDING',
+        exchange_request__user__platform='DUC'
+    ).first()
     if pending_payments:
         return 
 
