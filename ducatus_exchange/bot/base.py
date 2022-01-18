@@ -10,6 +10,7 @@ from django.db import IntegrityError
 from ducatus_exchange.bot.models import BotSub
 from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
+from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.settings import NETWORK_SETTINGS, BOT_TOKEN
 
 logger = logging.getLogger('bot')
@@ -49,7 +50,7 @@ class Bot(threading.Thread):
             logger.info('run balances handler')
             ducx_balance = ParityInterface().get_balance()
             duc_balance = DucatuscoreInterface().get_balance()
-            response = f'DUC balance: {duc_balance}\nDUCX balance {ducx_balance / (10 ** 18)}'
+            response = f'DUC balance: {duc_balance / DECIMALS["DUC"]}\nDUCX balance {ducx_balance / DECIMALS["DUCX"]}'
             self.bot.reply_to(message, response)
 
 
