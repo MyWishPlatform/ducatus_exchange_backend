@@ -40,9 +40,10 @@ class ParityInterface:
         # self.check_connection()
 
     def setup_endpoint(self):
-        self.endpoint = 'http://{host}:{port}'.format(
+        self.endpoint = '{schema}://{host}:{port}'.format(
             host=self.settings['host'],
-            port=self.settings['port']
+            port=self.settings['port'],
+            schema=self.settings['schema']
         )
         self.settings['chainId'] = self.eth_chainId()
         logger.info(msg=f'parity interface {self.settings}')
