@@ -55,6 +55,8 @@ services:
     depends_on:
       - db
       - rabbitmq
+    env_file:
+      - .env
     environment:
       CONFIG: settings/config.yaml
     restart: unless-stopped
