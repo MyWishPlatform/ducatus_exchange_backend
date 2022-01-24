@@ -4,9 +4,11 @@ import os
 import random
 import string
 import time
+import json
+import requests
 from sys import platform
 
-import requests
+
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.utils import timezone
@@ -240,9 +242,14 @@ def get_payments_statistics():
 
 def parse_payment_manually(tx_hash, currency):
     address_field_name = currency.lower() + '_address__iexact'
-    if currency == 'DUC':
-        url = '/'.join([WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins'])
+    if currency in ['DUC', 'BTC']:
+        base_url = NETWORK_SETTINGS[currency].get('bitcore_url')
+        if not base_url:
+            raise ValueError(f'bitcore_url is not configured for {currency} network')
+
+        url = '/'.join([base_url, 'tx', tx_hash, 'coins'])
         response = requests.get(url)
+
         if response.status_code == 404:
             raise ValueError(f'Transaction {tx_hash} not found')
 
@@ -270,6 +277,45 @@ def parse_payment_manually(tx_hash, currency):
                     'status': 'COMMITED'
             }
             parse_payment_message(message)
+
+    elif currency in ['USDT', 'USDC']:
+        w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
+        receipt = w3.eth.getTransactionReceipt(tx_hash)
+
+        contract_address = NETWORK_SETTINGS[currency].get('address')
+        if not contract_address:
+            raise ValueError(f'address is not configured for {currency} network')
+
+        abi_file = NETWORK_SETTINGS[currency].get('abi')
+        if not abi_file:
+            raise ValueError(f'abi is not configured for {currency} network')
+        with open(os.path.abspath(abi_file)) as f:
+            abi = json.load(f)
+
+        contract = w3.eth.contract(address=w3.toChecksumAddress(contract_address), abi=abi)
+
+        receipt = contract.events.Transfer().processReceipt(receipt)
+        if not receipt:
+            logger.debug(f'{currency} transaction with tx_hash {tx_hash} returned empty contract receipt')
+            return
+
+        event = receipt[0].args
+        try:
+            exchange_request = ExchangeRequest.objects.get(eth_address__iexact=event.to)
+        except ExchangeRequest.DoesNotExist:
+            raise ValueError(f'Exchange request not found')
+
+        message = {
+            'exchangeId': exchange_request.id,
+            'address': exchange_request.eth_address,
+            'fromAddress': event['from'],
+            'transactionHash': tx_hash,
+            'currency': currency,
+            'amount': event.value,
+            'success': True,
+            'status': 'COMMITED'
+        }
+        parse_payment(message)
 
     elif currency in ['DUCX', 'ETH']:
         w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
