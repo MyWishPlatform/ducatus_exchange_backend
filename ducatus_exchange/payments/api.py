@@ -557,7 +557,7 @@ def parse_payment_manually(tx_hash, currency):
             'success': True,
             'status': 'COMMITED'
         }
-        parse_payment(message)
+        parse_payment_message(message)
 
     elif currency in ['DUCX', 'ETH']:
         w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
