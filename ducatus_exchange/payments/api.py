@@ -37,7 +37,7 @@ from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.rates.serializers import get_usd_prices
 from ducatus_exchange.settings import MINIMAL_RETURN
-from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, NETWORK_SETTINGS, WALLET_API_URL
+from ducatus_exchange.settings_local import CONFIRMATION_FROM_EMAIL, NETWORK_SETTINGS, WALLET_API_URL, ERC20_ABI
 from ducatus_exchange.transfers.api import check_limits, save_transfer, make_ref_transfer, transfer_ducatusx
 from ducatus_exchange.transfers.api import save_transfer, TransferException
 from web3 import Web3, HTTPProvider
