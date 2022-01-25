@@ -60,8 +60,6 @@ def register_payment(request_id, tx_hash, currency, amount, from_address):
         sent_amount=calculated_amount,
         from_address=from_address
     )
-    # exchange_request.from_currency = currency
-    # exchange_request.save()
     logger.info(msg=(
         f'PAYMENT: {amount} {currency} from: {from_address} ({calculated_amount} DUC)'
         f' on rate {rate} within request {exchange_request.id} with TXID: {tx_hash}')
@@ -82,7 +80,6 @@ def parse_payment_message(message):
         from_address = message.get('fromAddress', None)
         logger.info(msg=('PAYMENT:', tx, request_id, amount, currency))
         payment = register_payment(request_id, tx, currency, amount, from_address)
-        # try to remove transfer_with_handle_lottery_and_referral(payment) method
         user = payment.exchange_request.user
         if user.platform == 'DUCX' and not user.address.startswith('voucher'):
             transfer_ducatusx(payment)
@@ -92,35 +89,8 @@ def parse_payment_message(message):
             else:
                 payment.state_transfer_queued()
                 payment.save()
-        # transfer_with_handle_lottery_and_referral(payment)
     else:
         logger.info(msg=f'tx {tx} already registered')
-
-
-# def transfer_with_handle_lottery_and_referral(payment):
-#     logger.info(msg='starting transfer')
-#     try:
-#         if not payment.exchange_request.user.address.startswith('voucher'):
-#             transfer_currency(payment)
-#             payment.state_transfer_done()
-#         elif payment.exchange_request.user.platform == 'DUC':
-#             usd_amount = get_usd_prices()['DUC'] * int(payment.sent_amount) / DECIMALS['DUC']
-#             try:
-#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
-#             except IntegrityError as e:
-#                 if 'voucher code' not in e.args[0]:
-#                     raise e
-#                 voucher = create_voucher(usd_amount, payment_id=payment.id)
-#             send_voucher_email(voucher, payment.exchange_request.user.email, usd_amount)
-#             if payment.exchange_request.user.ref_address:
-#                 make_ref_transfer(payment)
-#     except (ParityInterfaceException, DucatuscoreInterfaceException) as e:
-#         payment.state_transfer_error()
-#         payment.save()
-#         raise TransferException(e)
-#     logger.info(msg='transfer completed')
-
-
 
 def get_random_string():
     chars_for_random = string.ascii_uppercase + string.digits
@@ -191,9 +161,6 @@ def process_vaucher(payment):
         raise TransferException(e)
 
 
-
-
-
 def write_payments_to_csv(outfile_path, payment_list, curr_decimals):
     with open(outfile_path, 'w') as outfile:
         writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -240,13 +207,24 @@ def get_payments_statistics():
 
 def parse_payment_manually(tx_hash, currency):
     address_field_name = currency.lower() + '_address__iexact'
-    if currency == 'DUC':
-        url = '/'.join([WALLET_API_URL.format(currency=currency), 'tx', tx_hash, 'coins'])
+    if currency in ['DUC', 'BTC']:
+        base_url = NETWORK_SETTINGS[currency].get('bitcore_url')
+        if not base_url:
+            raise ValueError(f'bitcore_url is not configured for {currency} network')
+
+        url = '/'.join([base_url, 'tx', tx_hash, 'coins'])
         response = requests.get(url)
+
         if response.status_code == 404:
             raise ValueError(f'Transaction {tx_hash} not found')
-            
+
         data = response.json()
+
+        try:
+            from_address = data['inputs'][0]['address']
+        except (KeyError, IndexError):
+            from_address = None
+
         for output in data['outputs']:
             try:
                 exchange_request = ExchangeRequest.objects.get(**{ address_field_name: output['address'] })
@@ -255,6 +233,7 @@ def parse_payment_manually(tx_hash, currency):
 
             message = {
                     'exchangeId': exchange_request.pk,
+                    'fromAddress': from_address,
                     'address': output['address'],
                     'transactionHash': tx_hash,
                     'currency': currency,
@@ -263,6 +242,44 @@ def parse_payment_manually(tx_hash, currency):
                     'status': 'COMMITED'
             }
             parse_payment_message(message)
+
+    elif currency in ['USDT', 'USDC']:
+        ETH_NETWORK = NETWORK_SETTINGS['ETH']
+
+        w3 = Web3(HTTPProvider(ETH_NETWORK['url']))
+        receipt = w3.eth.getTransactionReceipt(tx_hash)
+
+        token = ETH_NETWORK['tokens'][currency]
+        contract_address = token.get('address')
+        if not contract_address:
+            raise ValueError(f'address is not configured for {currency} network')
+
+        with open(os.path.abspath(ERC20_ABI)) as f:
+            abi = json.load(f)
+
+        contract = w3.eth.contract(address=w3.toChecksumAddress(contract_address), abi=abi)
+        receipt = contract.events.Transfer().processReceipt(receipt)
+        if not receipt:
+            logger.debug(f'{currency} transaction with tx_hash {tx_hash} returned empty contract receipt')
+            return
+
+        event = receipt[0].args
+        try:
+            exchange_request = ExchangeRequest.objects.get(eth_address__iexact=event.to)
+        except ExchangeRequest.DoesNotExist:
+            raise ValueError(f'Exchange request not found')
+
+        message = {
+            'exchangeId': exchange_request.id,
+            'address': exchange_request.eth_address,
+            'fromAddress': event['from'],
+            'transactionHash': tx_hash,
+            'currency': currency,
+            'amount': event.value,
+            'success': True,
+            'status': 'COMMITED'
+        }
+        parse_payment_message(message)
 
     elif currency in ['DUCX', 'ETH']:
         w3 = Web3(HTTPProvider(NETWORK_SETTINGS[currency]['url']))
@@ -279,6 +296,7 @@ def parse_payment_manually(tx_hash, currency):
 
         message = {
             'exchangeId': exchange_request.pk,
+            'fromAddress': tx['from'],
             'address': receipt['to'],
             'transactionHash': tx_hash,
             'currency': currency,
@@ -286,7 +304,6 @@ def parse_payment_manually(tx_hash, currency):
             'success': True,
             'status': 'COMMITED'
         }
-
         parse_payment_message(message)
     else:
         raise ValueError(f'Invalid currency: {currency}')
