@@ -189,9 +189,10 @@ class DucatusAPI:
         return tx_addresses
 
 
-
 class DucatusXAPI(DucatusAPI):
-    def set_base_url(self):
+
+    def __init__(self):
+        super().__init__()
         self.base_url = f'https://ducapi.rocknblock.io/api/DUCX/{self.network}'
 
     def get_tx_value(self, tx):
