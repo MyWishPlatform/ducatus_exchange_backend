@@ -142,31 +142,20 @@ class BitcoreWalletsViewSet(ReadOnlyModelViewSet):
 class DucWalletsToCSV(APIView):
 
     def get(self, request, currency):
-        if currency.lower() == 'ducx':
-            account_list = []
-            for account in StatisticsAddress.objects.filter(network='DUCX'):
-                account_list.append([account.user_address, account.balance])
-
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = f'attachment;' \
-                                              f' filename="ducx_wallet_export_{str(datetime.now().date())}.csv"'
-            writer = csv.DictWriter(response, fieldnames=['ducx_address', 'balance'])
-            writer.writeheader()
-            for acc in account_list:
-                writer.writerow({'ducx_address': acc[0], 'balance': int(float(acc[1]))})
-
-        elif currency.lower() == 'duc':
-            try:
-                logger.info(msg=(os.path.join(BASE_DIR, 'DUC.csv')))
-                with open(os.path.join(BASE_DIR, 'DUC.csv'), 'r') as f:
-                    file_data = f.read()
-            except:
-                return Response('currently calculating balances, please check again in a few hours')
-            response = HttpResponse(file_data, content_type='text/csv')
-            response['Content-Disposition'] = f'attachment;' \
-                                              f' filename="duc_wallet_export_{str(datetime.now().date())}.csv"'
-
-        else:
+        if currency not in ['DUC', 'DUCX']:
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
+
+        account_list = []
+        for account in StatisticsAddress.objects.filter(network=currency):
+            account_list.append([account.user_address, account.balance])
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment;' \
+                                          f' filename="{currency}_wallet_export_{str(datetime.now().date())}.csv"'
+        writer = csv.DictWriter(response, fieldnames=['ducx_address', 'balance'])
+        writer.writeheader()
+        for acc in account_list:
+            writer.writerow({'address': acc[0], 'balance': int(float(acc[1]))})
+
 
         return response
