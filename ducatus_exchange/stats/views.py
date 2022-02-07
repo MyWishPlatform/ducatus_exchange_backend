@@ -147,7 +147,7 @@ class DucWalletsToCSV(APIView):
             return Response('unknown currency', status=status.HTTP_400_BAD_REQUEST)
 
         account_list = []
-        for account in StatisticsAddress.objects.filter(network=currency):
+        for account in StatisticsAddress.objects.filter(network=currency, balance__gt=0):
             account_list.append([account.user_address, account.balance])
 
         response = HttpResponse(content_type='text/csv')
