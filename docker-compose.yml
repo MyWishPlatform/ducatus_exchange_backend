@@ -25,7 +25,7 @@ services:
     volumes:
       - .:/app
     command: python receiver.py
-  web: 
+  web:
     <<: *python-service
     ports:
       - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
@@ -48,18 +48,3 @@ services:
   bot:
     <<: *python-service
     command: python start_bot_polling.py
-  scanner:
-    build:
-      context: mywill_scanner
-      dockerfile: Dockerfile
-    depends_on:
-      - db
-      - rabbitmq
-    env_file:
-      - .env
-    environment:
-      CONFIG: settings/config.yaml
-    restart: unless-stopped
-    volumes:
-      - ./mywill_scanner:/app
-
