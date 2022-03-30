@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.realpath(__file__))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'web',]
 
 
 # Application definition
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
     'ducatus_exchange.bot',
+    'ducatus_exchange.scanner',
 ]
 
 MIDDLEWARE = [
@@ -102,9 +103,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 USE_X_FORWARDED_HOST = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

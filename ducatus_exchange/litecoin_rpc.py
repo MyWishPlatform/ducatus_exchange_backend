@@ -132,3 +132,6 @@ class DucatuscoreInterface:
 
     def get_balance(self):
         return int(self.rpc.getbalance('') * DECIMALS['DUC'])
+
+    def get_transaction(self, tx_hash):
+        return self.rpc.getrawtransaction(tx_hash, 1)
