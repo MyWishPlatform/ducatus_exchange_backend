@@ -7,12 +7,13 @@ services:
     env_file:
       - .env
     volumes:
+      - ./multiple_db/:/docker-entrypoint-initdb.d
       - ./.docker/postgres-data:/var/lib/postgresql/data
   rabbitmq:
     image: rabbitmq:3.8.11
     env_file: .env
     restart: unless-stopped
-  receiver: &python-service
+  lottery_checker: &python-service
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,15 +25,12 @@ services:
     restart: unless-stopped
     volumes:
       - .:/app
-    command: python receiver.py
+    command: python lottery_checker.py
   web:
     <<: *python-service
     ports:
       - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
     command: gunicorn --bind :${DJANGO_PORT:-8000} --workers 8 ducatus_exchange.wsgi:application
-  lottery_checker:
-    <<: *python-service
-    command: python lottery_checker.py
   rates_checker:
     <<: *python-service
     command: python rates_checker.py
@@ -48,3 +46,14 @@ services:
   bot:
     <<: *python-service
     command: python start_bot_polling.py
+  scanner:
+    image: scanner:latest
+    depends_on:
+      - db
+      - web
+    env_file:
+      - .env
+    volumes:
+      - ./scanner_config.yaml:/app/scanner_config.yaml
+    tty: true
+    command: bash -c "python db_init.py && python main.py"

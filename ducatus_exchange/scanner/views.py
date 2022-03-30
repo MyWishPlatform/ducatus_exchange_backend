@@ -34,13 +34,15 @@ class AddressesToScan(APIView):
 
     @classmethod
     def get(cls, request) -> Response:
+
         try:
             network = request.query_params['network']
-            queryset = ExchangeRequest.objects.filter(payment=None).only(ADDRESSES_TYPES[network]["address"])
+            address = ADDRESSES_TYPES[network]["address"]
+            queryset = ExchangeRequest.objects.filter(payment__isnull=True).only(address)
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        addresses = [i.__getattribute__(ADDRESSES_TYPES[network]["address"]) for i in queryset]
+        addresses = [i.__getattribute__(address) for i in queryset]
 
         return Response({"addresses": addresses}, status=status.HTTP_200_OK)
 
@@ -80,13 +82,15 @@ class EventsForScann(APIView):
     def get(cls, request):
 
         request_message = [{"network": "Etherium", "contracts": list()}]
-
-        for token_name, token_data in NETWORK_SETTINGS['ETH']['tokens'].items():
-            request_message[0]["contracts"].append({
-                "address": token_data.get("address"),
-                "abi": TRANSFER_ABI
-            })
-        return Response(request_message, status=status.HTTP_200_OK)
+        tokens = NETWORK_SETTINGS.get('ETH', {}).get('tokens')
+        if tokens:
+            for token_name, token_data in tokens.items():
+                request_message[0]["contracts"].append({
+                    "address": token_data.get("address"),
+                    "abi": TRANSFER_ABI
+                })
+            return Response(request_message, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class ERC20PaymentHandler(APIView):
