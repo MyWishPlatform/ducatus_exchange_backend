@@ -87,7 +87,7 @@ class EventsForScann(APIView):
             for token_name, token_data in tokens.items():
                 request_message[0]["contracts"].append({
                     "address": token_data.get("address"),
-                    "abi": TRANSFER_ABI
+                    "events": [{"abi": TRANSFER_ABI}]
                 })
             return Response(request_message, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
