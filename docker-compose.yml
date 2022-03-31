@@ -56,4 +56,4 @@ services:
     volumes:
       - ./scanner_config.yaml:/app/scanner_config.yaml
     tty: true
-    command: bash -c "python db_init.py && python main.py"
+    command: bash -c "python scanner/db_init.py && python scanner/main.py"
