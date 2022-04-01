@@ -8,25 +8,23 @@ from celery_config import app
 
 @app.task
 def confirm_transfers():
-    transfer = DucatusTransfer.objects.filter(state='WAITING_FOR_CONFIRMATION').select_related('payment').first()
+    transfers = DucatusTransfer.objects.filter(state='WAITING_FOR_CONFIRMATION').select_related('payment')
 
-    if not transfer:
+    if not transfers:
         return
 
-    tx_hash = transfer.tx_hash
-    currency = transfer.currency
-    fac = factory_creator(currency)
+    for transfer in transfers:
+        tx_hash = transfer.tx_hash
+        currency = transfer.currency
+        fac = factory_creator(currency)
 
-    if not fac:
-        return
+        conformation = fac.confirm(tx_hash)
 
-    conformation = fac.confirm(tx_hash)
-
-    if conformation:
-        transfer.state_done()
-        transfer.save()
-        transfer.payment.state_transfer_done()
-        transfer.payment.save()
+        if conformation:
+            transfer.state_done()
+            transfer.save()
+            transfer.payment.state_transfer_done()
+            transfer.payment.save()
 
 
 class TransferConformationAbstractFactory(ABC):

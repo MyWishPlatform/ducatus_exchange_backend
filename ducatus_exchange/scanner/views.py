@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from typing import Union
 
@@ -11,22 +10,20 @@ from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.payments.api import parse_payment_message
 from ducatus_exchange.settings import NETWORK_SETTINGS
 
-
 ADDRESSES_TYPES = {
-        "Ducatus": {"address": "duc_address", "currency": "DUC"},
-        "Ducatusx": {"address": "ducx_address", "currency": "DUCX"},
-        "Bitcoin": {"address": "btc_address", "currency": "BTC"},
-        "Etherium": {"address": "eth_address", "currency": "ETH"}
-    }
-
+    "Ducatus": {"address": "duc_address", "currency": "DUC"},
+    "Ducatusx": {"address": "ducx_address", "currency": "DUCX"},
+    "Bitcoin": {"address": "btc_address", "currency": "BTC"},
+    "Etherium": {"address": "eth_address", "currency": "ETH"}
+}
 
 TRANSFER_ABI = {
-                'anonymous': False,
-                'inputs': [{'indexed': True, 'name': 'from', 'type': 'address'},
-                           {'indexed': True, 'name': 'to', 'type': 'address'},
-                           {'indexed': False, 'name': 'value', 'type': 'uint256'}],
-                'name': 'Transfer',
-                'type': 'event'
+    'anonymous': False,
+    'inputs': [{'indexed': True, 'name': 'from', 'type': 'address'},
+               {'indexed': True, 'name': 'to', 'type': 'address'},
+               {'indexed': False, 'name': 'value', 'type': 'uint256'}],
+    'name': 'Transfer',
+    'type': 'event'
 }
 
 
@@ -43,6 +40,7 @@ class AddressesToScan(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         addresses = [i.__getattribute__(address) for i in queryset]
+        print(addresses)
 
         return Response({"addresses": addresses}, status=status.HTTP_200_OK)
 
@@ -51,29 +49,29 @@ class PaymentHandler(APIView):
 
     @classmethod
     def post(cls, request) -> Response:
-        
-        with atomic():
-            request_data = request.data
-            network = request_data.get("network")
-            address_to = request_data.get("address_to")
-            filter_data = {
-                ADDRESSES_TYPES.get(network).get("address"): address_to
-            }
-            exchange_id = ExchangeRequest.objects.get(**filter_data).id
-            amount = request_data.get("amount")
-            currency = ADDRESSES_TYPES[network]["currency"]
-            tx_hash = request_data.get("transaction_hash")
-            address_from = request_data.get("address_from")
-            message = Message(
-                exchangeId=exchange_id,
-                amount=amount,
-                currency=currency,
-                transactionHash=tx_hash,
-                fromAddress=address_from,
-                address=address_to
-                )
+        request_data = request.data
+        network = request_data.get("network")
+        address_to = request_data.get("address_to")
+        filter_data = {
+            ADDRESSES_TYPES.get(network).get("address"): address_to
+        }
+        exchange_id = ExchangeRequest.objects.get(**filter_data).id
+        amount = request_data.get("amount")
+        currency = ADDRESSES_TYPES[network]["currency"]
+        tx_hash = request_data.get("transaction_hash")
+        address_from = request_data.get("address_from")
+        message = Message(
+            exchangeId=exchange_id,
+            amount=amount,
+            currency=currency,
+            transactionHash=tx_hash,
+            fromAddress=address_from,
+            address=address_to
+        )
 
-            return parse_message(message)
+        parse_message(message)
+        print('LOG RECEIVED')
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class EventsForScann(APIView):
@@ -87,9 +85,9 @@ class EventsForScann(APIView):
             for token_name, token_data in tokens.items():
                 request_message[0]["contracts"].append(
                     {
-                    "address": token_data.get("address"),
-                    "events": [{"abi": TRANSFER_ABI}]
-                })
+                        "address": token_data.get("address"),
+                        "events": [{"abi": TRANSFER_ABI}]
+                    })
             print(request_message)
             return Response(request_message, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -99,30 +97,31 @@ class ERC20PaymentHandler(APIView):
 
     @classmethod
     def post(cls, request) -> Response:
-
-        with atomic():
-            request_data = request.data
-            network = request_data.get("network")
-            tx_hash = request_data.get('tx_hash')
-            data = json.loads(request_data.get("data"))
-            address_to = data.get('to')
-            filter_data = {
-                ADDRESSES_TYPES.get(network).get("address"): address_to
-            }
-            exchange_id = ExchangeRequest.objects.get(**filter_data).id
-            currency = ADDRESSES_TYPES[network]["currency"]
-            amount = data.get('value')
-            from_address = data.get('from')
-            message = Message(
-                exchangeId=exchange_id,
-                currency=currency,
-                amount=amount,
-                fromAddress=from_address,
-                address=address_to,
-                transactionHash=tx_hash
-            )
-
-            return parse_message(message)
+        request_data = request.data
+        network = request_data.get("network")
+        tx_hash = request_data.get('tx_hash')
+        data = request_data.get("data").get("args")
+        address_to = data.get('to')
+        filter_data = {
+            ADDRESSES_TYPES.get(network).get("address"): address_to
+        }
+        exchange = ExchangeRequest.objects.filter(**filter_data).first()
+        if not exchange:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        exchange_id = exchange.id
+        currency = ADDRESSES_TYPES[network]["currency"]
+        amount = data.get('value')
+        from_address = data.get('from')
+        message = Message(
+            exchangeId=exchange_id,
+            currency=currency,
+            amount=amount,
+            fromAddress=from_address,
+            address=address_to,
+            transactionHash=tx_hash
+        )
+        parse_message(message)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 @dataclass
@@ -141,6 +140,5 @@ class Message:
 def parse_message(message: Message) -> Response:
     try:
         parse_payment_message(message=message.__dict__)
-        return Response(message, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response(e, status=status.HTTP_400_BAD_REQUEST)
