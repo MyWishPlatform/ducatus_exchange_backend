@@ -84,4 +84,8 @@ app.conf.beat_schedule = {
         'task': 'ducatus_exchange.transfers.tasks.confirm_transfers',
         'schedule': crontab(minute='*'),
     },
+    'parse_logs': {
+        'task': 'ducatus_exchange.payments.tasks.parse_logs',
+        'schedule': crontab(minute='*'),
+    },
 }

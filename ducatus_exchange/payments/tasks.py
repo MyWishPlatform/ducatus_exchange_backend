@@ -1,9 +1,9 @@
 from ducatus_exchange.settings import MINIMAL_RETURN
 from ducatus_exchange.ducatus_api import return_ducatus
 from ducatus_exchange.exchange_requests.models import ExchangeStatus
-from ducatus_exchange.payments.api import check_limits
+from ducatus_exchange.payments.api import check_limits, process_vaucher
 from ducatus_exchange.payments.models import Payment
-from ducatus_exchange.transfers.api import make_ref_transfer, transfer_ducatus
+from ducatus_exchange.transfers.api import make_ref_transfer, transfer_ducatus, transfer_ducatusx
 from celery_config import app
 
 
@@ -37,3 +37,24 @@ def process_queued_duc_transfer():
             raise ValueError('Platform is None')
 
     return
+
+
+@app.task
+def parse_logs():
+    waiting_payments = Payment.objects.filter(
+        transfer_state='WAITING_FOR_TRANSFER').select_related(
+        'exchange_request').select_related('user').select_for_update()
+
+    if not waiting_payments:
+        return
+
+    for payment in waiting_payments:
+        user = payment.exchange_request.user
+        if user.platform == 'DUCX' and not user.address.startswith('voucher'):
+            transfer_ducatusx(payment)
+        elif user.platform == 'DUC':
+            if user.address.startswith('voucher'):
+                process_vaucher(payment)
+            else:
+                payment.state_transfer_queued()
+                payment.save()

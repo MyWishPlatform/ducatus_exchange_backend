@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Union
+import logging
 
 from django.db.transaction import atomic
 from rest_framework import status
@@ -7,8 +6,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
-from ducatus_exchange.payments.api import parse_payment_message
+from ducatus_exchange.payments.api import register_payment
+from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.settings import NETWORK_SETTINGS
+
+
+logger = logging.getLogger(__name__)
+
 
 ADDRESSES_TYPES = {
     "Ducatus": {"address": "duc_address", "currency": "DUC"},
@@ -35,13 +39,13 @@ class AddressesToScan(APIView):
         try:
             network = request.query_params['network']
             address = ADDRESSES_TYPES[network]["address"]
-            queryset = ExchangeRequest.objects.filter(payment__isnull=True).only(address)
+            queryset = ExchangeRequest.objects.all().only(address)
         except KeyError:
+            logger.debug('Bad request')
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         addresses = [i.__getattribute__(address) for i in queryset]
-        print(addresses)
-
+        logger.debug('Addresses successfully repast')
         return Response({"addresses": addresses}, status=status.HTTP_200_OK)
 
 
@@ -49,29 +53,33 @@ class PaymentHandler(APIView):
 
     @classmethod
     def post(cls, request) -> Response:
-        request_data = request.data
-        network = request_data.get("network")
-        address_to = request_data.get("address_to")
-        filter_data = {
-            ADDRESSES_TYPES.get(network).get("address"): address_to
-        }
-        exchange_id = ExchangeRequest.objects.get(**filter_data).id
-        amount = request_data.get("amount")
-        currency = ADDRESSES_TYPES[network]["currency"]
-        tx_hash = request_data.get("transaction_hash")
-        address_from = request_data.get("address_from")
-        message = Message(
-            exchangeId=exchange_id,
-            amount=amount,
-            currency=currency,
-            transactionHash=tx_hash,
-            fromAddress=address_from,
-            address=address_to
-        )
+        with atomic():
+            request_data = request.data
 
-        parse_message(message)
-        print('LOG RECEIVED')
-        return Response(status=status.HTTP_201_CREATED)
+            tx_hash = request_data.get("transaction_hash")
+            if Payment.objects.filter(tx_hash=tx_hash).count():
+               return Response(status=status.HTTP_208_ALREADY_REPORTED)
+
+            network = request_data.get("network")
+            address_to = request_data.get("address_to")
+
+            filter_data = {
+                f'{ADDRESSES_TYPES.get(network).get("address")}__iexact': address_to
+            }
+
+            exchange = ExchangeRequest.objects.get(**filter_data)
+            if not exchange:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+            exchange_id = exchange.id
+            amount = request_data.get("amount")
+            currency = ADDRESSES_TYPES[network]["currency"]
+            address_from = request_data.get("address_from")
+            register_payment(exchange_id, tx_hash, currency, amount, address_from)
+
+            logger.info('LOG RECEIVED')
+
+            return Response(status=status.HTTP_201_CREATED)
 
 
 class EventsForScann(APIView):
@@ -88,7 +96,6 @@ class EventsForScann(APIView):
                         "address": token_data.get("address"),
                         "events": [{"abi": TRANSFER_ABI}]
                     })
-            print(request_message)
             return Response(request_message, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -97,48 +104,30 @@ class ERC20PaymentHandler(APIView):
 
     @classmethod
     def post(cls, request) -> Response:
-        request_data = request.data
-        network = request_data.get("network")
-        tx_hash = request_data.get('tx_hash')
-        data = request_data.get("data").get("args")
-        address_to = data.get('to')
-        filter_data = {
-            ADDRESSES_TYPES.get(network).get("address"): address_to
-        }
-        exchange = ExchangeRequest.objects.filter(**filter_data).first()
-        if not exchange:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        exchange_id = exchange.id
-        currency = ADDRESSES_TYPES[network]["currency"]
-        amount = data.get('value')
-        from_address = data.get('from')
-        message = Message(
-            exchangeId=exchange_id,
-            currency=currency,
-            amount=amount,
-            fromAddress=from_address,
-            address=address_to,
-            transactionHash=tx_hash
-        )
-        parse_message(message)
-        return Response(status=status.HTTP_201_CREATED)
+        with atomic():
+            request_data = request.data
+            tx_hash = request_data.get('tx_hash')
+            if Payment.objects.filter(tx_hash=tx_hash).count():
+               return Response(status=status.HTTP_208_ALREADY_REPORTED)
 
+            network = request_data.get("network")
+            data = request_data.get("data").get("args")
+            address_to = data.get('to')
 
-@dataclass
-class Message:
-    exchangeId: int
-    fromAddress: str
-    address: str
-    transactionHash: str
-    currency: str
-    amount: int
+            filter_data = {
+                f'{ADDRESSES_TYPES.get(network).get("address")}__iexact': address_to
+            }
 
-    def __getitem__(self, item) -> Union[int, str]:
-        return getattr(self, item)
+            exchange = ExchangeRequest.objects.filter(**filter_data).first()
 
+            if not exchange:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            exchange_id = exchange.id
+            currency = ADDRESSES_TYPES[network]["currency"]
+            amount = data.get('value')
+            address_from = data.get('from')
+            register_payment(exchange_id, tx_hash, currency, amount, address_from)
 
-def parse_message(message: Message) -> Response:
-    try:
-        parse_payment_message(message=message.__dict__)
-    except Exception as e:
-        return Response(e, status=status.HTTP_400_BAD_REQUEST)
+            logger.info('LOG RECEIVED')
+
+            return Response(status=status.HTTP_201_CREATED)
