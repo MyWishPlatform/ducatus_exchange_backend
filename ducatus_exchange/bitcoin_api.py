@@ -103,7 +103,7 @@ class BitcoinAPI:
         inputs_value = 0
         unspent_inputs = []
         for input_tx in inputs_of_address:
-            if not input_tx['spentTxid']:
+            if not input_tx['spentTxid'] and input_tx['mintHeight'] > 1:
                 unspent_inputs.append({
                     'txid': input_tx['mintTxid'],
                     'vout': input_tx['mintIndex']

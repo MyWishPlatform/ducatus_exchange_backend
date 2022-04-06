@@ -34,7 +34,7 @@ def withdraw_ducx_funds():
             logger.info(f'Value not found for parameter {key}. Aborting')
             return
 
-    all_requests = ExchangeRequest.objects.all().exclude(generated_address=None)
+    all_requests = ExchangeRequest.objects.all().exclude(generated_address=None).order_by('id')
     for account in all_requests:
         ducx_priv_key, _ = get_private_keys(withdraw_parameters['root_private_key'], account.user.id)
         process_withdraw_ducx(withdraw_parameters, account, ducx_priv_key)
@@ -91,7 +91,7 @@ def withdraw_eth_funds():
             logger.info(f'Value not found for parameter {key}. Aborting')
             return
 
-    all_requests = ExchangeRequest.objects.all().exclude(eth_address=None)
+    all_requests = ExchangeRequest.objects.all().exclude(eth_address=None).order_by('id')
     '''
     usdc_gas_transactions = collections.defaultdict(list)
     delayed_transactions_addresses = []
@@ -120,7 +120,7 @@ def withdraw_eth_funds():
     print('ETH WITHDRAW', flush=True)
     for account in all_requests:
         eth_priv_key, _ = get_private_keys(withdraw_parameters['root_private_key'], account.user.id)
-        logger.info(f'ETH address: {account.eth_address}, {Account.from_key(eth_priv_key).address}')
+        logger.info(f'ETH {account.id} address: {account.eth_address}, {Account.from_key(eth_priv_key).address}')
         '''
         if account.eth_address in delayed_transactions_addresses:
             logger.info('address {} skipped because of delayed gas transaction'.format(account.eth_address))
@@ -318,11 +318,11 @@ def withdraw_btc_funds():
             logging.info(f'Value not found for parameter {key}. Aborting')
             return
 
-    all_requests = ExchangeRequest.objects.all().exclude(btc_address=None)
+    all_requests = ExchangeRequest.objects.all().exclude(btc_address=None).order_by('id')
     logger.info('BTC WITHDRAW')
     for user in all_requests:
         eth_priv_key, btc_priv_key = get_private_keys(withdraw_parameters['root_private_key'], user.user.id)
-        logger.info(f'BTC address: {user.btc_address}')
+        logger.info(f'BTC {user.id} address: {user.btc_address}')
         try:
             process_withdraw_btc(withdraw_parameters, user, btc_priv_key)
         except Exception as e:
