@@ -42,22 +42,21 @@ def process_queued_duc_transfer():
 
 
 @app.task
-def parse_logs():
-    with atomic():
-        waiting_payments = Payment.objects.filter(
-            transfer_state='WAITING_FOR_TRANSFER').select_related(
-            'exchange_request').select_for_update()
+def process_payments():
+    waiting_payments = Payment.objects.filter(
+        transfer_state='WAITING_FOR_TRANSFER').select_related(
+        'exchange_request')
 
-        if not waiting_payments:
-            return
+    if not waiting_payments:
+        return
 
-        for payment in waiting_payments:
-            user = payment.exchange_request.user
-            if user.platform == 'DUCX' and not user.address.startswith('voucher'):
-                transfer_ducatusx(payment)
-            elif user.platform == 'DUC':
-                if user.address.startswith('voucher'):
-                    process_vaucher(payment)
-                else:
-                    payment.state_transfer_queued()
-                    payment.save()
+    for payment in waiting_payments:
+        user = payment.exchange_request.user
+        if user.platform == 'DUCX' and not user.address.startswith('voucher'):
+            transfer_ducatusx(payment)
+        elif user.platform == 'DUC':
+            if user.address.startswith('voucher'):
+                process_vaucher(payment)
+            else:
+                payment.state_transfer_queued()
+                payment.save()

@@ -115,7 +115,7 @@ class ParityInterface:
         balance = int(raw_balance, 16)
         return balance
 
-    def get_transaction(self, tx_hash):
+    def get_block_for_transfer(self, tx_hash):
         return int(self.eth_getTransactionByHash(tx_hash).get('blockNumber'), 16)
 
     def get_block_count(self):
