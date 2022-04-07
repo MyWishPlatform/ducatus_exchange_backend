@@ -47,7 +47,7 @@ class DUCXTransferConformationFactory(TransferConformationAbstractFactory):
 
     def confirm(self, tx_hash: str) -> bool:
         rpc = ParityInterface()
-        transaction_block_number = rpc.get_transaction(tx_hash)
+        transaction_block_number = rpc.get_block_for_transfer(tx_hash)
         total_block_number = rpc.get_block_count()
         if transaction_block_number:
             return (total_block_number - transaction_block_number) > 5
