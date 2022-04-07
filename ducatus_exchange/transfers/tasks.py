@@ -5,6 +5,8 @@ from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
 from celery_config import app
 
+from ducatus_exchange.settings import NETWORK_SETTINGS
+
 
 @app.task
 def confirm_transfers():
@@ -37,20 +39,22 @@ class TransferConformationAbstractFactory(ABC):
 class DUCTransferConformationFactory(TransferConformationAbstractFactory):
 
     def confirm(self, tx_hash: str) -> bool:
+        conformation_blocks = NETWORK_SETTINGS['DUC']['conformation_blocks']
         rpc = DucatuscoreInterface()
         transaction = rpc.get_transaction(tx_hash)
         if transaction:
-            return transaction.get('confirmations') > 5
+            return transaction.get('confirmations') > conformation_blocks
 
 
 class DUCXTransferConformationFactory(TransferConformationAbstractFactory):
 
     def confirm(self, tx_hash: str) -> bool:
+        conformation_blocks = NETWORK_SETTINGS['DUC']['conformation_blocks']
         rpc = ParityInterface()
         transaction_block_number = rpc.get_block_for_transfer(tx_hash)
         total_block_number = rpc.get_block_count()
         if transaction_block_number:
-            return (total_block_number - transaction_block_number) > 5
+            return (total_block_number - transaction_block_number) > conformation_blocks
 
 
 def factory_creator(currency: str) -> TransferConformationAbstractFactory:
