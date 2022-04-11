@@ -57,8 +57,9 @@ class PaymentHandler(APIView):
                 f'{ADDRESSES_TYPES.get(network).get("address")}__iexact': address_to
             }
 
-            exchange = ExchangeRequest.objects.get(**filter_data)
-            if not exchange:
+            try:
+                exchange = ExchangeRequest.objects.get(**filter_data)
+            except ExchangeRequest.DoesNotExist:
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
             exchange_id = exchange.id

@@ -51,7 +51,7 @@ class DUCXTransferConformationFactory(TransferConformationAbstractFactory):
     def confirm(self, tx_hash: str) -> bool:
         conformation_blocks = NETWORK_SETTINGS['DUC']['conformation_blocks']
         rpc = ParityInterface()
-        transaction_block_number = rpc.get_block_for_transfer(tx_hash)
+        transaction_block_number = rpc.get_block_number_by_tx_hash(tx_hash)
         total_block_number = rpc.get_block_count()
         if transaction_block_number:
             return (total_block_number - transaction_block_number) > conformation_blocks
