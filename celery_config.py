@@ -22,6 +22,7 @@ app = celery.Celery(
     include=[
         'ducatus_exchange.payments.tasks',
         'ducatus_exchange.exchange_requests.tasks',
+        'ducatus_exchange.transfers.tasks',
     ]
 )
 
@@ -78,5 +79,13 @@ app.conf.beat_schedule = {
     'update_duc_and_ducx_balances': {
         'task': 'ducatus_exchange.exchange_requests.tasks.update_duc_and_ducx_balances',
         'schedule': crontab(minute='*'),
-    }
+    },
+    'confirm_transfers': {
+        'task': 'ducatus_exchange.transfers.tasks.confirm_transfers',
+        'schedule': crontab(minute='*'),
+    },
+    'parse_logs': {
+        'task': 'ducatus_exchange.payments.tasks.process_payments',
+        'schedule': crontab(minute='*'),
+    },
 }

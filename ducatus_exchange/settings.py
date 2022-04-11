@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.realpath(__file__))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'web',]
 
 
 # Application definition
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'ducatus_exchange.stats',
     'ducatus_exchange.quantum',
     'ducatus_exchange.bot',
+    'ducatus_exchange.scanner',
 ]
 
 MIDDLEWARE = [
@@ -89,9 +90,9 @@ WSGI_APPLICATION = 'ducatus_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'ducatus_exchange'),
-        'USER': os.getenv('POSTGRES_USER', 'ducatus_exchange'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'ducatus_exchange'),
+        'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+        'USER': os.getenv('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'postgres'),
         'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
         'PORT': os.getenv('POSTGRES_PORT', 5432),
     }
@@ -102,9 +103,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 USE_X_FORWARDED_HOST = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

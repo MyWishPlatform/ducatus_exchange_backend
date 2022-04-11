@@ -114,4 +114,9 @@ class ParityInterface:
         raw_balance = self.eth_getBalance(Web3.toChecksumAddress(address))
         balance = int(raw_balance, 16)
         return balance
-    
+
+    def get_block_number_by_tx_hash(self, tx_hash):
+        return int(self.eth_getTransactionByHash(tx_hash).get('blockNumber'), 16)
+
+    def get_block_count(self):
+        return int(self.eth_getBlockByNumber('latest', True).get('number'), 16)
