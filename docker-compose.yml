@@ -47,7 +47,7 @@ services:
     <<: *python-service
     command: python start_bot_polling.py
   scanner:
-    image: scanner:latest
+    image: rocknblock/scanner:latest
     depends_on:
       - db
       - web
