@@ -64,7 +64,7 @@ class PaymentHandler(APIView):
 
             exchange_id = exchange.id
             amount = request_data.get("amount")
-            currency = ADDRESSES_TYPES[network]["currency"]
+            currency = request_data.get("currency") or ADDRESSES_TYPES[network]["currency"]
             address_from = request_data.get("address_from")
             register_payment(exchange_id, tx_hash, currency, amount, address_from)
 
