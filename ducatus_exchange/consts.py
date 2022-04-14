@@ -8,6 +8,7 @@ DECIMALS = {
     'DUC': 10 ** 8,
     'DUCX': 10 ** 18,
     'USDC': 10 ** 6,
+    'USDT': 10 ** 6,
 
     # quantum currencies
     'USD': 10 ** 2,
