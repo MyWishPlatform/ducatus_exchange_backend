@@ -17,7 +17,7 @@ class Payment(models.Model):
     Can link to tx_hash or Charge object, depending on what type of payment user choose
     """
 
-    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'QUEUED', 'PENDING')
+    TRANSFER_STATES_DEFAULT = ('WAITING_FOR_TRANSFER', 'DONE', 'ERROR', 'RETURNED', 'QUEUED', 'PENDING', 'ARCHIVED')
     ADAPTED_TRANSFER_STATES_DEFAULT = ('WAITING_FOR_VALIDATION', 'SUCCESS', 'FAIL', 'RETURN', 'WAITING_FOR_RELAY', 'PENDING')
     COLLECTION_STATES_DEFAULT = ('NOT_COLLECTED', 'COLLECTED', 'ERROR')
     TRANSFER_STATES = list(zip(TRANSFER_STATES_DEFAULT, TRANSFER_STATES_DEFAULT))
@@ -88,4 +88,3 @@ def transfer_state_transition_dispatcher(sender, instance, **kwargs):
     instance.save()
 
 post_transition.connect(transfer_state_transition_dispatcher, Payment)
-    
