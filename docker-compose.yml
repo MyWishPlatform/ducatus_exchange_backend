@@ -55,4 +55,5 @@ services:
       - .env
     volumes:
       - ./scanner_config.yaml:/app/scanner_config.yaml
+      - ./.docker/scanner/migrations:/app/migrations
     tty: true
