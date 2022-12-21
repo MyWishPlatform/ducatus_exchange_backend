@@ -9,10 +9,22 @@ services:
     volumes:
       - ./multiple_db/:/docker-entrypoint-initdb.d
       - ./.docker/postgres-data:/var/lib/postgresql/data
+    logging:
+      # limit logs retained on host to 2GB
+      driver: "json-file"
+      options:
+        max-size: "250m"
+        max-file: "4"
   rabbitmq:
     image: rabbitmq:3.8.11
     env_file: .env
     restart: unless-stopped
+    logging:
+      # limit logs retained on host to 2GB
+      driver: "json-file"
+      options:
+        max-size: "250m"
+        max-file: "4"
   lottery_checker: &python-service
     build:
       context: .
@@ -26,11 +38,23 @@ services:
     volumes:
       - .:/app
     command: python lottery_checker.py
+    logging:
+      # limit logs retained on host to 2GB
+      driver: "json-file"
+      options:
+        max-size: "250m"
+        max-file: "4"
   web:
     <<: *python-service
     ports:
       - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
     command: gunicorn --bind :${DJANGO_PORT:-8000} --workers 8 ducatus_exchange.wsgi:application
+    logging:
+      # limit logs retained on host to 2GB
+      driver: "json-file"
+      options:
+        max-size: "250m"
+        max-file: "4"
   rates_checker:
     <<: *python-service
     command: python rates_checker.py
@@ -57,3 +81,9 @@ services:
       - ./scanner_config.yaml:/app/scanner_config.yaml
       - ./.docker/scanner/migrations:/app/migrations
     tty: true
+    logging:
+      # limit logs retained on host to 2GB
+      driver: "json-file"
+      options:
+        max-size: "250m"
+        max-file: "4"
