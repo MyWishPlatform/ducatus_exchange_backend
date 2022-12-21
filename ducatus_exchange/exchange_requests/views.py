@@ -96,7 +96,8 @@ class ExchangeRequestView(APIView):
                 'usdt_address': exchange_request.eth_address,
             }
         else:
-            response_data = {'duc_address': exchange_request.duc_address}
+            return Response(status=status.HTTP_403_FORBIDDEN)
+           # response_data = {'duc_address': exchange_request.duc_address}
 
         logger.info(msg=('res:', response_data))
 
