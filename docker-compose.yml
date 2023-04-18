@@ -54,10 +54,10 @@ services:
     command: python rates_checker.py
   stats_checker_ducx:
     <<: *python-service
-    command: python stats_checker.py DUCX
+    command: python stats_checker.py --network DUCX
   stats_checker_duc:
     <<: *python-service
-    command: python stats_checker.py DUC
+    command: python stats_checker.py --network DUC
   stats_checker_balances:
     <<: *python-service
     command: python stats_checker.py --balances
