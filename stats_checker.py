@@ -4,7 +4,8 @@ import logging
 from datetime import datetime
 from argparse import ArgumentParser
 import django
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 
@@ -94,29 +95,9 @@ def update_balances(network, api, addresses):
     c = 0
     if network not in ['DUC', 'DUCX']:
         raise Exception(f'network is not supported to update balances')
-    for addr in addresses:
-        try:
-            account, balance_before = update_address_balance(network, api, addr)
-            c += 1
-            logger.info(
-                '{net} STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
-                    net=network,
-                    acc=account.user_address,
-                    count=c,
-                    total=len(addresses),
-                    now=account.balance,
-                    before=balance_before
-                ))
 
-        except Exception as e:
-            logger.error(f'Skipped address {addr} because of error')
-            logger.error(f'Error: {e}')
-            
-async def aupdate_balances_network(network, api, addresses):
-    c = 0
-    if network not in ['DUC', 'DUCX']:
-        raise Exception(f'network is not supported to update balances')
-    async for addr in addresses:
+    def update_address(addr):
+        nonlocal c
         try:
             account, balance_before = update_address_balance(network, api, addr)
             c += 1
@@ -134,14 +115,8 @@ async def aupdate_balances_network(network, api, addresses):
             logger.error(f'Skipped address {addr} because of error')
             logger.error(f'Error: {e}')
 
-async def aupdate_balances_all():
-    for network in ['DUC', 'DUCX']:
-        addresses = StatisticsAddress.objects.filter(network=network).exclude(user_address__in=['False', 'false']).exclude(user_address=None)
-        if network == 'DUC':
-            api = DucatusAPI()
-        else:
-            api = DucatusXAPI()
-        aupdate_balances_network(network, api, addresses)
+    with ThreadPoolExecutor() as executor:
+        executor.map(update_address, addresses)
 
 
 def update_stats(api, network):
