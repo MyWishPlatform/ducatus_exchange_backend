@@ -176,7 +176,7 @@ def update_stats(api, network):
 if __name__ == '__main__':
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--network', help='specify network where checker runs (DUC/DUCX')
-    arg_parser.add_argument('--balances', help='run balances updater')
+    arg_parser.add_argument('--balances', help='run balances updater', action="store_true")
     launch_args = arg_parser.parse_args()
     
     if launch_args.balances and not launch_args.network:
