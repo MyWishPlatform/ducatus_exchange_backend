@@ -12,7 +12,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 django.setup()
 
 from ducatus_exchange.stats.models import StatisticsAddress, StatisticsTransfer
-from ducatus_exchange.settings_local import STATS_CHECKER_TIMEOUT
+from ducatus_exchange.settings_local import STATS_CHECKER_TIMEOUT, STATS_CHECKER_TIMEOUT_BALANCES
 from ducatus_exchange.settings import STATS_NORMALIZED_TIME
 from ducatus_exchange.ducatus_api import DucatusAPI, DucatusXAPI
 from ducatus_exchange.stats.LastBlockPersister import get_last_block, save_last_block
@@ -169,7 +169,7 @@ if __name__ == '__main__':
             logger.info('run update balances')
             update_balances_all()
             logger.info('update balances done')
-            time.sleep(STATS_CHECKER_TIMEOUT)
+            time.sleep(STATS_CHECKER_TIMEOUT_BALANCES)
 
     if launch_args.network not in ['DUC', 'DUCX']:
         raise Exception('Checker can be launched only on DUC or DUCX network')
