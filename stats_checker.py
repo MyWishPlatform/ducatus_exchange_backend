@@ -164,7 +164,11 @@ if __name__ == '__main__':
     launch_args = arg_parser.parse_args()
     
     if launch_args.balances and not launch_args.network:
-        update_balances_all
+        while True:
+            logger.info('run update balances')
+            update_balances_all()
+            logger.info('update balances done')
+            time.sleep(STATS_CHECKER_TIMEOUT)
 
     if launch_args.network not in ['DUC', 'DUCX']:
         raise Exception('Checker can be launched only on DUC or DUCX network')
