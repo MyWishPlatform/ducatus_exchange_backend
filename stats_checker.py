@@ -117,6 +117,15 @@ def update_balances(network, api, addresses):
 
     with ThreadPoolExecutor() as executor:
         executor.map(update_address, addresses)
+        
+def update_balances_all():
+    for network in ['DUC', 'DUCX']:
+        addresses = StatisticsAddress.objects.filter(network=network).exclude(user_address__in=['False', 'false']).exclude(user_address=None)
+        if network == 'DUC':
+            api = DucatusAPI()
+        else:
+            api = DucatusXAPI()
+        update_balances(network=network, api=api, addresses=addresses)
 
 
 def update_stats(api, network):
@@ -155,7 +164,7 @@ if __name__ == '__main__':
     launch_args = arg_parser.parse_args()
     
     if launch_args.balances and not launch_args.network:
-        asyncio.run(aupdate_balances_all())
+        update_balances_all
 
     if launch_args.network not in ['DUC', 'DUCX']:
         raise Exception('Checker can be launched only on DUC or DUCX network')
