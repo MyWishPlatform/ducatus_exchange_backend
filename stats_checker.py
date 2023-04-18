@@ -120,7 +120,8 @@ def update_balances(network, api, addresses):
         
 def update_balances_all():
     for network in ['DUC', 'DUCX']:
-        addresses = StatisticsAddress.objects.filter(network=network).exclude(user_address__in=['False', 'false']).exclude(user_address=None)
+        logger.info(f'run update balances on net {network}')
+        addresses = list(StatisticsAddress.objects.filter(network=network).exclude(user_address__in=['False', 'false']).exclude(user_address=None).values_list('user_address', flat=True))
         if network == 'DUC':
             api = DucatusAPI()
         else:
