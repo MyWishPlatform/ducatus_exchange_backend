@@ -58,6 +58,9 @@ services:
   stats_checker_duc:
     <<: *python-service
     command: python stats_checker.py DUC
+  stats_checker_balances:
+    <<: *python-service
+    command: python stats_checker.py --balances
   celery:
     <<: *python-service
     command: celery -A celery_config worker -B --loglevel=info

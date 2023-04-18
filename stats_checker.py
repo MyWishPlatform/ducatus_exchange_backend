@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from argparse import ArgumentParser
 import django
+import asyncio
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_exchange.settings')
 
@@ -76,6 +77,18 @@ def save_transfer(api, tx, network):
         'transfer_saved': transfer_saved
         }
 
+def update_address_balance(network, api, addr):
+    if network == 'DUCX':
+        account = StatisticsAddress.objects.get(user_address=addr)
+    else:
+        # network == 'DUC'
+        account, new_duc_addr = StatisticsAddress.objects.get_or_create(
+            user_address=addr, network=network)
+
+    balance_before = account.balance
+    account.balance = api.get_address_balance(account.user_address)
+    account.save()
+    return account, balance_before
 
 def update_balances(network, api, addresses):
     c = 0
@@ -83,16 +96,7 @@ def update_balances(network, api, addresses):
         raise Exception(f'network is not supported to update balances')
     for addr in addresses:
         try:
-            if network == 'DUCX':
-                account = StatisticsAddress.objects.get(user_address=addr)
-            else:
-                # network == 'DUC'
-                account, new_duc_addr = StatisticsAddress.objects.get_or_create(
-                    user_address=addr, network=network)
-
-            balance_before = account.balance
-            account.balance = api.get_address_balance(account.user_address)
-            account.save()
+            account, balance_before = update_address_balance(network, api, addr)
             c += 1
             logger.info(
                 '{net} STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
@@ -107,6 +111,37 @@ def update_balances(network, api, addresses):
         except Exception as e:
             logger.error(f'Skipped address {addr} because of error')
             logger.error(f'Error: {e}')
+            
+async def aupdate_balances_network(network, api, addresses):
+    c = 0
+    if network not in ['DUC', 'DUCX']:
+        raise Exception(f'network is not supported to update balances')
+    async for addr in addresses:
+        try:
+            account, balance_before = update_address_balance(network, api, addr)
+            c += 1
+            logger.info(
+                '{net} STATS: account {acc} updated ({count}/{total}), balance now: {now}, was: {before}'.format(
+                    net=network,
+                    acc=account.user_address,
+                    count=c,
+                    total=len(addresses),
+                    now=account.balance,
+                    before=balance_before
+                ))
+
+        except Exception as e:
+            logger.error(f'Skipped address {addr} because of error')
+            logger.error(f'Error: {e}')
+
+async def aupdate_balances_all():
+    for network in ['DUC', 'DUCX']:
+        addresses = StatisticsAddress.objects.filter(network=network).exclude(user_address__in=['False', 'false']).exclude(user_address=None)
+        if network == 'DUC':
+            api = DucatusAPI()
+        else:
+            api = DucatusXAPI()
+        aupdate_balances_network(network, api, addresses)
 
 
 def update_stats(api, network):
@@ -141,7 +176,11 @@ def update_stats(api, network):
 if __name__ == '__main__':
     arg_parser = ArgumentParser()
     arg_parser.add_argument('network', help='specify network where checker runs (DUC/DUCX')
+    arg_parser.add_argument('--balances', help='run balances updater')
     launch_args = arg_parser.parse_args()
+    
+    if launch_args.balances and not launch_args.network:
+        asyncio.run(async_update_balances())
 
     if launch_args.network not in ['DUC', 'DUCX']:
         raise Exception('Checker can be launched only on DUC or DUCX network')
