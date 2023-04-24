@@ -151,9 +151,9 @@ def update_stats(api, network):
         logger.info(msg=f'Chain: {network}; Block: {current_block}, tx count: {len(txs_in_block)}')
         current_block += 1
         save_last_block(network, current_block)
-        if current_block > (current_network_block - 1000):
-            # update balances only when reaching full sync to network
-            update_balances(network, api, set(addresses_in_txes))
+        # if current_block > (current_network_block - 1000):
+        #     # update balances only when reaching full sync to network
+        update_balances(network, api, set(addresses_in_txes))
 
     return {'current_block': current_block}
 

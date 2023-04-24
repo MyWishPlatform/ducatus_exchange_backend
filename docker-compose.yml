@@ -6,6 +6,7 @@ services:
     image: postgres:${POSTGRES_VERSION}
     env_file:
       - .env
+    command: postgres -c 'max_connections=1000'
     volumes:
       - ./multiple_db/:/docker-entrypoint-initdb.d
       - ./.docker/postgres-data:/var/lib/postgresql/data
@@ -58,9 +59,9 @@ services:
   stats_checker_duc:
     <<: *python-service
     command: python stats_checker.py --network DUC
-  stats_checker_balances:
-    <<: *python-service
-    command: python stats_checker.py --balances
+    # stats_checker_balances:
+    # st<<: *python-service
+    # stcommand: python stats_checker.py --balances
   celery:
     <<: *python-service
     command: celery -A celery_config worker -B --loglevel=info
