@@ -15,6 +15,7 @@ def generate_transfer_state_history_default() -> list:
 
 
 def calculate_amount(original_amount, from_currency):
+    original_amount = int(original_amount)
     to_currency = 'DUCX' if from_currency == 'DUC' else 'DUC'
     logger.info(msg=f'Calculating amount, original: {original_amount}, from {from_currency} to {to_currency}')
 

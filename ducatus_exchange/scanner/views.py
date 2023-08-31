@@ -46,12 +46,13 @@ class PaymentHandler(APIView):
         with atomic():
             request_data = request.data
 
-            tx_hash = request_data.get("transaction_hash")
+            tx_hash = request_data.get("tx_hash")
             if Payment.objects.filter(tx_hash=tx_hash).count():
                 return Response(status=status.HTTP_208_ALREADY_REPORTED)
 
-            network = request_data.get("network")
+            network = request_data.get("network_name")
             address_to = request_data.get("address_to")
+            logger.info(f"Registering payment on {network} - {address_to}")
 
             filter_data = {
                 f'{ADDRESSES_TYPES.get(network).get("address")}__iexact': address_to

@@ -7,6 +7,8 @@ services:
     env_file:
       - .env
     command: postgres -c 'max_connections=1000'
+    networks:
+      ducatus_exchange_net:
     volumes:
       - ./multiple_db/:/docker-entrypoint-initdb.d
       - ./.docker/postgres-data:/var/lib/postgresql/data
@@ -14,6 +16,8 @@ services:
     image: rabbitmq:3.8.11
     env_file: .env
     restart: unless-stopped
+    networks:
+      ducatus_exchange_net:
     logging:
       # limit logs retained on host to 2GB
       driver: "json-file"
@@ -33,6 +37,8 @@ services:
     volumes:
       - .:/app
     command: python lottery_checker.py
+    networks:
+      ducatus_exchange_net:
     logging:
       # limit logs retained on host to 2GB
       driver: "json-file"
@@ -70,6 +76,8 @@ services:
     command: python start_bot_polling.py
   scanner:
     image: rocknblock/scanner:latest
+    networks:
+      ducatus_exchange_net:
     depends_on:
       - db
       - web
@@ -85,3 +93,10 @@ services:
       options:
         max-size: "250m"
         max-file: "4"
+networks:
+  ducatus_exchange_net:
+    name: ducatus_exchange_net
+    ipam:
+      driver: default
+      config:
+      - subnet: "${DOCKER_NETWORK_SUBNET?err}"
