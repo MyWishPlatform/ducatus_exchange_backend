@@ -28,7 +28,7 @@ from ducatus_exchange.exchange_requests.models import (
     ExchangeRequest,
     ExchangeStatus
 )
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterfaceException
+from ducatus_exchange.bitcoin_api import DucatuscoreInterfaceError
 from ducatus_exchange.lottery.api import LotteryRegister
 from ducatus_exchange.parity_interface import (
     ParityInterface,
@@ -156,7 +156,7 @@ def process_vaucher(payment):
         if user.ref_address:
             logger.info(msg=f'payment with id: {payment.id} added to queue to send.')
             payment.state_transfer_queued()
-    except DucatuscoreInterfaceException as e:
+    except DucatuscoreInterfaceError as e:
         payment.state_transfer_error()
         payment.save()
         raise TransferException(e)

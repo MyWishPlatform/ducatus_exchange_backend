@@ -17,7 +17,7 @@ from ducatus_exchange.settings import NETWORK_SETTINGS, ROOT_KEYS, DUCX_GAS_PRIC
 from ducatus_exchange.rates.models import UsdRate
 from ducatus_exchange.withdrawals.utils import get_private_keys
 from ducatus_exchange.consts import DECIMALS
-from ducatus_exchange.bitcoin_api import BitcoinAPI, BitcoinRPC
+from ducatus_exchange.bitcoin_api import BitcoinAPI, DucatuscoreInterface
 
 logger = logging.getLogger('withdraw')
 
@@ -344,7 +344,7 @@ def process_withdraw_btc(params, account, priv_key):
     balance = int(value)
     if balance <= 0:
         balance = 0
-    rpc = BitcoinRPC()
+    rpc = DucatuscoreInterface(NETWORK_SETTINGS["BTC"], DECIMALS["BTC"])
     transaction_fee = rpc.relay_fee
     if balance < transaction_fee:
         logger.info(f'Address skipped: {from_address}: balance {balance} < tx fee of {transaction_fee}')

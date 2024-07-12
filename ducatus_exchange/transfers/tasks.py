@@ -1,11 +1,12 @@
 from abc import abstractmethod, ABC
 
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.transfers.models import DucatusTransfer
 from celery_config import app
 
 from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.consts import DECIMALS
 
 
 @app.task
@@ -40,7 +41,7 @@ class DUCTransferConformationFactory(TransferConformationAbstractFactory):
 
     def confirm(self, tx_hash: str) -> bool:
         conformation_blocks = NETWORK_SETTINGS['DUC']['conformation_blocks']
-        rpc = DucatuscoreInterface()
+        rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
         transaction = rpc.get_transaction(tx_hash)
         if transaction:
             return transaction.get('confirmations') > conformation_blocks

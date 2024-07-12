@@ -9,7 +9,7 @@ from web3 import Web3, HTTPProvider
 
 from ducatus_exchange.payments.models import Payment
 from ducatus_exchange.consts import DECIMALS
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
 from ducatus_exchange.bip32_ducatus import DucatusWallet
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.settings import ROOT_KEYS, STATS_NORMALIZED_TIME, DUCX_GAS_PRICE, NETWORK_SETTINGS, DUCX_TRANSFER_GAS_LIMIT
@@ -222,7 +222,7 @@ def return_ducatus(payment_hash, amount):
     #     return
 
     duc_api = DucatusAPI()
-    duc_rpc = DucatuscoreInterface()
+    duc_rpc = DucatuscoreInterface(NETWORK_SETTINGS['DUC'], DECIMALS[])
 
     raw_fee = duc_rpc.get_fee()
     fee = raw_fee * DECIMALS['DUC']
@@ -253,13 +253,7 @@ def return_ducatus(payment_hash, amount):
 
     logger.info(msg=f'output_params {output_params}')
 
-    tx = duc_rpc.rpc.createrawtransaction(input_params, output_params)
-    logger.info(msg=f'raw tx {tx}')
-
-    signed = duc_rpc.rpc.signrawtransaction(tx, None, [child_private])
-    logger.info(msg=f'signed tx {signed}')
-
-    tx_hash = duc_rpc.rpc.sendrawtransaction(signed['hex'])
+    tx_hash = duc_rpc.construct_and_send_tx(input_params, output_params, child_private)
     p.returned_tx_hash = tx_hash
     p.state_transfer_returned()
     p.save()

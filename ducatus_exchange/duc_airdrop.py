@@ -4,7 +4,9 @@ import datetime
 import time
 
 from ducatus_exchange.settings import BASE_DIR
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
+from ducatus_exchange.settings import NETWORK_SETTINGS
+from ducatus_exchange.consts import DECIMALS
 
 time_format = '%Y-%m-%dT%H-%M-%S'
 
@@ -49,22 +51,16 @@ def duc_airdrop(duc_amount):
 
                 for duc_address in address_batch:
 
-                    address_api = DucatuscoreInterface()
-                    is_valid = address_api.rpc.validateaddress(duc_address)
+                    address_api = DucatuscoreInterface(NETWORK_SETTINGS['DUC'], DECIMALS["DUC"])
+                    is_valid = address_api.validateaddress(duc_address)
                     # print(is_valid)
                     if is_valid.get('isvalid'):
 
                         transfers[duc_address] = duc_amount
 
                 print('transfer', transfers)
-                ducatus_api = DucatuscoreInterface()
-                try:
-                    ducatus_api.rpc.walletpassphrase(ducatus_api.settings['wallet_password'], 30)
-                    transfer_hash = ducatus_api.rpc.sendmany("", transfers)
-                    print(transfer_hash)
-                except Exception as e:
-                    print(e)
-                    transfer_hash = 'transfer_error'
+                ducatus_api = DucatuscoreInterface(NETWORK_SETTINGS['DUC'], DECIMALS["DUC"])
+                transfer_hash = ducatus_api.send_many(transfers)
 
                 for duc_address in address_batch:
                     airdrop_writer.writerow([duc_address, duc_amount, transfer_hash])

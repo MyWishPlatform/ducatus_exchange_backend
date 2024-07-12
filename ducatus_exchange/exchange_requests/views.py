@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from ducatus_exchange.exchange_requests.models import DucatusUser, ExchangeRequest, ExchangeStatus
 from ducatus_exchange.exchange_requests.serializers import ExchangeStatusSerializer
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
 from ducatus_exchange.quantum.models import Charge
 from ducatus_exchange.transfers.serializers import DucatusTransferSerializer
 from ducatus_exchange.lottery.api import LotteryRegister

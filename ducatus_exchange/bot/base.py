@@ -8,7 +8,7 @@ import telebot
 
 from django.db import IntegrityError
 from ducatus_exchange.bot.models import BotSub
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface
 from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.settings import NETWORK_SETTINGS, BOT_TOKEN
@@ -49,7 +49,8 @@ class Bot(threading.Thread):
         def balances_handle(message):
             logger.info('run balances handler')
             ducx_balance = ParityInterface().get_balance()
-            duc_balance = DucatuscoreInterface().get_balance()
+            duc_rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
+            duc_balance = duc_rpc.get_balance()
             response = f'DUC balance: {duc_balance / DECIMALS["DUC"]}\nDUCX balance {ducx_balance / DECIMALS["DUCX"]}'
             self.bot.reply_to(message, response)
 
@@ -58,7 +59,8 @@ class Bot(threading.Thread):
         def addresses_handle(message):
             logger.info('run addresses handler')
             ducx_address = NETWORK_SETTINGS['DUCX']['address']
-            duc_address = DucatuscoreInterface().rpc.getaccountaddress('')
+            duc_rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
+            duc_address = duc_rpc.get_account_address()
             response = f'DUC balance: {duc_address}\nDUCX balance {ducx_address}'
             self.bot.reply_to(message, response)
 

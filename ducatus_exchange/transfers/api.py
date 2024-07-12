@@ -5,12 +5,12 @@ import logging
 from decimal import Decimal
 from django.db import transaction
 
-from ducatus_exchange.litecoin_rpc import DucatuscoreInterface
+from ducatus_exchange.bitcoin_api import DucatuscoreInterface
 from ducatus_exchange.parity_interface import ParityInterface, ParityInterfaceException
 from ducatus_exchange.transfers.models import DucatusTransfer
-from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN, DUCX_GAS_PRICE, DUCX_TRANSFER_GAS_LIMIT
+from ducatus_exchange.settings import ROOT_KEYS, REF_BONUS_PERCENT, MINIMAL_RETURN, DUCX_GAS_PRICE, DUCX_TRANSFER_GAS_LIMIT, NETWORK_SETTINGS
 from ducatus_exchange.bip32_ducatus import DucatusWallet
-from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT
+from ducatus_exchange.consts import DAYLY_LIMIT, WEEKLY_LIMIT, DECIMALS
 from ducatus_exchange.payments.utils import calculate_amount
 from ducatus_exchange.exchange_requests.models import ExchangeRequest
 from ducatus_exchange.ducatus_api import return_ducatus, return_ducatusx
@@ -61,7 +61,7 @@ def make_ref_transfer(payment):
     logger.info(msg=f'ducatus transfer started: sending {amount} DUC to {receiver}')
     currency = 'DUC'
 
-    rpc = DucatuscoreInterface()
+    rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
     tx = rpc.transfer(receiver, amount)
     transfer = save_transfer(payment, tx, amount, currency)
 
@@ -81,7 +81,7 @@ def transfer_ducatus(payment):
         return_ducatusx(payment.tx_hash, payment.original_amount)
         return
 
-    rpc = DucatuscoreInterface()
+    rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
     # if not enough balance on admin address return tokens to user
     if rpc.get_balance() > amount:
         tx = rpc.transfer(receiver, amount)
@@ -180,8 +180,8 @@ def collect_duc(payment):
     tx_hashes = [payment.tx_hash]
     address_from = payment.exchange_request.duc_address
     amount = payment.original_amount
-    rpc = DucatuscoreInterface()
-    address_to = rpc.rpc.getaccountaddress('')
+    rpc = DucatuscoreInterface(NETWORK_SETTINGS["DUC"], DECIMALS["DUC"])
+    address_to = rpc.get_account_address()
     try:
         tx = rpc.internal_transfer(tx_hashes, address_from, address_to, amount, child_private)
         payment.state_collect_duc()
