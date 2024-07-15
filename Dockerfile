@@ -1,15 +1,21 @@
-FROM python:3.11
-
-WORKDIR /app
+FROM python:3.9
 
 ENV PYTHONUNBUFFERED=1
 
-ENV PATH="/app/.venv/bin:$PATH"
-RUN pip install uv==0.1.42
+RUN mkdir /code
+WORKDIR /code
+
+RUN apt-get update && apt-get install -y netcat-traditional
+RUN pip install --upgrade pip
+
+ENV PATH="/code/.venv/bin:$PATH"
+RUN pip install --upgrade uv
 RUN uv venv
 RUN uv pip install setuptools
-
-COPY requirements.txt /app/requirements.txt
+COPY requirements.txt /code/requirements.txt
 RUN uv pip install -r requirements.txt
 
-COPY . /app
+EXPOSE 8000
+
+COPY . /code/
+

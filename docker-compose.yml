@@ -50,6 +50,7 @@ services:
     ports:
       - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
     command: gunicorn --bind :${DJANGO_PORT:-8000} --workers 8 ducatus_exchange.wsgi:application
+    # command: sleep 1000
     logging:
       # limit logs retained on host to 2GB
       driver: "json-file"
