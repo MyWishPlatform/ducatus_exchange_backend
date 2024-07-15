@@ -344,7 +344,7 @@ def process_withdraw_btc(params, account, priv_key):
     balance = int(value)
     if balance <= 0:
         balance = 0
-    rpc = DucatuscoreInterface(NETWORK_SETTINGS["BTC"], DECIMALS["BTC"])
+    rpc = DucatuscoreInterface(NETWORK_SETTINGS["BTC"], DECIMALS["BTC"], is_bitcoin=True)
     transaction_fee = rpc.relay_fee
     if balance < transaction_fee:
         logger.info(f'Address skipped: {from_address}: balance {balance} < tx fee of {transaction_fee}')

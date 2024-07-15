@@ -52,7 +52,7 @@ class BitcoinSettings:
     wallet_password: Optional[str]
 
 class DucatuscoreInterface:
-    def __init__(self, settings, decimals, is_bitcoin):
+    def __init__(self, settings, decimals, is_bitcoin = False):
         self.settings = BitcoinSettings(
             user=settings['user'],
             password=settings['password'],
