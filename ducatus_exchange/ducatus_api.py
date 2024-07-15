@@ -222,7 +222,7 @@ def return_ducatus(payment_hash, amount):
     #     return
 
     duc_api = DucatusAPI()
-    duc_rpc = DucatuscoreInterface(NETWORK_SETTINGS['DUC'], DECIMALS[])
+    duc_rpc = DucatuscoreInterface(NETWORK_SETTINGS['DUC'], DECIMALS['DUC'])
 
     raw_fee = duc_rpc.get_fee()
     fee = raw_fee * DECIMALS['DUC']
