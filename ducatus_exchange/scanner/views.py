@@ -34,7 +34,13 @@ class AddressesToScan(APIView):
             logger.debug('Bad request')
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        addresses = [i.__getattribute__(address) for i in queryset if i is not None]
+        addresses = []
+        for addr in queryset:
+            user_addr = addr.__getattribute__(address)
+            if user_addr == None:
+                continue
+            addresses.append(user_addr)
+        
         logger.debug('Addresses successfully repast')
         return Response({"addresses": addresses}, status=status.HTTP_200_OK)
 
