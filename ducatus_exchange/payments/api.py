@@ -317,16 +317,29 @@ def get_payments_status_from_hashes(payment_hashes_list: list):
             status = 'Not received in scanner'
             payment_date = None
             return_tx = None
+            transfer_tx = None
         else:
             payment_date = payment.created_date
             status = payment.transfer_state
             return_tx = payment.returned_tx_hash
 
-        payment_data.append({'tx_hash': p, 'status': status, 'date': payment_date, 'return_tx_hash': return_tx})  
+            transfer = payment.transfers.first()
+            if transfer and status == 'DONE':
+                transfer_tx = transfer.tx_hash
+            else:
+                transfer_tx = None
+
+        payment_data.append({
+            'tx_hash': p,
+            'status': status,
+            'date': payment_date,
+            'transfer_tx_hash': transfer_tx,
+            'return_tx_hash': return_tx
+        })  
         
     dt = timezone.now()
     with open(f'payments-{dt.year}-{dt.month}-{dt.day}.csv', 'w') as csvfile:
-        fieldnames = ['tx_hash', 'status', 'date', 'return_tx_hash']
+        fieldnames = ['tx_hash', 'status', 'date', 'transfer_tx_hash', 'return_tx_hash']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in payment_data:
