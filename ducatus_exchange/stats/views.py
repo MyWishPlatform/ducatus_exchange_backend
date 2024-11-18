@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework import status
 
+from ducatus_exchange.consts import DECIMALS
 from ducatus_exchange.stats.models import StatisticsTransfer, StatisticsAddress, BitcoreAddress
 from ducatus_exchange.stats.serializers import DucWalletsSerializer, BitcoreWalletsSerializer
 from ducatus_exchange.settings import BASE_DIR
@@ -71,6 +72,31 @@ class StatisticsTotals(APIView):
             'duc': str(duc_address_sum['balance__sum']),
             'ducx': str(ducx_address_sum['balance__sum'])
         }, status=status.HTTP_200_OK)
+
+
+class Supply(APIView):
+    ALLOWED_TYPES = {'total', 'circulating'}
+    """ Retrieve DUCX total or circulating supply """
+    def get(self, request):
+        supply_type = request.query_params.get('type')
+        if supply_type not in self.ALLOWED_TYPES:
+            return Response(
+                {"error": "Invalid query parameter 'type'. Allowed values are 'total' or 'circulating'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        query = StatisticsAddress.objects.filter(network='DUCX')
+        if supply_type == 'circulating':
+            ducx_blacklist = DucatusAddressBlacklist.objects.filter(network='DUCX').values('wallet_address')
+            query = query.exclude(user_address__in=ducx_blacklist)
+
+        ducx_address_sum = query.aggregate(total_balance=Sum('balance'))
+        total_balance = ducx_address_sum['total_balance'] or 0
+
+        return Response(
+            total_balance/DECIMALS['DUCX'],
+            status=status.HTTP_200_OK
+        )
 
 
 class StatsHandler(APIView):
